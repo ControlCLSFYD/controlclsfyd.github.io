@@ -10,6 +10,7 @@ interface SavedAnswers {
 const Index = () => {
   const [savedAnswers, setSavedAnswers] = useState<SavedAnswers>({});
   const [introCompleted, setIntroCompleted] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
 
   // Load saved answers from localStorage on initial load
   useEffect(() => {
@@ -44,21 +45,50 @@ const Index = () => {
   const handleIntroComplete = () => {
     setIntroCompleted(true);
     sessionStorage.setItem('clsfyd-intro-watched', 'true');
+    console.log("Video completed, moving to game");
+  };
+
+  // Handle video loaded
+  const handleVideoLoaded = () => {
+    setVideoLoaded(true);
+    console.log("Video loaded and ready to play");
+  };
+
+  // Handle skip intro
+  const handleSkipIntro = () => {
+    const video = document.getElementById('intro-video') as HTMLVideoElement;
+    if (video) {
+      video.pause();
+    }
+    handleIntroComplete();
   };
 
   return (
     <div className="terminal">
       {!introCompleted ? (
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full h-full flex flex-col items-center justify-center relative">
           <video 
+            id="intro-video"
             src="/clsfyd intro.mp4"
-            className="max-w-full max-h-[80vh]"
+            className="max-w-full max-h-[80vh] z-10"
             autoPlay
+            muted={false}
+            playsInline
+            onLoadedData={handleVideoLoaded}
             onEnded={handleIntroComplete}
             controls={false}
           >
             Your browser does not support the video tag.
           </video>
+          
+          {videoLoaded && (
+            <button
+              onClick={handleSkipIntro}
+              className="absolute bottom-10 right-10 bg-terminal-green bg-opacity-20 border border-terminal-green px-4 py-2 text-terminal-green hover:bg-opacity-40 transition-all z-20"
+            >
+              Skip Intro
+            </button>
+          )}
         </div>
       ) : (
         <GameContainer 
