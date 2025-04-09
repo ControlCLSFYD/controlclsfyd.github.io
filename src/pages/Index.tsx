@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import GameContainer from "../components/GameContainer";
+import { useIsMobile } from "../hooks/use-mobile";
 
 // Type for storing answers
 interface SavedAnswers {
@@ -11,6 +12,7 @@ const Index = () => {
   const [savedAnswers, setSavedAnswers] = useState<SavedAnswers>({});
   const [introCompleted, setIntroCompleted] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   // Load saved answers from localStorage on initial load
   useEffect(() => {
@@ -69,8 +71,8 @@ const Index = () => {
         <div className="w-full h-full flex flex-col items-center justify-center relative">
           <video 
             id="intro-video"
-            src="/clsfyd intro.mp4"
-            className="max-w-full max-h-[80vh] z-10"
+            src="/CLSFYDINTRO.mp4"
+            className={`${isMobile ? 'w-full h-auto' : 'max-w-full max-h-screen'} z-10`}
             autoPlay
             muted={false}
             playsInline
