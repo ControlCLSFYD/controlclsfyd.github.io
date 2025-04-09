@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import GameContainer from "../components/GameContainer";
+import VideoIntro from "../components/VideoIntro";
 
 // Type for storing answers
 interface SavedAnswers {
@@ -9,6 +10,7 @@ interface SavedAnswers {
 
 const Index = () => {
   const [savedAnswers, setSavedAnswers] = useState<SavedAnswers>({});
+  const [videoIntroCompleted, setVideoIntroCompleted] = useState(false);
 
   // Load saved answers from localStorage on initial load
   useEffect(() => {
@@ -33,14 +35,27 @@ const Index = () => {
     localStorage.removeItem('clsfyd-game-answers');
   };
 
+  const handleVideoIntroComplete = () => {
+    setVideoIntroCompleted(true);
+  };
+
   return (
-    <div className="terminal">
-      <GameContainer 
-        savedAnswers={savedAnswers}
-        onAnswerUpdate={handleAnswerUpdate}
-        onResetGame={handleResetGame}
-      />
-    </div>
+    <>
+      {!videoIntroCompleted ? (
+        <VideoIntro 
+          onComplete={handleVideoIntroComplete} 
+          videoSrc="/CLSFYDINTRO.mp4" 
+        />
+      ) : (
+        <div className="terminal">
+          <GameContainer 
+            savedAnswers={savedAnswers}
+            onAnswerUpdate={handleAnswerUpdate}
+            onResetGame={handleResetGame}
+          />
+        </div>
+      )}
+    </>
   );
 };
 
