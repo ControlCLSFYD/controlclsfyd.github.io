@@ -1,8 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import GameContainer from "../components/GameContainer";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 // Type for storing answers
 interface SavedAnswers {
@@ -12,7 +10,6 @@ interface SavedAnswers {
 const Index = () => {
   const [savedAnswers, setSavedAnswers] = useState<SavedAnswers>({});
   const [introCompleted, setIntroCompleted] = useState(false);
-  const isMobile = useIsMobile();
 
   // Load saved answers from localStorage on initial load
   useEffect(() => {
@@ -43,37 +40,25 @@ const Index = () => {
     localStorage.removeItem('clsfyd-game-answers');
   };
 
-  // Handle video completion or skip
+  // Handle video completion
   const handleIntroComplete = () => {
     setIntroCompleted(true);
     sessionStorage.setItem('clsfyd-intro-watched', 'true');
   };
 
-  console.log("Intro completed:", introCompleted);
-
   return (
     <div className="terminal">
       {!introCompleted ? (
-        <div className="w-full h-full flex flex-col items-center justify-center relative p-4">
-          <div className={`relative ${isMobile ? 'w-full' : 'max-w-[80%]'}`}>
-            <video 
-              src="/clsfyd intro.mp4"
-              className="w-full h-auto rounded"
-              autoPlay
-              onEnded={handleIntroComplete}
-              controls={false}
-              playsInline
-            >
-              Your browser does not support the video tag.
-            </video>
-            <Button 
-              variant="outline" 
-              onClick={handleIntroComplete}
-              className="absolute top-4 right-4 bg-terminal-black border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-terminal-black"
-            >
-              Skip
-            </Button>
-          </div>
+        <div className="w-full h-full flex items-center justify-center">
+          <video 
+            src="/clsfyd intro.mp4"
+            className="max-w-full max-h-[80vh]"
+            autoPlay
+            onEnded={handleIntroComplete}
+            controls={false}
+          >
+            Your browser does not support the video tag.
+          </video>
         </div>
       ) : (
         <GameContainer 
