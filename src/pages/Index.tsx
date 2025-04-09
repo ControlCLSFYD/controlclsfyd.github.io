@@ -49,6 +49,8 @@ const Index = () => {
     sessionStorage.setItem('clsfyd-intro-watched', 'true');
   };
 
+  console.log("Intro completed:", introCompleted);
+
   return (
     <div className="terminal">
       {!introCompleted ? (
@@ -60,6 +62,7 @@ const Index = () => {
               autoPlay
               onEnded={handleIntroComplete}
               controls={false}
+              playsInline
             >
               Your browser does not support the video tag.
             </video>
