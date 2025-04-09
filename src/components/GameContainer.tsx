@@ -124,7 +124,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           </div>
         )}
 
-        {loadingStep >= 4 && (
+        {loadingStep === 4 && (
           <div>
             <TypewriterText text="Send your access code." className="mb-4 block" />
             <form onSubmit={handleAccessCodeSubmit} className="mt-4">
