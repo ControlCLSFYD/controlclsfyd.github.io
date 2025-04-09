@@ -7,9 +7,14 @@ import { gameLevels } from '../data/gameData';
 interface GameContainerProps {
   savedAnswers: Record<string, string>;
   onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
+  onResetGame: () => void;
 }
 
-const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpdate }) => {
+const GameContainer: React.FC<GameContainerProps> = ({ 
+  savedAnswers, 
+  onAnswerUpdate,
+  onResetGame
+}) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [accessCode, setAccessCode] = useState("");
@@ -67,6 +72,8 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (accessCode === "111") {
+      // Reset any existing answers when starting a new game
+      onResetGame();
       setGameStarted(true);
       setCurrentLevel(1);
     }

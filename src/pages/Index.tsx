@@ -27,11 +27,18 @@ const Index = () => {
     localStorage.setItem('clsfyd-game-answers', JSON.stringify(updatedAnswers));
   };
 
+  // Reset all game answers
+  const handleResetGame = () => {
+    setSavedAnswers({});
+    localStorage.removeItem('clsfyd-game-answers');
+  };
+
   return (
     <div className="terminal">
       <GameContainer 
         savedAnswers={savedAnswers}
         onAnswerUpdate={handleAnswerUpdate}
+        onResetGame={handleResetGame}
       />
     </div>
   );
