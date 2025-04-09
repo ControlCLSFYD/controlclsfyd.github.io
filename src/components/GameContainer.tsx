@@ -18,32 +18,28 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [currentLevel, setCurrentLevel] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [accessCode, setAccessCode] = useState("");
-  const [showAccessCodePrompt, setShowAccessCodePrompt] = useState(false);
-  const [showInitializing, setShowInitializing] = useState(false);
-  const [loadingDots, setLoadingDots] = useState("");
+  const [loadingStep, setLoadingStep] = useState(1);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
 
   useEffect(() => {
-    // Show loading dots animation
+    // Sequential loading steps with typewriter effect
     const dotTimeout = setTimeout(() => {
-      setLoadingDots("...");
+      setLoadingStep(2); // Show loading dots
     }, 1000);
 
-    // Show initializing text after dots
     const initTimeout = setTimeout(() => {
-      setShowInitializing(true);
+      setLoadingStep(3); // Show initializing text
     }, 2500);
 
-    // Show access code prompt
-    const promptTimeout = setTimeout(() => {
-      setShowAccessCodePrompt(true);
+    const codeTimeout = setTimeout(() => {
+      setLoadingStep(4); // Show access code prompt
     }, 5000);
 
     return () => {
       clearTimeout(dotTimeout);
       clearTimeout(initTimeout);
-      clearTimeout(promptTimeout);
+      clearTimeout(codeTimeout);
     };
   }, []);
 
@@ -106,39 +102,56 @@ const GameContainer: React.FC<GameContainerProps> = ({
   // Check if the next level is accessible
   const isNextLevelAccessible = completedLevels.includes(currentLevel);
 
+  const renderLoadingScreen = () => {
+    return (
+      <div className="flex flex-col items-start">
+        {loadingStep === 2 && (
+          <div className="mb-8">
+            <TypewriterText 
+              text="..." 
+              speed={200} 
+              onComplete={() => setTimeout(() => setLoadingStep(3), 500)}
+            />
+          </div>
+        )}
+
+        {loadingStep === 3 && (
+          <div className="mb-8">
+            <TypewriterText 
+              text="CLSFYD Challenge Initializing..." 
+              onComplete={() => setTimeout(() => setLoadingStep(4), 1000)}
+            />
+          </div>
+        )}
+
+        {loadingStep === 4 && (
+          <div>
+            <TypewriterText text="Send your access code." className="mb-4 block" />
+            <form onSubmit={handleAccessCodeSubmit} className="mt-4">
+              <input
+                type="text"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value)}
+                className="bg-transparent border border-terminal-green text-terminal-green p-1 focus:outline-none"
+                autoFocus
+              />
+              <button 
+                type="submit" 
+                className="border border-terminal-green text-terminal-green px-2 py-1 ml-2 focus:outline-none hover:bg-terminal-green hover:bg-opacity-20"
+              >
+                Submit
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="terminal p-4">
       {!gameStarted ? (
-        <div className="flex flex-col items-start">
-          <div className="mb-8">
-            <span>{loadingDots}</span>
-          </div>
-          {showInitializing && (
-            <div className="mb-8">
-              <TypewriterText text="CLSFYD Challenge Initializing..." />
-            </div>
-          )}
-          {showAccessCodePrompt && (
-            <div>
-              <TypewriterText text="Send your access code." className="mb-4 block" />
-              <form onSubmit={handleAccessCodeSubmit} className="mt-4">
-                <input
-                  type="text"
-                  value={accessCode}
-                  onChange={(e) => setAccessCode(e.target.value)}
-                  className="bg-transparent border border-terminal-green text-terminal-green p-1 focus:outline-none"
-                  autoFocus
-                />
-                <button 
-                  type="submit" 
-                  className="border border-terminal-green text-terminal-green px-2 py-1 ml-2 focus:outline-none hover:bg-terminal-green hover:bg-opacity-20"
-                >
-                  Submit
-                </button>
-              </form>
-            </div>
-          )}
-        </div>
+        renderLoadingScreen()
       ) : (
         <div>
           {/* Navigation Buttons */}
