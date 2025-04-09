@@ -9,12 +9,19 @@ interface SavedAnswers {
 
 const Index = () => {
   const [savedAnswers, setSavedAnswers] = useState<SavedAnswers>({});
+  const [introCompleted, setIntroCompleted] = useState(false);
 
   // Load saved answers from localStorage on initial load
   useEffect(() => {
     const storedAnswers = localStorage.getItem('clsfyd-game-answers');
     if (storedAnswers) {
       setSavedAnswers(JSON.parse(storedAnswers));
+    }
+
+    // Check if intro has been watched in this session
+    const introWatched = sessionStorage.getItem('clsfyd-intro-watched');
+    if (introWatched) {
+      setIntroCompleted(true);
     }
   }, []);
 
@@ -33,13 +40,33 @@ const Index = () => {
     localStorage.removeItem('clsfyd-game-answers');
   };
 
+  // Handle video completion
+  const handleIntroComplete = () => {
+    setIntroCompleted(true);
+    sessionStorage.setItem('clsfyd-intro-watched', 'true');
+  };
+
   return (
     <div className="terminal">
-      <GameContainer 
-        savedAnswers={savedAnswers}
-        onAnswerUpdate={handleAnswerUpdate}
-        onResetGame={handleResetGame}
-      />
+      {!introCompleted ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <video 
+            src="/clsfyd intro.mp4"
+            className="max-w-full max-h-[80vh]"
+            autoPlay
+            onEnded={handleIntroComplete}
+            controls={false}
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      ) : (
+        <GameContainer 
+          savedAnswers={savedAnswers}
+          onAnswerUpdate={handleAnswerUpdate}
+          onResetGame={handleResetGame}
+        />
+      )}
     </div>
   );
 };
