@@ -5,12 +5,27 @@ interface AnswerInputProps {
   correctAnswer: string;
   onCorrectAnswer: () => void;
   questionLabel: string;
+  savedAnswer?: string;
 }
 
-const AnswerInput: React.FC<AnswerInputProps> = ({ correctAnswer, onCorrectAnswer, questionLabel }) => {
-  const [userAnswer, setUserAnswer] = useState('');
+const AnswerInput: React.FC<AnswerInputProps> = ({ 
+  correctAnswer, 
+  onCorrectAnswer, 
+  questionLabel,
+  savedAnswer = ''
+}) => {
+  const [userAnswer, setUserAnswer] = useState(savedAnswer);
   const [isCorrect, setIsCorrect] = useState(false);
   const [showPlaceholders, setShowPlaceholders] = useState(true);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [isIncorrect, setIsIncorrect] = useState(false);
+
+  useEffect(() => {
+    // Check if we have a saved answer that's correct
+    if (savedAnswer && checkAnswer(savedAnswer)) {
+      setIsCorrect(true);
+    }
+  }, [savedAnswer]);
 
   // Calculate character count excluding spaces
   const answerCharCount = correctAnswer.replace(/\s/g, '').length;
@@ -42,9 +57,29 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ correctAnswer, onCorrectAnswe
     const value = e.target.value;
     setUserAnswer(value);
     
-    if (checkAnswer(value)) {
-      setIsCorrect(true);
-      onCorrectAnswer();
+    // Reset incorrect state when typing
+    if (isIncorrect) {
+      setIsIncorrect(false);
+      setShowFeedback(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      
+      if (checkAnswer(userAnswer)) {
+        setIsCorrect(true);
+        setShowFeedback(true);
+        onCorrectAnswer();
+      } else {
+        setIsIncorrect(true);
+        setShowFeedback(true);
+        setTimeout(() => {
+          setShowFeedback(false);
+          setIsIncorrect(false);
+        }, 2000); // Hide incorrect feedback after 2 seconds
+      }
     }
   };
 
@@ -52,15 +87,26 @@ const AnswerInput: React.FC<AnswerInputProps> = ({ correctAnswer, onCorrectAnswe
     <div className="mb-4">
       <div className="mb-1">{questionLabel}</div>
       <div className="flex flex-col space-y-2">
-        <input
-          type="text"
-          value={userAnswer}
-          onChange={handleInputChange}
-          className={`bg-transparent border border-terminal-green text-terminal-green p-1 focus:outline-none focus:ring-1 focus:ring-terminal-green ${isCorrect ? 'bg-terminal-darkGreen bg-opacity-20' : ''}`}
-          disabled={isCorrect}
-          placeholder="Type answer here..."
-          autoComplete="off"
-        />
+        <div className="relative">
+          <input
+            type="text"
+            value={userAnswer}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            className={`bg-transparent border p-1 focus:outline-none focus:ring-1 w-full
+              ${isCorrect ? 'border-green-500 bg-green-900 bg-opacity-20 text-green-500' : 
+                isIncorrect ? 'border-red-500 bg-red-900 bg-opacity-20 text-red-500' : 
+                'border-terminal-green text-terminal-green focus:ring-terminal-green'}`}
+            disabled={isCorrect}
+            placeholder="Type answer here..."
+            autoComplete="off"
+          />
+          {showFeedback && (
+            <div className={`absolute right-2 top-1 font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+              {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
+            </div>
+          )}
+        </div>
         {showPlaceholders && (
           <div className="flex">
             {renderCharPlaceholders()}

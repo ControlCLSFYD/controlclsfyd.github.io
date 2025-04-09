@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
@@ -16,6 +16,8 @@ interface GameLevelProps {
   imageSrc?: string;
   isActive: boolean;
   onLevelComplete: () => void;
+  savedAnswers: Record<string, string>;
+  onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
 }
 
 const GameLevel: React.FC<GameLevelProps> = ({
@@ -23,14 +25,37 @@ const GameLevel: React.FC<GameLevelProps> = ({
   questions,
   imageSrc,
   isActive,
-  onLevelComplete
+  onLevelComplete,
+  savedAnswers,
+  onAnswerUpdate
 }) => {
-  const [answeredQuestions, setAnsweredQuestions] = React.useState<string[]>([]);
+  const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
 
-  const handleCorrectAnswer = (questionId: string) => {
+  useEffect(() => {
+    // Check if we have any previously answered questions
+    const answered = questions
+      .filter(q => {
+        const answerKey = `${level}-${q.id}`;
+        const savedAnswer = savedAnswers[answerKey];
+        return savedAnswer && savedAnswer.trim().toLowerCase() === q.answer.toLowerCase();
+      })
+      .map(q => q.id);
+    
+    setAnsweredQuestions(answered);
+    
+    // If all questions are already answered, notify completion
+    if (answered.length === questions.length) {
+      onLevelComplete();
+    }
+  }, [level, questions, savedAnswers]);
+
+  const handleCorrectAnswer = (questionId: string, answer: string) => {
     if (!answeredQuestions.includes(questionId)) {
       const newAnswered = [...answeredQuestions, questionId];
       setAnsweredQuestions(newAnswered);
+      
+      // Save the answer
+      onAnswerUpdate(level, questionId, answer);
       
       // Check if all questions are answered
       if (newAnswered.length === questions.length) {
@@ -63,19 +88,25 @@ const GameLevel: React.FC<GameLevelProps> = ({
       )}
       
       <div className="space-y-6">
-        {questions.map((question) => (
-          <div key={question.id} className="mb-6">
-            <TypewriterText 
-              text={question.text} 
-              className="block mb-4"
-            />
-            <AnswerInput 
-              correctAnswer={question.answer} 
-              onCorrectAnswer={() => handleCorrectAnswer(question.id)} 
-              questionLabel={`Answer for ${question.id}`}
-            />
-          </div>
-        ))}
+        {questions.map((question) => {
+          const answerKey = `${level}-${question.id}`;
+          const savedAnswer = savedAnswers[answerKey] || '';
+          
+          return (
+            <div key={question.id} className="mb-6">
+              <TypewriterText 
+                text={question.text} 
+                className="block mb-4"
+              />
+              <AnswerInput 
+                correctAnswer={question.answer} 
+                onCorrectAnswer={() => handleCorrectAnswer(question.id, savedAnswer || question.answer)}
+                questionLabel={`Answer for ${question.id}`}
+                savedAnswer={savedAnswer}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
