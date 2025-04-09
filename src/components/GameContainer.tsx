@@ -4,7 +4,12 @@ import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
 import { gameLevels } from '../data/gameData';
 
-const GameContainer: React.FC = () => {
+interface GameContainerProps {
+  savedAnswers: Record<string, string>;
+  onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
+}
+
+const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpdate }) => {
   const [currentLevel, setCurrentLevel] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [accessCode, setAccessCode] = useState("");
@@ -134,6 +139,8 @@ const GameContainer: React.FC = () => {
                 imageSrc={gameLevels[currentLevel - 1].imageSrc}
                 isActive={true}
                 onLevelComplete={handleLevelComplete}
+                savedAnswers={savedAnswers}
+                onAnswerUpdate={onAnswerUpdate}
               />
             )
           )}
