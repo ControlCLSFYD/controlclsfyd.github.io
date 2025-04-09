@@ -17,6 +17,7 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
   const [showInitializing, setShowInitializing] = useState(false);
   const [loadingDots, setLoadingDots] = useState("");
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [completedLevels, setCompletedLevels] = useState<number[]>([]);
 
   useEffect(() => {
     // Show loading dots animation
@@ -41,6 +42,28 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
     };
   }, []);
 
+  // Check for already completed levels based on saved answers
+  useEffect(() => {
+    if (Object.keys(savedAnswers).length > 0) {
+      const newCompletedLevels: number[] = [];
+      
+      gameLevels.forEach((level, index) => {
+        const levelNum = index + 1;
+        const allQuestionsAnswered = level.questions.every(question => {
+          const answerKey = `${levelNum}-${question.id}`;
+          const savedAnswer = savedAnswers[answerKey];
+          return savedAnswer && savedAnswer.trim().toLowerCase() === question.answer.toLowerCase();
+        });
+        
+        if (allQuestionsAnswered) {
+          newCompletedLevels.push(levelNum);
+        }
+      });
+      
+      setCompletedLevels(newCompletedLevels);
+    }
+  }, [savedAnswers]);
+
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (accessCode === "111") {
@@ -50,6 +73,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
   };
 
   const handleLevelComplete = () => {
+    // Add the current level to completed levels if not already there
+    if (!completedLevels.includes(currentLevel)) {
+      setCompletedLevels(prev => [...prev, currentLevel]);
+    }
+    
     if (currentLevel < gameLevels.length) {
       setCurrentLevel(currentLevel + 1);
     } else {
@@ -59,11 +87,17 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
 
   const navigateLevel = (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentLevel < gameLevels.length) {
-      setCurrentLevel(currentLevel + 1);
+      // Only allow navigation to next level if current level is completed
+      if (completedLevels.includes(currentLevel)) {
+        setCurrentLevel(currentLevel + 1);
+      }
     } else if (direction === 'prev' && currentLevel > 1) {
       setCurrentLevel(currentLevel - 1);
     }
   };
+
+  // Check if the next level is accessible
+  const isNextLevelAccessible = completedLevels.includes(currentLevel);
 
   return (
     <div className="terminal p-4">
@@ -113,9 +147,11 @@ const GameContainer: React.FC<GameContainerProps> = ({ savedAnswers, onAnswerUpd
             </button>
             <button
               onClick={() => navigateLevel('next')}
-              disabled={currentLevel >= gameLevels.length || currentLevel === 0}
+              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible}
               className={`border border-terminal-green px-2 py-1 ${
-                currentLevel >= gameLevels.length ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
+                currentLevel >= gameLevels.length || !isNextLevelAccessible 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
             >
               Next &gt;
