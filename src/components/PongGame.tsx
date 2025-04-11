@@ -121,7 +121,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       ctx.fillText(`CPU: ${computerScore}`, 20, 20);
 
       // Computer AI - follow the ball with a delay
-      const computerSpeed = 1.8; // Reduced from 3 to make it slower and easier
+      const computerSpeed = 1.5; // Reduced from 1.8 to make it even slower and easier
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Add some "intelligence" - only move when the ball is moving towards the computer
@@ -260,6 +260,11 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
           height={canvasHeight}
           className="bg-black"
         />
+      </div>
+      
+      <div className="mt-4 flex justify-between w-full max-w-[600px] px-4">
+        <div className="text-xl">YOU: {userScore}</div>
+        <div className="text-xl">CPU: {computerScore}</div>
       </div>
     </div>
   );
