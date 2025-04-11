@@ -61,7 +61,7 @@
     @apply bg-terminal-black text-terminal-green font-mono m-0 p-0;
   }
 
-  /* Character placeholder styles */
+  /* Character placeholder styles - updated for better visibility without the box */
   .char-placeholder {
     @apply inline-flex justify-center items-end w-6 h-8 mx-1 border-b-2 border-terminal-green text-terminal-green text-2xl font-mono;
     position: relative;

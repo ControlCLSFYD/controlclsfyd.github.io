@@ -118,13 +118,12 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             maxLength={correctAnswer.length}
           />
           
-          {/* Visual representation of the answer */}
+          {/* Visual representation of the answer - removed border */}
           <div 
-            className={`flex pt-2 pb-1 px-2 border ${
-              isCorrect ? 'border-green-500 bg-green-900 bg-opacity-20' : 
-              isIncorrect ? 'border-red-500 bg-red-900 bg-opacity-20' : 
-              'border-terminal-green'
-            } min-h-[40px] cursor-text`}
+            className={`flex pt-2 pb-1 px-2 min-h-[40px] cursor-text ${
+              isCorrect ? 'bg-green-900 bg-opacity-10' : 
+              isIncorrect ? 'bg-red-900 bg-opacity-10' : ''
+            }`}
             onClick={() => inputRef.current?.focus()}
           >
             {renderCharacters()}
