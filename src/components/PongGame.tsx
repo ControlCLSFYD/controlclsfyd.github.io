@@ -12,6 +12,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   const [computerScore, setComputerScore] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [gameOver, setGameOver] = useState(false);
 
   // Canvas dimensions
   const canvasWidth = 600;
@@ -21,6 +22,14 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   const paddleHeight = 10;
   const paddleWidth = 75;
   const ballRadius = 6;
+
+  // Reset the game state
+  const resetGame = () => {
+    setUserScore(0);
+    setComputerScore(0);
+    setGameActive(true);
+    setGameOver(false);
+  };
 
   useEffect(() => {
     // Auto-hide instructions after 3 seconds
@@ -160,9 +169,9 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       
       // Ball out of bounds (top/bottom)
       if (ballY + ballDY < 0) {
-        // User scores
-        setUserScore(prev => {
-          const newScore = prev + 1;
+        // User scores - ball went past computer paddle
+        setUserScore(prevScore => {
+          const newScore = prevScore + 1;
           if (newScore >= 2) {
             setGameActive(false);
             setTimeout(() => onGameComplete(), 1000);
@@ -171,8 +180,15 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         });
         resetBall();
       } else if (ballY + ballDY > canvasHeight) {
-        // Computer scores
-        setComputerScore(prev => prev + 1);
+        // Computer scores - ball went past user paddle
+        setComputerScore(prevScore => {
+          const newScore = prevScore + 1;
+          if (newScore >= 2) {
+            setGameActive(false);
+            setGameOver(true);
+          }
+          return newScore;
+        });
         resetBall();
       }
       
@@ -216,6 +232,19 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
           <ArrowLeft className="mx-1" size={20} />
           <ArrowRight className="mx-1" size={20} />
           <span>keys to move your paddle</span>
+        </div>
+      )}
+      
+      {gameOver && (
+        <div className="mb-4 p-2 border border-terminal-green text-center">
+          <p className="text-red-500 mb-2">GAME OVER</p>
+          <p className="mb-2">CPU scored 2 points</p>
+          <button 
+            onClick={resetGame}
+            className="px-4 py-1 border border-terminal-green hover:bg-terminal-green hover:bg-opacity-20"
+          >
+            Restart Game
+          </button>
         </div>
       )}
       
