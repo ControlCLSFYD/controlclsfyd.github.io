@@ -31,6 +31,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
 }) => {
   const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [levelComplete, setLevelComplete] = useState(false);
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -46,7 +47,10 @@ const GameLevel: React.FC<GameLevelProps> = ({
     
     // If all questions are already answered, notify completion
     if (answered.length === questions.length) {
-      onLevelComplete();
+      setLevelComplete(true);
+      setTimeout(() => {
+        onLevelComplete();
+      }, 1000);
     }
   }, [level, questions, savedAnswers]);
 
@@ -73,6 +77,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
       
       // Check if all questions are answered
       if (newAnswered.length === questions.length) {
+        setLevelComplete(true);
+        // Delay level completion by 1 second
         setTimeout(() => {
           onLevelComplete();
         }, 1000);

@@ -13,7 +13,7 @@ const GRID_WIDTH = 20;
 const GRID_HEIGHT = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
 const INITIAL_DIRECTION = 'RIGHT';
-const GAME_SPEED = 150;
+const GAME_SPEED = 400; // Significantly slower speed (was 150)
 const MOBILE_BUTTON_SIZE = 60;
 
 // Direction vectors
@@ -48,8 +48,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
   const [gameWon, setGameWon] = useState(false);
   const requestRef = useRef<number>();
 
-  // Win condition
-  const WIN_SCORE = 20;
+  // Win condition - reduced to 3 apples
+  const WIN_SCORE = 3;
 
   // Generate random food position
   const generateFood = (snakeBody: Position[]): Position => {
@@ -302,7 +302,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
         (GRID_HEIGHT * CELL_SIZE) / 2
       );
       ctx.fillText(
-        'Collect 20 apples to win',
+        'Collect 3 apples to win',
         (GRID_WIDTH * CELL_SIZE) / 2,
         (GRID_HEIGHT * CELL_SIZE) / 2 + 30
       );
@@ -381,34 +381,34 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
           <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[300px]">
             <div className="col-start-2">
               <button 
-                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[120px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('UP')}
               >
-                <ArrowUp size={32} />
+                <ArrowUp size={40} />
               </button>
             </div>
             <div className="col-start-1 col-span-1 row-start-2">
               <button 
-                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[120px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('LEFT')}
               >
-                <ArrowLeft size={32} />
+                <ArrowLeft size={40} />
               </button>
             </div>
             <div className="col-start-3 col-span-1 row-start-2">
               <button 
-                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[120px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('RIGHT')}
               >
-                <ArrowRight size={32} />
+                <ArrowRight size={40} />
               </button>
             </div>
             <div className="col-start-2 row-start-3">
               <button 
-                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[120px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('DOWN')}
               >
-                <ArrowDown size={32} />
+                <ArrowDown size={40} />
               </button>
             </div>
           </div>

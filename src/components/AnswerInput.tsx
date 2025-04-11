@@ -62,6 +62,16 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       setIsIncorrect(false);
       setShowFeedback(false);
     }
+    
+    // Automatically check answer while typing
+    if (checkAnswer(value)) {
+      setIsCorrect(true);
+      setShowFeedback(true);
+      // Delay the onCorrectAnswer callback by 1 second
+      setTimeout(() => {
+        onCorrectAnswer();
+      }, 1000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -71,7 +81,10 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       if (checkAnswer(userAnswer)) {
         setIsCorrect(true);
         setShowFeedback(true);
-        onCorrectAnswer();
+        // Delay the onCorrectAnswer callback by 1 second
+        setTimeout(() => {
+          onCorrectAnswer();
+        }, 1000);
       } else {
         setIsIncorrect(true);
         setShowFeedback(true);
@@ -176,7 +189,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             {renderCharacters()}
           </div>
           
-          {/* Character count indicator - updated to show green at exactly 0 */}
+          {/* Character count indicator - updated to show green at exactly 0, red X below 0 */}
           <div className={`text-xs absolute right-2 bottom-[-20px] ${
             remainingChars > 0 
               ? 'text-terminal-green' 
