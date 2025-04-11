@@ -133,10 +133,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       ctx.fill();
       ctx.closePath();
       
-      // Draw scores - removed from in-game canvas
-      
       // Computer AI - follow the ball with a delay
-      const computerSpeed = 1.5; // Already reduced to be slower and easier
+      const computerSpeed = 1.2; // Reduced from 1.5 to be slower and easier
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Add some "intelligence" - only move when the ball is moving towards the computer
@@ -282,6 +280,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         />
       </div>
       
+      {/* Mobile controls - visible for all mobile devices */}
       {isMobile && (
         <div className="mt-4 flex justify-center w-full">
           <div className="grid grid-cols-2 gap-4">

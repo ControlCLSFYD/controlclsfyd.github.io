@@ -75,7 +75,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     // Enemy ship
     let enemyX = canvasWidth / 2;
     let enemyY = shipSize * 2;
-    const enemySpeed = 2;
+    const enemySpeed = 2.5; // Increased from 2 to make CPU slightly better
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
     let enemyMoveDirection = 1; // 1 for right, -1 for left
     
@@ -249,8 +249,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       
       // Enemy firing logic (random)
       const currentTime = Date.now();
-      if (currentTime - lastEnemyFireTime > 1000) { // Fire every second
-        if (Math.random() > 0.5) { // 50% chance to fire
+      if (currentTime - lastEnemyFireTime > 900) { // Fire slightly more frequently (was 1000ms)
+        if (Math.random() > 0.4) { // 60% chance to fire (was 50%)
           enemyBullets.push({
             x: enemyX,
             y: enemyY + shipSize / 2,
@@ -327,12 +327,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       drawAsteroids();
       drawBullets();
       
-      // Draw scores and time in canvas
-      ctx.font = '16px VT323, monospace';
-      ctx.fillStyle = '#D6BCFA'; // Light purple
-      ctx.fillText(`YOU: ${userScore}`, 20, canvasHeight - 20);
-      ctx.fillText(`CPU: ${computerScore}`, 20, 20);
-      ctx.fillText(`TIME: ${timeLeft}s`, canvasWidth - 85, 20);
+      // Remove in-game score display - we're using the outside one
       
       // Continue the game loop
       animationFrameId = window.requestAnimationFrame(draw);
@@ -382,6 +377,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         />
       </div>
       
+      {/* Mobile controls - visible for all mobile devices */}
       {isMobile && (
         <div className="mt-4 w-full max-w-[600px]">
           <div className="grid grid-cols-3 gap-4">
