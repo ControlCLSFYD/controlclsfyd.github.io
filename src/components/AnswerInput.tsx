@@ -20,6 +20,8 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const [isIncorrect, setIsIncorrect] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(savedAnswer.length);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { innerWidth } = window;
+  const isMobile = innerWidth < 768;
 
   useEffect(() => {
     // Check if we have a saved answer that's correct
@@ -144,7 +146,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
 
   return (
     <div className="mb-4">
-      <div className="mb-1">{questionLabel}</div>
+      <div className="mb-1">{questionLabel} (Type in the answer, then press Enter)</div>
       <div className="flex flex-col space-y-2">
         <div className="relative">
           {/* Hidden input field that captures keystrokes */}
@@ -172,8 +174,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             {renderCharacters()}
           </div>
           
+          {/* Feedback - moved below answer on mobile */}
           {showFeedback && (
-            <div className={`absolute right-2 top-1 font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
+            <div className={`${isMobile ? 'relative mt-2' : 'absolute right-2 top-1'} font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
               {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
             </div>
           )}

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -57,7 +58,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     if (isMobile) {
       const viewport = document.querySelector('meta[name=viewport]');
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+        viewport.setAttribute('content', 'width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no');
       }
     }
 
@@ -79,11 +80,16 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     
     // Ball variables
     let ballX = canvasWidth / 2;
-    // Start the ball from further away (about 3/4 of the way to the computer side)
-    let ballY = canvasHeight / 4;
+    // Start the ball from further away (closer to the computer side)
+    let ballY = canvasHeight / 8; // Much closer to the CPU (top)
+    
     // Initial direction - always towards player (bottom)
-    let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Initial horizontal speed
-    let ballDY = 5; // Positive value means ball goes towards player
+    // Reduced speed for mobile, slightly slower in general
+    const baseHorizontalSpeed = isMobile ? 2 : 2.5; 
+    const baseVerticalSpeed = isMobile ? 3.5 : 4;
+    
+    let ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1); // Initial horizontal speed
+    let ballDY = baseVerticalSpeed; // Positive value means ball goes towards player
     
     // Key states
     let rightPressed = false;
@@ -171,7 +177,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - userPaddleX) / paddleWidth;
-        ballDX = 7 * (hitPosition - 0.5); // For speed
+        ballDX = baseHorizontalSpeed * 2.5 * (hitPosition - 0.5); // For speed
       }
       
       // Computer paddle collision
@@ -183,7 +189,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - computerPaddleX) / paddleWidth;
-        ballDX = 7 * (hitPosition - 0.5); // For speed
+        ballDX = baseHorizontalSpeed * 2.5 * (hitPosition - 0.5); // For speed
       }
       
       // Ball collision with walls (left/right)
@@ -227,11 +233,11 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     // Reset ball to center after scoring
     const resetBall = () => {
       ballX = canvasWidth / 2;
-      // Start from 1/4 of the height (closer to computer side)
-      ballY = canvasHeight / 4;
+      // Start from closer to the computer side (only 1/8 down)
+      ballY = canvasHeight / 8;
       // Always start towards the player side after reset
-      ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Random horizontal direction
-      ballDY = 5; // Always towards player (positive)
+      ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1); // Random horizontal direction
+      ballDY = baseVerticalSpeed; // Always towards player (positive)
     };
     
     // Start the game loop
