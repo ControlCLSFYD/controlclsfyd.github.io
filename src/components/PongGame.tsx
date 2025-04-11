@@ -43,8 +43,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     let ballX = canvasWidth / 2;
     let ballY = canvasHeight / 2;
     // Initial direction - towards computer (top)
-    let ballDX = 2 * (Math.random() > 0.5 ? 1 : -1);
-    let ballDY = -4;
+    let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased initial horizontal speed
+    let ballDY = -5; // Increased initial vertical speed
     
     // Key states
     let rightPressed = false;
@@ -108,7 +108,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       ctx.fillText(`CPU: ${computerScore}`, 20, 20);
 
       // Computer AI - follow the ball with a delay
-      const computerSpeed = 3; // Adjust for difficulty
+      const computerSpeed = 1.8; // Reduced from 3 to make it slower and easier
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Add some "intelligence" - only move when the ball is moving towards the computer
@@ -138,7 +138,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - userPaddleX) / paddleWidth;
-        ballDX = 6 * (hitPosition - 0.5); // -3 to 3 based on hit position
+        ballDX = 7 * (hitPosition - 0.5); // Increased from 6 to 7 for more speed
       }
       
       // Computer paddle collision
@@ -150,7 +150,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - computerPaddleX) / paddleWidth;
-        ballDX = 6 * (hitPosition - 0.5); // -3 to 3 based on hit position
+        ballDX = 7 * (hitPosition - 0.5); // Increased from 6 to 7 for more speed
       }
       
       // Ball collision with walls (left/right)
@@ -189,8 +189,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       ballX = canvasWidth / 2;
       ballY = canvasHeight / 2;
       // Always start towards the computer side after reset
-      ballDX = 2 * (Math.random() > 0.5 ? 1 : -1);
-      ballDY = -3.5;
+      ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased from 2 to 3
+      ballDY = -5; // Increased from -3.5 to -5
     };
     
     // Start the game loop
