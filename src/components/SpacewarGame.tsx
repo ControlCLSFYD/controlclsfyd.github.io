@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUp, Rocket } from 'lucide-react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 interface SpacewarGameProps {
   onGameComplete: () => void;
@@ -13,10 +14,30 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
   const [gameActive, setGameActive] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
   const [timeLeft, setTimeLeft] = useState(30); // 30 seconds game
+  const isMobile = useIsMobile();
 
   // Canvas dimensions
   const canvasWidth = 600;
   const canvasHeight = 400;
+
+  // Mobile controls
+  const handleLeftButton = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+  };
+
+  const handleRightButton = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+  };
+
+  const handleFireButton = () => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
+  };
+
+  const handleButtonUp = () => {
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }));
+  };
 
   useEffect(() => {
     // Auto-hide instructions after 3 seconds
@@ -31,18 +52,18 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Game elements
-    const shipSize = 20;
-    const bulletSize = 3;
-    const enemySize = 20;
-    const asteroidSize = 15;
-    const starCount = 50;
+    // Game elements - smaller sizes for more stylish visuals
+    const shipSize = 15; // Reduced from 20
+    const bulletSize = 2; // Reduced from 3
+    const enemySize = 15; // Reduced from 20
+    const asteroidSize = 10; // Reduced from 15
+    const starCount = 70; // Increased from 50 for more background detail
 
     // Define stars (background)
     const stars = Array.from({ length: starCount }, () => ({
       x: Math.random() * canvasWidth,
       y: Math.random() * canvasHeight,
-      size: Math.random() * 2 + 1,
+      size: Math.random() * 1.5 + 0.5, // Smaller stars
     }));
 
     // Player ship
@@ -135,7 +156,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       ctx.lineTo(playerX + shipSize, playerY + shipSize);
       ctx.lineTo(playerX - shipSize, playerY + shipSize);
       ctx.closePath();
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#D6BCFA'; // Light purple
       ctx.fill();
     };
 
@@ -146,14 +167,14 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       ctx.lineTo(enemyX + shipSize, enemyY - shipSize);
       ctx.lineTo(enemyX - shipSize, enemyY - shipSize);
       ctx.closePath();
-      ctx.fillStyle = '#FF0000';
+      ctx.fillStyle = '#7E69AB'; // Secondary purple
       ctx.fill();
     };
 
     // Draw bullets
     const drawBullets = () => {
       // Player bullets
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#D6BCFA'; // Light purple
       playerBullets.forEach(bullet => {
         if (bullet.active) {
           ctx.beginPath();
@@ -164,7 +185,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       });
       
       // Enemy bullets
-      ctx.fillStyle = '#FF0000';
+      ctx.fillStyle = '#7E69AB'; // Secondary purple
       enemyBullets.forEach(bullet => {
         if (bullet.active) {
           ctx.beginPath();
@@ -177,7 +198,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
 
     // Draw asteroids
     const drawAsteroids = () => {
-      ctx.fillStyle = '#AAAAAA';
+      ctx.fillStyle = '#9F9EA1'; // Silver gray
       asteroids.forEach(asteroid => {
         ctx.beginPath();
         ctx.arc(asteroid.x, asteroid.y, asteroidSize, 0, Math.PI * 2);
@@ -306,12 +327,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       drawAsteroids();
       drawBullets();
       
-      // Draw scores and time
+      // Draw scores and time in canvas
       ctx.font = '16px VT323, monospace';
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#D6BCFA'; // Light purple
       ctx.fillText(`YOU: ${userScore}`, 20, canvasHeight - 20);
       ctx.fillText(`CPU: ${computerScore}`, 20, 20);
-      ctx.fillText(`TIME: ${timeLeft}`, canvasWidth - 80, 20);
+      ctx.fillText(`TIME: ${timeLeft}s`, canvasWidth - 85, 20);
       
       // Continue the game loop
       animationFrameId = window.requestAnimationFrame(draw);
@@ -333,7 +354,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
-      <p className="mb-2">Score more points than the CPU in 30 seconds</p>
+      <p className="mb-2">Score more points than the CPU in {timeLeft} seconds</p>
       
       {showInstructions && (
         <div className="flex items-center mb-4 p-2 border border-terminal-green">
@@ -346,9 +367,9 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         </div>
       )}
       
-      <div className="mb-2">Time: {timeLeft}s</div>
-      <div className="mb-4">
-        <span className="mr-4">Player: {userScore}</span>
+      <div className="mb-4 flex justify-between w-full max-w-[600px] px-4">
+        <span>Player: {userScore}</span>
+        <span>Time: {timeLeft}s</span>
         <span>CPU: {computerScore}</span>
       </div>
       
@@ -360,6 +381,34 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
           className="bg-black"
         />
       </div>
+      
+      {isMobile && (
+        <div className="mt-4 w-full max-w-[600px]">
+          <div className="grid grid-cols-3 gap-4">
+            <button
+              onTouchStart={handleLeftButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowLeft size={32} color="#D6BCFA" />
+            </button>
+            <button
+              onTouchStart={handleFireButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowUp size={32} color="#D6BCFA" />
+            </button>
+            <button
+              onTouchStart={handleRightButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowRight size={32} color="#D6BCFA" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

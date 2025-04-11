@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 interface PongGameProps {
   onGameComplete: () => void;
@@ -13,17 +14,18 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   const [gameActive, setGameActive] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
   const [gameOver, setGameOver] = useState(false);
+  const isMobile = useIsMobile();
 
   // Canvas dimensions
   const canvasWidth = 600;
   const canvasHeight = 400;
 
   // Game elements
-  const paddleHeight = 10;
-  const paddleWidth = 75;
-  const ballRadius = 6;
+  const paddleHeight = 8; // Reduced from 10
+  const paddleWidth = 60; // Reduced from 75
+  const ballRadius = 4; // Reduced from 6
   
-  // Winning score - changed from 2 to 3
+  // Winning score - 3 points to win
   const winningScore = 3;
 
   // Reset the game state
@@ -32,6 +34,23 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     setComputerScore(0);
     setGameActive(true);
     setGameOver(false);
+  };
+
+  // Mobile controls
+  const handleLeftButton = () => {
+    // This function will be called by the mobile left button
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+  };
+
+  const handleRightButton = () => {
+    // This function will be called by the mobile right button
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+  };
+
+  const handleButtonUp = () => {
+    // Release keys when touch ends
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
   };
 
   useEffect(() => {
@@ -56,7 +75,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     // Start the ball from further away (about 3/4 of the way to the computer side)
     let ballY = canvasHeight / 4;
     // Initial direction - always towards player (bottom)
-    let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased initial horizontal speed
+    let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Initial horizontal speed
     let ballDY = 5; // Positive value means ball goes towards player
     
     // Key states
@@ -96,32 +115,28 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       // Draw ball
       ctx.beginPath();
       ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#9b87f5'; // Subtle purple color
       ctx.fill();
       ctx.closePath();
       
       // Draw user paddle (bottom)
       ctx.beginPath();
       ctx.rect(userPaddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#D6BCFA'; // Light purple
       ctx.fill();
       ctx.closePath();
       
       // Draw computer paddle (top)
       ctx.beginPath();
       ctx.rect(computerPaddleX, 0, paddleWidth, paddleHeight);
-      ctx.fillStyle = '#00FF00';
+      ctx.fillStyle = '#7E69AB'; // Secondary purple
       ctx.fill();
       ctx.closePath();
       
-      // Draw scores
-      ctx.font = '16px VT323, monospace';
-      ctx.fillStyle = '#00FF00';
-      ctx.fillText(`YOU: ${userScore}`, 20, canvasHeight - 20);
-      ctx.fillText(`CPU: ${computerScore}`, 20, 20);
-
+      // Draw scores - removed from in-game canvas
+      
       // Computer AI - follow the ball with a delay
-      const computerSpeed = 1.5; // Reduced from 1.8 to make it even slower and easier
+      const computerSpeed = 1.5; // Already reduced to be slower and easier
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Add some "intelligence" - only move when the ball is moving towards the computer
@@ -151,7 +166,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - userPaddleX) / paddleWidth;
-        ballDX = 7 * (hitPosition - 0.5); // Increased from 6 to 7 for more speed
+        ballDX = 7 * (hitPosition - 0.5); // For speed
       }
       
       // Computer paddle collision
@@ -163,7 +178,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         ballDY = -ballDY;
         // Add some angle based on where the ball hits the paddle
         const hitPosition = (ballX - computerPaddleX) / paddleWidth;
-        ballDX = 7 * (hitPosition - 0.5); // Increased from 6 to 7 for more speed
+        ballDX = 7 * (hitPosition - 0.5); // For speed
       }
       
       // Ball collision with walls (left/right)
@@ -253,6 +268,11 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         </div>
       )}
       
+      <div className="mt-4 flex justify-between w-full max-w-[600px] px-4 mb-2">
+        <div className="text-lg">YOU: {userScore}</div>
+        <div className="text-lg">CPU: {computerScore}</div>
+      </div>
+      
       <div className="border border-terminal-green">
         <canvas 
           ref={canvasRef}
@@ -262,10 +282,26 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         />
       </div>
       
-      <div className="mt-4 flex justify-between w-full max-w-[600px] px-4">
-        <div className="text-xl">YOU: {userScore}</div>
-        <div className="text-xl">CPU: {computerScore}</div>
-      </div>
+      {isMobile && (
+        <div className="mt-4 flex justify-center w-full">
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onTouchStart={handleLeftButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowLeft size={32} color="#D6BCFA" />
+            </button>
+            <button
+              onTouchStart={handleRightButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowRight size={32} color="#D6BCFA" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
