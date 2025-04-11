@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -13,7 +12,7 @@ const GRID_WIDTH = 20;
 const GRID_HEIGHT = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
 const INITIAL_DIRECTION = 'RIGHT';
-const GAME_SPEED = 800; // Significantly slower speed (was 400)
+const GAME_SPEED = 1600; // Updated to 1600ms as requested
 const MOBILE_BUTTON_SIZE = 80; // Increased from 60
 
 // Direction vectors
