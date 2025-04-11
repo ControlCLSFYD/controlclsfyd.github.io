@@ -88,7 +88,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
 
   return (
     <div className="p-4" ref={containerRef}>
-      <div className="flex justify-between items-center mb-4">
+      {/* Fixed height header container to prevent layout shifts */}
+      <div className="flex justify-between items-center h-[40px] mb-4">
         <TypewriterText 
           text={`LEVEL ${level}`} 
           className="text-xl"
@@ -114,10 +115,13 @@ const GameLevel: React.FC<GameLevelProps> = ({
           
           return (
             <div key={question.id} className="mb-6">
-              <TypewriterText 
-                text={question.text} 
-                className="block mb-4"
-              />
+              {/* Fixed height container for question text to prevent layout shifts */}
+              <div className="min-h-[80px] mb-4">
+                <TypewriterText 
+                  text={question.text} 
+                  className="block"
+                />
+              </div>
               <AnswerInput 
                 correctAnswer={question.answer} 
                 onCorrectAnswer={() => handleCorrectAnswer(question.id, savedAnswer || question.answer)}

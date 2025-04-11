@@ -314,11 +314,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
     }
   }, [snake, food, gameOver, gameWon, gameStarted, direction, score]);
 
-  // Animation frame loop
+  // Animation frame loop - with significantly reduced speed
   useEffect(() => {
     let lastTime = 0;
     const animate = (time: number) => {
-      if (time - lastTime >= GAME_SPEED) {
+      if (time - lastTime >= GAME_SPEED) { // Using the slower GAME_SPEED constant (400ms)
         gameLoop();
         lastTime = time;
       }

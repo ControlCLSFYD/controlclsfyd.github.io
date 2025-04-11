@@ -78,7 +78,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     // Enemy ship
     let enemyX = canvasWidth / 2;
     let enemyY = shipSize * 2;
-    const enemySpeed = 3.0; // Increased from 2.5 to make CPU better
+    const enemySpeed = 4.5; // Increased from 3.0 to make CPU smarter
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
     let enemyMoveDirection = 1; // 1 for right, -1 for left
     
@@ -217,6 +217,37 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       return distance < (size1 + size2);
     };
 
+    // Improved enemy AI - track player position for better targeting
+    const updateEnemyAI = () => {
+      // Track player position with 70% accuracy (smarter CPU)
+      if (Math.random() < 0.7) { // Increased from 0.5
+        if (playerX < enemyX - 10) {
+          enemyMoveDirection = -1;
+        } else if (playerX > enemyX + 10) {
+          enemyMoveDirection = 1;
+        }
+      }
+      
+      // Occasionally change direction to be less predictable
+      if (Math.random() < 0.02) {
+        enemyMoveDirection *= -1;
+      }
+      
+      // Increase firing frequency when aligned with player (improved aim)
+      const currentTime = Date.now();
+      if (currentTime - lastEnemyFireTime > 700) { // Fire more frequently (was 800ms)
+        // Improved targeting - higher chance to fire when aligned with player
+        if (Math.abs(enemyX - playerX) < shipSize * 2 || Math.random() > 0.4) { // Better accuracy
+          enemyBullets.push({
+            x: enemyX,
+            y: enemyY + shipSize / 2,
+            active: true
+          });
+        }
+        lastEnemyFireTime = currentTime;
+      }
+    };
+
     // Game loop
     const draw = () => {
       if (!ctx || !gameActive) return;
@@ -234,28 +265,19 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         playerX -= playerSpeed;
       }
       
-      // Move enemy AI
+      // Update enemy AI (improved)
+      updateEnemyAI();
+      
+      // Move enemy
       enemyX += enemySpeed * enemyMoveDirection;
       if (enemyX > canvasWidth - shipSize || enemyX < shipSize) {
         enemyMoveDirection *= -1;
       }
       
-      // Enemy firing logic (random)
-      const currentTime = Date.now();
-      if (currentTime - lastEnemyFireTime > 800) { // Fire slightly more frequently (was 900ms)
-        if (Math.random() > 0.3) { // 70% chance to fire (was 60%)
-          enemyBullets.push({
-            x: enemyX,
-            y: enemyY + shipSize / 2,
-            active: true
-          });
-        }
-        lastEnemyFireTime = currentTime;
-      }
-
       // Auto fire for player (always shooting)
+      const currentTime = Date.now();
       if (currentTime - lastAutoFireTime > autoFireInterval) {
-        if (playerBullets.length < 3) { // Limit bullets
+        if (playerBullets.length < 5) { // Increased from 3 to compensate for smarter CPU
           playerBullets.push({
             x: playerX,
             y: playerY - shipSize / 2,
@@ -352,16 +374,20 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
-      <p className="mb-2">Score more points than the CPU in {timeLeft} seconds</p>
       
-      {showInstructions && (
-        <div className="flex items-center mb-4 p-2 border border-terminal-green">
-          <span>Use</span>
-          <ArrowLeft className="mx-1" size={20} />
-          <ArrowRight className="mx-1" size={20} />
-          <span>keys to move. Auto-firing enabled!</span>
-        </div>
-      )}
+      {/* Fixed height container for instructions and timer */}
+      <div className="h-[60px] mb-2">
+        {showInstructions ? (
+          <div className="flex items-center p-2 border border-terminal-green">
+            <span>Use</span>
+            <ArrowLeft className="mx-1" size={20} />
+            <ArrowRight className="mx-1" size={20} />
+            <span>keys to move. Auto-firing enabled!</span>
+          </div>
+        ) : (
+          <p className="mb-2">Score more points than the CPU in {timeLeft} seconds</p>
+        )}
+      </div>
       
       <div className="mb-4 flex justify-between w-full max-w-[600px] px-4">
         <span>Player: {userScore}</span>
