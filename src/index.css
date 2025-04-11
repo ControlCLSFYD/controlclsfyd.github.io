@@ -61,8 +61,21 @@
     @apply bg-terminal-black text-terminal-green font-mono m-0 p-0;
   }
 
-  /* Character placeholder line styles */
+  /* Character placeholder styles */
   .char-placeholder {
-    @apply inline-block w-4 h-0.5 mx-1 bg-terminal-green;
+    @apply inline-flex justify-center items-end w-6 h-8 mx-1 border-b-2 border-terminal-green text-terminal-green text-2xl font-mono;
+    position: relative;
+  }
+  
+  .char-placeholder.has-char {
+    @apply border-terminal-green;
+  }
+  
+  .char-placeholder.correct-char {
+    @apply border-green-500 text-green-500;
+  }
+  
+  .char-placeholder.incorrect-char {
+    @apply border-red-500 text-red-500;
   }
 }

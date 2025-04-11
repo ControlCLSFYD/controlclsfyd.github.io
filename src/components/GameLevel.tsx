@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
@@ -30,6 +30,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   onAnswerUpdate
 }) => {
   const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -49,6 +50,19 @@ const GameLevel: React.FC<GameLevelProps> = ({
     }
   }, [level, questions, savedAnswers]);
 
+  useEffect(() => {
+    // Ensure the component is focused when it becomes active
+    if (isActive && containerRef.current) {
+      // Using setTimeout to ensure focus happens after render
+      setTimeout(() => {
+        const firstInput = containerRef.current?.querySelector('input');
+        if (firstInput) {
+          firstInput.focus();
+        }
+      }, 100);
+    }
+  }, [isActive]);
+
   const handleCorrectAnswer = (questionId: string, answer: string) => {
     if (!answeredQuestions.includes(questionId)) {
       const newAnswered = [...answeredQuestions, questionId];
@@ -67,7 +81,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4" ref={containerRef}>
       <div className="flex justify-between items-center mb-4">
         <TypewriterText 
           text={`LEVEL ${level}`} 

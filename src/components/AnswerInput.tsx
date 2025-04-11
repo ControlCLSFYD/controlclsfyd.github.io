@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface AnswerInputProps {
   correctAnswer: string;
@@ -16,9 +16,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
 }) => {
   const [userAnswer, setUserAnswer] = useState(savedAnswer);
   const [isCorrect, setIsCorrect] = useState(false);
-  const [showPlaceholders, setShowPlaceholders] = useState(true);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isIncorrect, setIsIncorrect] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Check if we have a saved answer that's correct
@@ -27,25 +27,12 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   }, [savedAnswer]);
 
-  // Calculate character count excluding spaces
-  const answerCharCount = correctAnswer.replace(/\s/g, '').length;
-
-  // Generate character placeholders
-  const renderCharPlaceholders = () => {
-    const placeholder = [];
-    let charCount = 0;
-    
-    for (let i = 0; i < correctAnswer.length; i++) {
-      if (correctAnswer[i] === ' ') {
-        placeholder.push(<span key={i} className="mx-1"> </span>);
-      } else {
-        placeholder.push(<span key={i} className="char-placeholder"></span>);
-        charCount++;
-      }
+  useEffect(() => {
+    // Auto-focus the input when the component mounts
+    if (inputRef.current && !isCorrect) {
+      inputRef.current.focus();
     }
-    
-    return placeholder;
-  };
+  }, [isCorrect]);
 
   // Check if the answer is correct
   const checkAnswer = (input: string) => {
@@ -83,35 +70,72 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   };
 
+  // Generate character display that shows both placeholders and user input
+  const renderCharacters = () => {
+    const characters = [];
+    
+    for (let i = 0; i < correctAnswer.length; i++) {
+      if (correctAnswer[i] === ' ') {
+        // Add space between words
+        characters.push(
+          <span key={i} className="mx-2"> </span>
+        );
+      } else {
+        // Add character slot with potential user input shown
+        const char = i < userAnswer.length ? userAnswer[i] : '';
+        characters.push(
+          <span 
+            key={i} 
+            className={`char-placeholder ${char ? 'has-char' : ''} ${
+              isCorrect ? 'correct-char' : 
+              isIncorrect ? 'incorrect-char' : ''
+            }`}
+          >
+            {char || ''}
+          </span>
+        );
+      }
+    }
+    
+    return characters;
+  };
+
   return (
     <div className="mb-4">
       <div className="mb-1">{questionLabel}</div>
       <div className="flex flex-col space-y-2">
         <div className="relative">
+          {/* Hidden input field that captures keystrokes */}
           <input
+            ref={inputRef}
             type="text"
             value={userAnswer}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className={`bg-transparent border p-1 focus:outline-none focus:ring-1 w-full
-              ${isCorrect ? 'border-green-500 bg-green-900 bg-opacity-20 text-green-500' : 
-                isIncorrect ? 'border-red-500 bg-red-900 bg-opacity-20 text-red-500' : 
-                'border-terminal-green text-terminal-green focus:ring-terminal-green'}`}
+            className="opacity-0 absolute top-0 left-0 h-full w-full z-10"
             disabled={isCorrect}
-            placeholder="Type answer here..."
             autoComplete="off"
+            maxLength={correctAnswer.length}
           />
+          
+          {/* Visual representation of the answer */}
+          <div 
+            className={`flex pt-2 pb-1 px-2 border ${
+              isCorrect ? 'border-green-500 bg-green-900 bg-opacity-20' : 
+              isIncorrect ? 'border-red-500 bg-red-900 bg-opacity-20' : 
+              'border-terminal-green'
+            } min-h-[40px] cursor-text`}
+            onClick={() => inputRef.current?.focus()}
+          >
+            {renderCharacters()}
+          </div>
+          
           {showFeedback && (
             <div className={`absolute right-2 top-1 font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
               {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
             </div>
           )}
         </div>
-        {showPlaceholders && (
-          <div className="flex">
-            {renderCharPlaceholders()}
-          </div>
-        )}
       </div>
     </div>
   );
