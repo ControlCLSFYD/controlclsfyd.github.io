@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
 import PongGame from './PongGame';
+import OxoGame from './OxoGame';
 import { gameLevels } from '../data/gameData';
 
 interface GameContainerProps {
@@ -24,6 +25,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [showPongGame, setShowPongGame] = useState(false);
   const [pongCompleted, setPongCompleted] = useState(false);
+  const [showOxoGame, setShowOxoGame] = useState(false);
+  const [oxoCompleted, setOxoCompleted] = useState(false);
 
   useEffect(() => {
     // Sequential loading steps with typewriter effect
@@ -70,8 +73,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
       if (newCompletedLevels.includes(1) && currentLevel >= 2 && !pongCompleted) {
         setPongCompleted(true);
       }
+      
+      // If oxo should have been played but wasn't marked as completed
+      if (gameStarted && currentLevel >= 1 && !oxoCompleted) {
+        setOxoCompleted(true);
+      }
     }
-  }, [savedAnswers, currentLevel, pongCompleted]);
+  }, [savedAnswers, currentLevel, pongCompleted, gameStarted, oxoCompleted]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +87,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
       // Reset any existing answers when starting a new game
       onResetGame();
       setGameStarted(true);
-      setCurrentLevel(1);
+      // Show OXO game after access code entry
+      setShowOxoGame(true);
     }
+  };
+
+  const handleOxoComplete = () => {
+    setOxoCompleted(true);
+    setShowOxoGame(false);
+    setCurrentLevel(1);
   };
 
   const handleLevelComplete = () => {
@@ -180,18 +195,18 @@ const GameContainer: React.FC<GameContainerProps> = ({
           <div className="flex justify-end mb-4">
             <button
               onClick={() => navigateLevel('prev')}
-              disabled={currentLevel <= 1 || showPongGame}
+              disabled={currentLevel <= 1 || showPongGame || showOxoGame}
               className={`border border-terminal-green px-2 py-1 mr-2 ${
-                currentLevel <= 1 || showPongGame ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
+                currentLevel <= 1 || showPongGame || showOxoGame ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
             >
               &lt; Previous
             </button>
             <button
               onClick={() => navigateLevel('next')}
-              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame}
+              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame || showOxoGame}
               className={`border border-terminal-green px-2 py-1 ${
-                currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame
+                currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame || showOxoGame
                   ? 'opacity-50 cursor-not-allowed' 
                   : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
@@ -208,6 +223,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 className="text-xl"
               />
             </div>
+          ) : showOxoGame ? (
+            <OxoGame onGameComplete={handleOxoComplete} />
           ) : showPongGame ? (
             <PongGame onGameComplete={handlePongComplete} />
           ) : (

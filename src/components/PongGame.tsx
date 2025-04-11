@@ -42,9 +42,9 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     // Ball variables
     let ballX = canvasWidth / 2;
     let ballY = canvasHeight / 2;
-    // Initial direction - towards computer (top)
+    // Initial direction - always towards player (bottom)
     let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased initial horizontal speed
-    let ballDY = -5; // Increased initial vertical speed
+    let ballDY = 5; // Positive value means ball goes towards player
     
     // Key states
     let rightPressed = false;
@@ -188,9 +188,9 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     const resetBall = () => {
       ballX = canvasWidth / 2;
       ballY = canvasHeight / 2;
-      // Always start towards the computer side after reset
-      ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased from 2 to 3
-      ballDY = -5; // Increased from -3.5 to -5
+      // Always start towards the player side after reset
+      ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Random horizontal direction
+      ballDY = 5; // Always towards player (positive)
     };
     
     // Start the game loop
