@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -14,16 +13,16 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   const [gameActive, setGameActive] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
   const [gameOver, setGameOver] = useState(false);
+
+  // Canvas dimensions - responsive based on screen
   const isMobile = useIsMobile();
+  const canvasWidth = isMobile ? 320 : 600;
+  const canvasHeight = isMobile ? 240 : 400;
 
-  // Canvas dimensions
-  const canvasWidth = 600;
-  const canvasHeight = 400;
-
-  // Game elements
-  const paddleHeight = 8; // Reduced from 10
-  const paddleWidth = 60; // Reduced from 75
-  const ballRadius = 4; // Reduced from 6
+  // Game elements - sized proportionally based on canvas
+  const paddleHeight = Math.max(6, Math.floor(canvasHeight * 0.02)); // Scaled for mobile
+  const paddleWidth = Math.max(40, Math.floor(canvasWidth * 0.1)); // Scaled for mobile
+  const ballRadius = Math.max(3, Math.floor(canvasWidth * 0.007)); // Scaled for mobile
   
   // Winning score - 3 points to win
   const winningScore = 3;
@@ -54,6 +53,14 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   };
 
   useEffect(() => {
+    // Set viewport meta for mobile devices
+    if (isMobile) {
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      }
+    }
+
     // Auto-hide instructions after 3 seconds
     const instructionsTimer = setTimeout(() => {
       setShowInstructions(false);
@@ -237,7 +244,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [gameActive, onGameComplete, winningScore]);
+  }, [gameActive, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">

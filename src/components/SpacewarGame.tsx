@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUp, Rocket } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -16,9 +15,9 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
   const [timeLeft, setTimeLeft] = useState(30); // 30 seconds game
   const isMobile = useIsMobile();
 
-  // Canvas dimensions
-  const canvasWidth = 600;
-  const canvasHeight = 400;
+  // Canvas dimensions - responsive based on screen
+  const canvasWidth = isMobile ? 320 : 600;
+  const canvasHeight = isMobile ? 240 : 400;
 
   // Mobile controls
   const handleLeftButton = () => {
@@ -40,6 +39,14 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
   };
 
   useEffect(() => {
+    // Set viewport meta for mobile devices
+    if (isMobile) {
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+      }
+    }
+
     // Auto-hide instructions after 3 seconds
     const instructionsTimer = setTimeout(() => {
       setShowInstructions(false);
@@ -52,11 +59,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Game elements - smaller sizes for more stylish visuals
-    const shipSize = 15; // Reduced from 20
-    const bulletSize = 2; // Reduced from 3
-    const enemySize = 15; // Reduced from 20
-    const asteroidSize = 10; // Reduced from 15
+    // Game elements - smaller sizes for more stylish visuals - scale for mobile
+    const shipSize = isMobile ? 10 : 15; // Reduced for mobile
+    const bulletSize = Math.max(1.5, Math.floor(canvasWidth * 0.003)); // Scaled
+    const enemySize = isMobile ? 10 : 15; // Reduced for mobile
+    const asteroidSize = isMobile ? 7 : 10; // Reduced for mobile
     const starCount = 70; // Increased from 50 for more background detail
 
     // Define stars (background)
@@ -344,7 +351,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       clearTimeout(instructionsTimer);
       clearInterval(gameTimer);
     };
-  }, [onGameComplete]);
+  }, [onGameComplete, isMobile, canvasWidth, canvasHeight]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
@@ -384,23 +391,23 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
             <button
               onTouchStart={handleLeftButton}
               onTouchEnd={handleButtonUp}
-              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
             >
-              <ArrowLeft size={32} color="#D6BCFA" />
+              <ArrowLeft size={24} color="#D6BCFA" />
             </button>
             <button
               onTouchStart={handleFireButton}
               onTouchEnd={handleButtonUp}
-              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
             >
-              <ArrowUp size={32} color="#D6BCFA" />
+              <ArrowUp size={24} color="#D6BCFA" />
             </button>
             <button
               onTouchStart={handleRightButton}
               onTouchEnd={handleButtonUp}
-              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
             >
-              <ArrowRight size={32} color="#D6BCFA" />
+              <ArrowRight size={24} color="#D6BCFA" />
             </button>
           </div>
         </div>
