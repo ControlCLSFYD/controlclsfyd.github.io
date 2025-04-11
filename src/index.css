@@ -65,4 +65,14 @@
   .char-placeholder {
     @apply inline-block w-4 h-0.5 mx-1 bg-terminal-green;
   }
+  
+  /* Character input styles */
+  .char-input {
+    @apply caret-terminal-green;
+    min-width: 1.75rem;
+  }
+  
+  .char-input:focus {
+    @apply border-b-terminal-green border-b-4;
+  }
 }
