@@ -22,6 +22,9 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
   const paddleHeight = 10;
   const paddleWidth = 75;
   const ballRadius = 6;
+  
+  // Winning score - changed from 2 to 3
+  const winningScore = 3;
 
   // Reset the game state
   const resetGame = () => {
@@ -50,7 +53,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     
     // Ball variables
     let ballX = canvasWidth / 2;
-    let ballY = canvasHeight / 2;
+    // Start the ball from further away (about 3/4 of the way to the computer side)
+    let ballY = canvasHeight / 4;
     // Initial direction - always towards player (bottom)
     let ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Increased initial horizontal speed
     let ballDY = 5; // Positive value means ball goes towards player
@@ -172,7 +176,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         // User scores - ball went past computer paddle
         setUserScore(prevScore => {
           const newScore = prevScore + 1;
-          if (newScore >= 2) {
+          if (newScore >= winningScore) {
             setGameActive(false);
             setTimeout(() => onGameComplete(), 1000);
           }
@@ -183,7 +187,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
         // Computer scores - ball went past user paddle
         setComputerScore(prevScore => {
           const newScore = prevScore + 1;
-          if (newScore >= 2) {
+          if (newScore >= winningScore) {
             setGameActive(false);
             setGameOver(true);
           }
@@ -203,7 +207,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
     // Reset ball to center after scoring
     const resetBall = () => {
       ballX = canvasWidth / 2;
-      ballY = canvasHeight / 2;
+      // Start from 1/4 of the height (closer to computer side)
+      ballY = canvasHeight / 4;
       // Always start towards the player side after reset
       ballDX = 3 * (Math.random() > 0.5 ? 1 : -1); // Random horizontal direction
       ballDY = 5; // Always towards player (positive)
@@ -219,12 +224,12 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [gameActive, onGameComplete]);
+  }, [gameActive, onGameComplete, winningScore]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">PONG CHALLENGE</h2>
-      <p className="mb-2">Score 2 points to continue</p>
+      <p className="mb-2">Score {winningScore} points to continue</p>
       
       {showInstructions && (
         <div className="flex items-center mb-4 p-2 border border-terminal-green">
@@ -238,7 +243,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
       {gameOver && (
         <div className="mb-4 p-2 border border-terminal-green text-center">
           <p className="text-red-500 mb-2">GAME OVER</p>
-          <p className="mb-2">CPU scored 2 points</p>
+          <p className="mb-2">CPU scored {winningScore} points</p>
           <button 
             onClick={resetGame}
             className="px-4 py-1 border border-terminal-green hover:bg-terminal-green hover:bg-opacity-20"

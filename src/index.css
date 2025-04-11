@@ -78,4 +78,21 @@
   .char-placeholder.incorrect-char {
     @apply border-red-500 text-red-500;
   }
+  
+  /* Flashing cursor styles */
+  .char-placeholder.cursor-position::after {
+    content: '';
+    position: absolute;
+    height: 80%;
+    width: 2px;
+    background-color: #00FF00;
+    right: 0;
+    top: 10%;
+    animation: blink 1s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
 }

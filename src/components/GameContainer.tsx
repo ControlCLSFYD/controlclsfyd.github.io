@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
 import PongGame from './PongGame';
 import OxoGame from './OxoGame';
+import SpacewarGame from './SpacewarGame';
 import { gameLevels } from '../data/gameData';
 
 interface GameContainerProps {
@@ -27,9 +27,10 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [pongCompleted, setPongCompleted] = useState(false);
   const [showOxoGame, setShowOxoGame] = useState(false);
   const [oxoCompleted, setOxoCompleted] = useState(false);
+  const [showSpacewarGame, setShowSpacewarGame] = useState(false);
+  const [spacewarCompleted, setSpacewarCompleted] = useState(false);
 
   useEffect(() => {
-    // Sequential loading steps with typewriter effect
     const dotTimeout = setTimeout(() => {
       setLoadingStep(2); // Show loading dots
     }, 1000);
@@ -49,7 +50,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     };
   }, []);
 
-  // Check for already completed levels based on saved answers
   useEffect(() => {
     if (Object.keys(savedAnswers).length > 0) {
       const newCompletedLevels: number[] = [];
@@ -69,25 +69,25 @@ const GameContainer: React.FC<GameContainerProps> = ({
       
       setCompletedLevels(newCompletedLevels);
       
-      // If pong should have been played but wasn't marked as completed
       if (newCompletedLevels.includes(1) && currentLevel >= 2 && !pongCompleted) {
         setPongCompleted(true);
       }
       
-      // If oxo should have been played but wasn't marked as completed
+      if (newCompletedLevels.includes(2) && currentLevel >= 3 && !spacewarCompleted) {
+        setSpacewarCompleted(true);
+      }
+      
       if (gameStarted && currentLevel >= 1 && !oxoCompleted) {
         setOxoCompleted(true);
       }
     }
-  }, [savedAnswers, currentLevel, pongCompleted, gameStarted, oxoCompleted]);
+  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, gameStarted, oxoCompleted]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (accessCode === "111") {
-      // Reset any existing answers when starting a new game
       onResetGame();
       setGameStarted(true);
-      // Show OXO game after access code entry
       setShowOxoGame(true);
     }
   };
@@ -99,15 +99,17 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handleLevelComplete = () => {
-    // Add the current level to completed levels if not already there
     if (!completedLevels.includes(currentLevel)) {
       setCompletedLevels(prev => [...prev, currentLevel]);
     }
     
-    // First level complete, show Pong game before level 2
     if (currentLevel === 1 && !pongCompleted) {
       setShowPongGame(true);
-    } else if (currentLevel < gameLevels.length) {
+    } 
+    else if (currentLevel === 2 && !spacewarCompleted) {
+      setShowSpacewarGame(true);
+    }
+    else if (currentLevel < gameLevels.length) {
       setCurrentLevel(currentLevel + 1);
     } else {
       setGameCompleted(true);
@@ -117,17 +119,25 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const handlePongComplete = () => {
     setPongCompleted(true);
     setShowPongGame(false);
-    setCurrentLevel(2); // Proceed to level 2 after Pong
+    setCurrentLevel(2);
+  };
+
+  const handleSpacewarComplete = () => {
+    setSpacewarCompleted(true);
+    setShowSpacewarGame(false);
+    setCurrentLevel(3);
   };
 
   const navigateLevel = (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentLevel < gameLevels.length) {
-      // Only allow navigation to next level if current level is completed
       if (completedLevels.includes(currentLevel)) {
-        // Check if we need to play pong before going to level 2
         if (currentLevel === 1 && !pongCompleted) {
           setShowPongGame(true);
-        } else {
+        } 
+        else if (currentLevel === 2 && !spacewarCompleted) {
+          setShowSpacewarGame(true);
+        }
+        else {
           setCurrentLevel(currentLevel + 1);
         }
       }
@@ -136,8 +146,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
-  // Check if the next level is accessible
   const isNextLevelAccessible = completedLevels.includes(currentLevel);
+  const isGameActive = showPongGame || showOxoGame || showSpacewarGame;
 
   const renderLoadingScreen = () => {
     return (
@@ -191,22 +201,21 @@ const GameContainer: React.FC<GameContainerProps> = ({
         renderLoadingScreen()
       ) : (
         <div>
-          {/* Navigation Buttons */}
           <div className="flex justify-end mb-4">
             <button
               onClick={() => navigateLevel('prev')}
-              disabled={currentLevel <= 1 || showPongGame || showOxoGame}
+              disabled={currentLevel <= 1 || isGameActive}
               className={`border border-terminal-green px-2 py-1 mr-2 ${
-                currentLevel <= 1 || showPongGame || showOxoGame ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
+                currentLevel <= 1 || isGameActive ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
             >
               &lt; Previous
             </button>
             <button
               onClick={() => navigateLevel('next')}
-              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame || showOxoGame}
+              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || isGameActive}
               className={`border border-terminal-green px-2 py-1 ${
-                currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame || showOxoGame
+                currentLevel >= gameLevels.length || !isNextLevelAccessible || isGameActive
                   ? 'opacity-50 cursor-not-allowed' 
                   : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
@@ -215,7 +224,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
             </button>
           </div>
 
-          {/* Game Content */}
           {gameCompleted ? (
             <div className="p-4">
               <TypewriterText
@@ -227,6 +235,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <OxoGame onGameComplete={handleOxoComplete} />
           ) : showPongGame ? (
             <PongGame onGameComplete={handlePongComplete} />
+          ) : showSpacewarGame ? (
+            <SpacewarGame onGameComplete={handleSpacewarComplete} />
           ) : (
             currentLevel > 0 && currentLevel <= gameLevels.length && (
               <GameLevel

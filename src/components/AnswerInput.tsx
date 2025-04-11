@@ -18,6 +18,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const [isCorrect, setIsCorrect] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const [isIncorrect, setIsIncorrect] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(savedAnswer.length);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,6 +34,13 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
       inputRef.current.focus();
     }
   }, [isCorrect]);
+  
+  // Update cursor position when input changes
+  const updateCursorPosition = () => {
+    if (inputRef.current) {
+      setCursorPosition(inputRef.current.selectionStart || userAnswer.length);
+    }
+  };
 
   // Check if the answer is correct
   const checkAnswer = (input: string) => {
@@ -43,6 +51,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setUserAnswer(value);
+    updateCursorPosition();
     
     // Reset incorrect state when typing
     if (isIncorrect) {
@@ -67,7 +76,37 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
           setIsIncorrect(false);
         }, 2000); // Hide incorrect feedback after 2 seconds
       }
+    } else {
+      // Update cursor position on any key press
+      setTimeout(updateCursorPosition, 0);
     }
+  };
+  
+  // Handle click on the display area
+  const handleClick = (e: React.MouseEvent) => {
+    if (inputRef.current && !isCorrect) {
+      inputRef.current.focus();
+      
+      // Get click position relative to the container
+      const containerRect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - containerRect.left;
+      
+      // Estimate which character position was clicked
+      const charWidth = 12; // Approximate width of a monospace character
+      const estimatedPosition = Math.min(
+        Math.max(Math.floor(clickX / charWidth), 0),
+        correctAnswer.length
+      );
+      
+      // Set cursor position
+      inputRef.current.setSelectionRange(estimatedPosition, estimatedPosition);
+      setCursorPosition(estimatedPosition);
+    }
+  };
+  
+  // Handle focus events
+  const handleFocus = () => {
+    updateCursorPosition();
   };
 
   // Generate character display that shows both placeholders and user input
@@ -81,6 +120,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
           <span key={i} className="mx-2"> </span>
         );
       } else {
+        // Determine if this is the cursor position
+        const isCursorHere = i === cursorPosition && !isCorrect;
+        
         // Add character slot with potential user input shown
         const char = i < userAnswer.length ? userAnswer[i] : '';
         characters.push(
@@ -89,7 +131,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             className={`char-placeholder ${char ? 'has-char' : ''} ${
               isCorrect ? 'correct-char' : 
               isIncorrect ? 'incorrect-char' : ''
-            }`}
+            } ${isCursorHere ? 'cursor-position' : ''}`}
           >
             {char || ''}
           </span>
@@ -112,19 +154,20 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             value={userAnswer}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
             className="opacity-0 absolute top-0 left-0 h-full w-full z-10"
             disabled={isCorrect}
             autoComplete="off"
             maxLength={correctAnswer.length}
           />
           
-          {/* Visual representation of the answer - removed border */}
+          {/* Visual representation of the answer */}
           <div 
             className={`flex pt-2 pb-1 px-2 min-h-[40px] cursor-text ${
               isCorrect ? 'bg-green-900 bg-opacity-10' : 
               isIncorrect ? 'bg-red-900 bg-opacity-10' : ''
             }`}
-            onClick={() => inputRef.current?.focus()}
+            onClick={handleClick}
           >
             {renderCharacters()}
           </div>
