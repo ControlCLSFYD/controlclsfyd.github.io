@@ -20,7 +20,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete }) => {
     // Create a board where player (O) is one move away from winning
     const setupNearWinBoard = (): BoardState => {
       // Random setup pattern selection
-      const patterns = [
+      const patterns: BoardState[] = [
         // Horizontal win setups
         [null, 'O', 'O', 'X', null, null, 'X', null, 'X'],
         ['O', 'O', null, null, 'X', null, 'X', null, 'X'],
@@ -131,6 +131,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete }) => {
     
     return (
       <div 
+        key={index}
         className="flex items-center justify-center w-20 h-20 border-2 border-terminal-green cursor-pointer"
         onClick={() => handleCellClick(index)}
       >
