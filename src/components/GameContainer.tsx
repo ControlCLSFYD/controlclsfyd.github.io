@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
+import PongGame from './PongGame';
 import { gameLevels } from '../data/gameData';
 
 interface GameContainerProps {
@@ -21,6 +22,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [loadingStep, setLoadingStep] = useState(1);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+  const [showPongGame, setShowPongGame] = useState(false);
+  const [pongCompleted, setPongCompleted] = useState(false);
 
   useEffect(() => {
     // Sequential loading steps with typewriter effect
@@ -62,8 +65,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
       });
       
       setCompletedLevels(newCompletedLevels);
+      
+      // If pong should have been played but wasn't marked as completed
+      if (newCompletedLevels.includes(1) && currentLevel >= 2 && !pongCompleted) {
+        setPongCompleted(true);
+      }
     }
-  }, [savedAnswers]);
+  }, [savedAnswers, currentLevel, pongCompleted]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,18 +89,32 @@ const GameContainer: React.FC<GameContainerProps> = ({
       setCompletedLevels(prev => [...prev, currentLevel]);
     }
     
-    if (currentLevel < gameLevels.length) {
+    // First level complete, show Pong game before level 2
+    if (currentLevel === 1 && !pongCompleted) {
+      setShowPongGame(true);
+    } else if (currentLevel < gameLevels.length) {
       setCurrentLevel(currentLevel + 1);
     } else {
       setGameCompleted(true);
     }
   };
 
+  const handlePongComplete = () => {
+    setPongCompleted(true);
+    setShowPongGame(false);
+    setCurrentLevel(2); // Proceed to level 2 after Pong
+  };
+
   const navigateLevel = (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentLevel < gameLevels.length) {
       // Only allow navigation to next level if current level is completed
       if (completedLevels.includes(currentLevel)) {
-        setCurrentLevel(currentLevel + 1);
+        // Check if we need to play pong before going to level 2
+        if (currentLevel === 1 && !pongCompleted) {
+          setShowPongGame(true);
+        } else {
+          setCurrentLevel(currentLevel + 1);
+        }
       }
     } else if (direction === 'prev' && currentLevel > 1) {
       setCurrentLevel(currentLevel - 1);
@@ -158,18 +180,18 @@ const GameContainer: React.FC<GameContainerProps> = ({
           <div className="flex justify-end mb-4">
             <button
               onClick={() => navigateLevel('prev')}
-              disabled={currentLevel <= 1}
+              disabled={currentLevel <= 1 || showPongGame}
               className={`border border-terminal-green px-2 py-1 mr-2 ${
-                currentLevel <= 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
+                currentLevel <= 1 || showPongGame ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
             >
               &lt; Previous
             </button>
             <button
               onClick={() => navigateLevel('next')}
-              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible}
+              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame}
               className={`border border-terminal-green px-2 py-1 ${
-                currentLevel >= gameLevels.length || !isNextLevelAccessible 
+                currentLevel >= gameLevels.length || !isNextLevelAccessible || showPongGame
                   ? 'opacity-50 cursor-not-allowed' 
                   : 'hover:bg-terminal-green hover:bg-opacity-20'
               }`}
@@ -186,6 +208,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 className="text-xl"
               />
             </div>
+          ) : showPongGame ? (
+            <PongGame onGameComplete={handlePongComplete} />
           ) : (
             currentLevel > 0 && currentLevel <= gameLevels.length && (
               <GameLevel
