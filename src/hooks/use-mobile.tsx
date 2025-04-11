@@ -42,6 +42,6 @@ export function getViewportAdjustment() {
   return {
     isMobile,
     scaleFactor: isMobile ? 0.8 : 1, // Scale down elements on mobile
-    viewportScale: isMobile ? 'width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no' : 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+    viewportScale: isMobile ? 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no' : 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
   };
 }

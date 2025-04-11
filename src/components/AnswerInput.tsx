@@ -22,6 +22,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const { innerWidth } = window;
   const isMobile = innerWidth < 768;
+  const remainingChars = correctAnswer.length - userAnswer.length;
 
   useEffect(() => {
     // Check if we have a saved answer that's correct
@@ -44,14 +45,15 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   };
 
-  // Check if the answer is correct
+  // Check if the answer is correct - now case insensitive
   const checkAnswer = (input: string) => {
     // Case insensitive comparison and trim whitespace
     return input.trim().toLowerCase() === correctAnswer.toLowerCase();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    // Limit input to the expected answer length
+    const value = e.target.value.substring(0, correctAnswer.length);
     setUserAnswer(value);
     updateCursorPosition();
     
@@ -163,9 +165,9 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             maxLength={correctAnswer.length}
           />
           
-          {/* Visual representation of the answer */}
+          {/* Visual representation of the answer with larger touch target for mobile */}
           <div 
-            className={`flex pt-2 pb-1 px-2 min-h-[40px] cursor-text ${
+            className={`flex pt-3 pb-2 px-2 min-h-[50px] cursor-text ${isMobile ? 'min-h-[60px]' : ''} ${
               isCorrect ? 'bg-green-900 bg-opacity-10' : 
               isIncorrect ? 'bg-red-900 bg-opacity-10' : ''
             }`}
@@ -174,10 +176,17 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             {renderCharacters()}
           </div>
           
+          {/* Character count indicator */}
+          <div className={`text-xs absolute right-2 bottom-[-20px] ${remainingChars > 0 ? 'text-terminal-green' : 'text-red-500'}`}>
+            {remainingChars > 0 ? `${remainingChars}` : '✖'}
+          </div>
+          
           {/* Feedback - moved below answer on mobile */}
           {showFeedback && (
-            <div className={`${isMobile ? 'relative mt-2' : 'absolute right-2 top-1'} font-bold ${isCorrect ? 'text-green-500' : 'text-red-500'}`}>
-              {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
+            <div className="relative mt-2 font-bold text-center md:text-right md:absolute md:right-2 md:top-1 md:mt-0">
+              <span className={isCorrect ? 'text-green-500' : 'text-red-500'}>
+                {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
+              </span>
             </div>
           )}
         </div>

@@ -1,5 +1,6 @@
+
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUp, Rocket } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
 
 interface SpacewarGameProps {
@@ -28,14 +29,9 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
   };
 
-  const handleFireButton = () => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
-  };
-
   const handleButtonUp = () => {
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
-    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp' }));
   };
 
   useEffect(() => {
@@ -82,7 +78,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     // Enemy ship
     let enemyX = canvasWidth / 2;
     let enemyY = shipSize * 2;
-    const enemySpeed = 2.5; // Increased from 2 to make CPU slightly better
+    const enemySpeed = 3.0; // Increased from 2.5 to make CPU better
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
     let enemyMoveDirection = 1; // 1 for right, -1 for left
     
@@ -97,7 +93,10 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     // Key states
     let rightPressed = false;
     let leftPressed = false;
-    let upPressed = false;
+    let lastAutoFireTime = Date.now();
+    
+    // Auto firing for mobile (and now all platforms)
+    const autoFireInterval = 400; // Fire every 400ms
 
     // Countdown timer
     const gameTimer = setInterval(() => {
@@ -124,16 +123,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         rightPressed = true;
       } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
         leftPressed = true;
-      } else if (e.key === 'Up' || e.key === 'ArrowUp' || e.key === ' ') {
-        upPressed = true;
-        // Fire bullet on keydown for better responsiveness
-        if (gameActive && playerBullets.length < 3) { // Limit bullets
-          playerBullets.push({
-            x: playerX,
-            y: playerY - shipSize / 2,
-            active: true
-          });
-        }
       }
     };
     
@@ -142,8 +131,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         rightPressed = false;
       } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
         leftPressed = false;
-      } else if (e.key === 'Up' || e.key === 'ArrowUp' || e.key === ' ') {
-        upPressed = false;
       }
     };
 
@@ -151,7 +138,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
     document.addEventListener('keyup', keyUpHandler);
 
     let lastEnemyFireTime = Date.now();
-    let lastAsteroidSpawn = Date.now();
 
     // Animation setup
     let animationFrameId: number;
@@ -256,8 +242,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       
       // Enemy firing logic (random)
       const currentTime = Date.now();
-      if (currentTime - lastEnemyFireTime > 900) { // Fire slightly more frequently (was 1000ms)
-        if (Math.random() > 0.4) { // 60% chance to fire (was 50%)
+      if (currentTime - lastEnemyFireTime > 800) { // Fire slightly more frequently (was 900ms)
+        if (Math.random() > 0.3) { // 70% chance to fire (was 60%)
           enemyBullets.push({
             x: enemyX,
             y: enemyY + shipSize / 2,
@@ -265,6 +251,18 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
           });
         }
         lastEnemyFireTime = currentTime;
+      }
+
+      // Auto fire for player (always shooting)
+      if (currentTime - lastAutoFireTime > autoFireInterval) {
+        if (playerBullets.length < 3) { // Limit bullets
+          playerBullets.push({
+            x: playerX,
+            y: playerY - shipSize / 2,
+            active: true
+          });
+        }
+        lastAutoFireTime = currentTime;
       }
       
       // Move bullets
@@ -334,8 +332,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       drawAsteroids();
       drawBullets();
       
-      // Remove in-game score display - we're using the outside one
-      
       // Continue the game loop
       animationFrameId = window.requestAnimationFrame(draw);
     };
@@ -363,9 +359,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
           <span>Use</span>
           <ArrowLeft className="mx-1" size={20} />
           <ArrowRight className="mx-1" size={20} />
-          <span>keys to move and</span>
-          <ArrowUp className="mx-1" size={20} />
-          <span>or Space to fire</span>
+          <span>keys to move. Auto-firing enabled!</span>
         </div>
       )}
       
@@ -384,30 +378,23 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         />
       </div>
       
-      {/* Mobile controls - visible for all mobile devices */}
+      {/* Mobile controls - larger buttons, no fire button needed since auto-fire is active */}
       {isMobile && (
         <div className="mt-4 w-full max-w-[600px]">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <button
               onTouchStart={handleLeftButton}
               onTouchEnd={handleButtonUp}
-              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+              className="py-6 px-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green h-24"
             >
-              <ArrowLeft size={24} color="#D6BCFA" />
-            </button>
-            <button
-              onTouchStart={handleFireButton}
-              onTouchEnd={handleButtonUp}
-              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
-            >
-              <ArrowUp size={24} color="#D6BCFA" />
+              <ArrowLeft size={32} color="#D6BCFA" />
             </button>
             <button
               onTouchStart={handleRightButton}
               onTouchEnd={handleButtonUp}
-              className="p-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+              className="py-6 px-4 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green h-24"
             >
-              <ArrowRight size={24} color="#D6BCFA" />
+              <ArrowRight size={32} color="#D6BCFA" />
             </button>
           </div>
         </div>

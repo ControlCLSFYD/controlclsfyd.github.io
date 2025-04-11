@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
@@ -128,25 +129,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(3);
   };
 
-  const navigateLevel = (direction: 'next' | 'prev') => {
-    if (direction === 'next' && currentLevel < gameLevels.length) {
-      if (completedLevels.includes(currentLevel)) {
-        if (currentLevel === 1 && !pongCompleted) {
-          setShowPongGame(true);
-        } 
-        else if (currentLevel === 2 && !spacewarCompleted) {
-          setShowSpacewarGame(true);
-        }
-        else {
-          setCurrentLevel(currentLevel + 1);
-        }
-      }
-    } else if (direction === 'prev' && currentLevel > 1) {
-      setCurrentLevel(currentLevel - 1);
-    }
-  };
+  // Removed navigation functions and associated state
 
-  const isNextLevelAccessible = completedLevels.includes(currentLevel);
   const isGameActive = showPongGame || showOxoGame || showSpacewarGame;
 
   const renderLoadingScreen = () => {
@@ -201,28 +185,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
         renderLoadingScreen()
       ) : (
         <div>
-          <div className="flex justify-end mb-4">
-            <button
-              onClick={() => navigateLevel('prev')}
-              disabled={currentLevel <= 1 || isGameActive}
-              className={`border border-terminal-green px-2 py-1 mr-2 ${
-                currentLevel <= 1 || isGameActive ? 'opacity-50 cursor-not-allowed' : 'hover:bg-terminal-green hover:bg-opacity-20'
-              }`}
-            >
-              &lt; Previous
-            </button>
-            <button
-              onClick={() => navigateLevel('next')}
-              disabled={currentLevel >= gameLevels.length || !isNextLevelAccessible || isGameActive}
-              className={`border border-terminal-green px-2 py-1 ${
-                currentLevel >= gameLevels.length || !isNextLevelAccessible || isGameActive
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:bg-terminal-green hover:bg-opacity-20'
-              }`}
-            >
-              Next &gt;
-            </button>
-          </div>
+          {/* Navigation buttons removed */}
 
           {gameCompleted ? (
             <div className="p-4">
