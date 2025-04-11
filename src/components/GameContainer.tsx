@@ -5,6 +5,7 @@ import TypewriterText from './TypewriterText';
 import PongGame from './PongGame';
 import OxoGame from './OxoGame';
 import SpacewarGame from './SpacewarGame';
+import SnakeGame from './SnakeGame';
 import { gameLevels } from '../data/gameData';
 
 interface GameContainerProps {
@@ -30,6 +31,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [oxoCompleted, setOxoCompleted] = useState(false);
   const [showSpacewarGame, setShowSpacewarGame] = useState(false);
   const [spacewarCompleted, setSpacewarCompleted] = useState(false);
+  const [showSnakeGame, setShowSnakeGame] = useState(false);
+  const [snakeCompleted, setSnakeCompleted] = useState(false);
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -78,11 +81,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
         setSpacewarCompleted(true);
       }
       
+      if (newCompletedLevels.includes(3) && currentLevel >= 4 && !snakeCompleted) {
+        setSnakeCompleted(true);
+      }
+      
       if (gameStarted && currentLevel >= 1 && !oxoCompleted) {
         setOxoCompleted(true);
       }
     }
-  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, gameStarted, oxoCompleted]);
+  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, snakeCompleted, gameStarted, oxoCompleted]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,6 +117,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
     else if (currentLevel === 2 && !spacewarCompleted) {
       setShowSpacewarGame(true);
     }
+    else if (currentLevel === 3 && !snakeCompleted) {
+      setShowSnakeGame(true);
+    }
     else if (currentLevel < gameLevels.length) {
       setCurrentLevel(currentLevel + 1);
     } else {
@@ -129,9 +139,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(3);
   };
 
-  // Removed navigation functions and associated state
+  const handleSnakeComplete = () => {
+    setSnakeCompleted(true);
+    setShowSnakeGame(false);
+    setCurrentLevel(4);
+  };
 
-  const isGameActive = showPongGame || showOxoGame || showSpacewarGame;
+  const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showSnakeGame;
 
   const renderLoadingScreen = () => {
     return (
@@ -185,8 +199,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
         renderLoadingScreen()
       ) : (
         <div>
-          {/* Navigation buttons removed */}
-
           {gameCompleted ? (
             <div className="p-4">
               <TypewriterText
@@ -200,6 +212,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <PongGame onGameComplete={handlePongComplete} />
           ) : showSpacewarGame ? (
             <SpacewarGame onGameComplete={handleSpacewarComplete} />
+          ) : showSnakeGame ? (
+            <SnakeGame onGameComplete={handleSnakeComplete} />
           ) : (
             currentLevel > 0 && currentLevel <= gameLevels.length && (
               <GameLevel

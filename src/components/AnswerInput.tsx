@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 interface AnswerInputProps {
   correctAnswer: string;
@@ -20,8 +21,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
   const [isIncorrect, setIsIncorrect] = useState(false);
   const [cursorPosition, setCursorPosition] = useState(savedAnswer.length);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { innerWidth } = window;
-  const isMobile = innerWidth < 768;
+  const isMobile = useIsMobile();
   const remainingChars = correctAnswer.length - userAnswer.length;
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
     }
   };
 
-  // Check if the answer is correct - now case insensitive
+  // Check if the answer is correct - case insensitive
   const checkAnswer = (input: string) => {
     // Case insensitive comparison and trim whitespace
     return input.trim().toLowerCase() === correctAnswer.toLowerCase();
@@ -176,14 +176,20 @@ const AnswerInput: React.FC<AnswerInputProps> = ({
             {renderCharacters()}
           </div>
           
-          {/* Character count indicator */}
-          <div className={`text-xs absolute right-2 bottom-[-20px] ${remainingChars > 0 ? 'text-terminal-green' : 'text-red-500'}`}>
-            {remainingChars > 0 ? `${remainingChars}` : '✖'}
+          {/* Character count indicator - updated to show green at exactly 0 */}
+          <div className={`text-xs absolute right-2 bottom-[-20px] ${
+            remainingChars > 0 
+              ? 'text-terminal-green' 
+              : remainingChars === 0 
+                ? 'text-terminal-green animate-pulse font-bold' 
+                : 'text-red-500'
+          }`}>
+            {remainingChars >= 0 ? `${remainingChars}` : '✖'}
           </div>
           
           {/* Feedback - moved below answer on mobile */}
           {showFeedback && (
-            <div className="relative mt-2 font-bold text-center md:text-right md:absolute md:right-2 md:top-1 md:mt-0">
+            <div className={`relative mt-2 font-bold text-center md:text-right md:absolute md:right-2 ${isMobile ? 'top-full pt-2' : 'md:top-1 md:mt-0'}`}>
               <span className={isCorrect ? 'text-green-500' : 'text-red-500'}>
                 {isCorrect ? 'CORRECT ANSWER' : 'INCORRECT ANSWER'}
               </span>
