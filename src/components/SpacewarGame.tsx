@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -20,14 +19,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
   const [showInstructions, setShowInstructions] = useState(true);
   const isMobile = useIsMobile();
 
-  // Victory condition
   const WINNING_SCORE = 20;
 
-  // Canvas dimensions - responsive based on screen
   const canvasWidth = isMobile ? 320 : 600;
   const canvasHeight = isMobile ? 240 : 400;
 
-  // Mobile controls
   const handleLeftButton = () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
   };
@@ -41,19 +37,15 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
   };
 
-  // Handle game completion
   const handleContinue = () => {
     onGameComplete();
   };
 
-  // Handle play again with increased difficulty
   const handlePlayAgain = () => {
-    // Reset the game state before calling onPlayAgain
     resetGame();
     onPlayAgain();
   };
 
-  // Reset game state function
   const resetGame = () => {
     setUserScore(0);
     setComputerScore(0);
@@ -66,7 +58,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
   };
 
   useEffect(() => {
-    // Set viewport meta for mobile devices
     if (isMobile) {
       const viewport = document.querySelector('meta[name=viewport]');
       if (viewport) {
@@ -74,47 +65,39 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       }
     }
 
-    // Auto-hide instructions after 3 seconds
     const instructionsTimer = setTimeout(() => {
       setShowInstructions(false);
     }, 3000);
 
-    // Game initialization
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Game elements - smaller sizes for more stylish visuals - scale for mobile
-    const shipSize = isMobile ? 10 : 15; // Reduced for mobile
-    const bulletSize = Math.max(1.5, Math.floor(canvasWidth * 0.003)); // Scaled
-    const enemySize = isMobile ? 10 : 15; // Reduced for mobile
-    const asteroidSize = isMobile ? 7 : 10; // Reduced for mobile
-    const starCount = 70; // Increased from 50 for more background detail
+    const shipSize = isMobile ? 10 : 15;
+    const bulletSize = Math.max(1.5, Math.floor(canvasWidth * 0.003));
+    const enemySize = isMobile ? 10 : 15;
+    const asteroidSize = isMobile ? 7 : 10;
+    const starCount = 70;
 
-    // Define stars (background)
     const stars = Array.from({ length: starCount }, () => ({
       x: Math.random() * canvasWidth,
       y: Math.random() * canvasHeight,
-      size: Math.random() * 1.5 + 0.5, // Smaller stars
+      size: Math.random() * 1.5 + 0.5,
     }));
 
-    // Player ship
     let playerX = canvasWidth / 2;
     let playerY = canvasHeight - shipSize * 2;
     const playerSpeed = 5;
     let playerBullets: { x: number; y: number; active: boolean }[] = [];
 
-    // Enemy ship
     let enemyX = canvasWidth / 2;
     let enemyY = shipSize * 2;
-    // Adjust enemy speed based on difficulty (1-5)
-    const enemySpeed = 3.0 + (difficulty * 0.5); // Increases with difficulty
+    const enemySpeed = 3.0 + (difficulty * 0.5);
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
-    let enemyMoveDirection = 1; // 1 for right, -1 for left
-    
-    // Asteroids for obstacles
+    let enemyMoveDirection = 1;
+
     const asteroids = Array.from({ length: 5 }, () => ({
       x: Math.random() * canvasWidth,
       y: Math.random() * (canvasHeight / 2) + 100,
@@ -122,15 +105,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       dy: (Math.random() - 0.5) * 2,
     }));
 
-    // Key states
     let rightPressed = false;
     let leftPressed = false;
     let lastAutoFireTime = Date.now();
-    
-    // Auto firing for mobile (and now all platforms)
-    const autoFireInterval = 400 - (difficulty * 20); // Fire faster with higher difficulty
-    
-    // Key event listeners
+    const autoFireInterval = 420 - (difficulty * 20);
+    const enemyFireInterval = 380 - (difficulty * 50);
+
     const keyDownHandler = (e: KeyboardEvent) => {
       if (e.key === 'Right' || e.key === 'ArrowRight') {
         rightPressed = true;
@@ -138,7 +118,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         leftPressed = true;
       }
     };
-    
+
     const keyUpHandler = (e: KeyboardEvent) => {
       if (e.key === 'Right' || e.key === 'ArrowRight') {
         rightPressed = false;
@@ -151,21 +131,14 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     document.addEventListener('keyup', keyUpHandler);
 
     let lastEnemyFireTime = Date.now();
-    // Adjust enemy firing interval based on difficulty
-    const enemyFireInterval = 800 - (difficulty * 50); // Fire faster with higher difficulty
 
-    // Animation setup
-    let animationFrameId: number;
-    let gameActive = !gameState.gameOver;
-
-    // Game rendering functions
     const drawPlayerShip = () => {
       ctx.beginPath();
       ctx.moveTo(playerX, playerY - shipSize);
       ctx.lineTo(playerX + shipSize, playerY + shipSize);
       ctx.lineTo(playerX - shipSize, playerY + shipSize);
       ctx.closePath();
-      ctx.fillStyle = '#D6BCFA'; // Light purple
+      ctx.fillStyle = '#D6BCFA';
       ctx.fill();
     };
 
@@ -175,13 +148,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       ctx.lineTo(enemyX + shipSize, enemyY - shipSize);
       ctx.lineTo(enemyX - shipSize, enemyY - shipSize);
       ctx.closePath();
-      ctx.fillStyle = '#7E69AB'; // Secondary purple
+      ctx.fillStyle = '#7E69AB';
       ctx.fill();
     };
 
     const drawBullets = () => {
-      // Player bullets
-      ctx.fillStyle = '#D6BCFA'; // Light purple
+      ctx.fillStyle = '#D6BCFA';
       playerBullets.forEach(bullet => {
         if (bullet.active) {
           ctx.beginPath();
@@ -191,8 +163,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         }
       });
       
-      // Enemy bullets
-      ctx.fillStyle = '#7E69AB'; // Secondary purple
+      ctx.fillStyle = '#7E69AB';
       enemyBullets.forEach(bullet => {
         if (bullet.active) {
           ctx.beginPath();
@@ -204,7 +175,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     };
 
     const drawAsteroids = () => {
-      ctx.fillStyle = '#9F9EA1'; // Silver gray
+      ctx.fillStyle = '#9F9EA1';
       asteroids.forEach(asteroid => {
         ctx.beginPath();
         ctx.arc(asteroid.x, asteroid.y, asteroidSize, 0, Math.PI * 2);
@@ -223,16 +194,13 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       });
     };
 
-    // Check collision between two objects
     const checkCollision = (x1: number, y1: number, size1: number, x2: number, y2: number, size2: number) => {
       const distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
       return distance < (size1 + size2);
     };
 
-    // Improved enemy AI - track player position for better targeting
     const updateEnemyAI = () => {
-      // Track player position with accuracy based on difficulty
-      if (Math.random() < (0.5 + difficulty * 0.05)) { // Smarter with higher difficulty
+      if (Math.random() < (0.5 + difficulty * 0.05)) {
         if (playerX < enemyX - 10) {
           enemyMoveDirection = -1;
         } else if (playerX > enemyX + 10) {
@@ -240,15 +208,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         }
       }
       
-      // Occasionally change direction to be less predictable
-      if (Math.random() < (0.02 - difficulty * 0.003)) { // Less erratic with higher difficulty
+      if (Math.random() < (0.02 - difficulty * 0.003)) {
         enemyMoveDirection *= -1;
       }
       
-      // Firing logic adjusted for difficulty
       const currentTime = Date.now();
       if (currentTime - lastEnemyFireTime > enemyFireInterval) {
-        // Improved targeting based on difficulty
         if (Math.abs(enemyX - playerX) < (shipSize * (4 - difficulty * 0.5)) || Math.random() > (0.5 - difficulty * 0.08)) { 
           enemyBullets.push({
             x: enemyX,
@@ -260,7 +225,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       }
     };
 
-    // Check if game is over
     const checkGameOver = (score: number, isPlayer: boolean) => {
       if (score >= WINNING_SCORE) {
         gameActive = false;
@@ -275,36 +239,31 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       return false;
     };
 
-    // Game loop
+    let gameActive = !gameState.gameOver;
+
     const draw = () => {
       if (!ctx || !gameActive) return;
       
-      // Clear canvas
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       
-      // Draw stars
       drawStars();
       
-      // Move player
       if (rightPressed && playerX < canvasWidth - shipSize) {
         playerX += playerSpeed;
       } else if (leftPressed && playerX > shipSize) {
         playerX -= playerSpeed;
       }
       
-      // Update enemy AI
       updateEnemyAI();
       
-      // Move enemy
       enemyX += enemySpeed * enemyMoveDirection;
       if (enemyX > canvasWidth - shipSize || enemyX < shipSize) {
         enemyMoveDirection *= -1;
       }
       
-      // Auto fire for player
       const currentTime = Date.now();
       if (currentTime - lastAutoFireTime > autoFireInterval) {
-        if (playerBullets.length < (3 + difficulty)) { // More bullets with higher difficulty
+        if (playerBullets.length < (3 + difficulty)) {
           playerBullets.push({
             x: playerX,
             y: playerY - shipSize / 2,
@@ -314,16 +273,13 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         lastAutoFireTime = currentTime;
       }
       
-      // Move bullets
       playerBullets.forEach(bullet => {
         if (bullet.active) {
-          bullet.y -= 8; // Move up
-          // Check if out of bounds
+          bullet.y -= 8;
           if (bullet.y < 0) {
             bullet.active = false;
           }
           
-          // Check collision with enemy
           if (checkCollision(bullet.x, bullet.y, bulletSize, enemyX, enemyY, shipSize)) {
             setUserScore(prevScore => {
               const newScore = prevScore + 1;
@@ -341,11 +297,9 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
             bullet.active = false;
           }
           
-          // Check collision with asteroids
           asteroids.forEach(asteroid => {
             if (checkCollision(bullet.x, bullet.y, bulletSize, asteroid.x, asteroid.y, asteroidSize)) {
               bullet.active = false;
-              // Move asteroid to random location after hit
               asteroid.x = Math.random() * canvasWidth;
               asteroid.y = Math.random() * (canvasHeight / 2) + 100;
             }
@@ -355,13 +309,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       
       enemyBullets.forEach(bullet => {
         if (bullet.active) {
-          bullet.y += 6; // Move down
-          // Check if out of bounds
+          bullet.y += 6;
           if (bullet.y > canvasHeight) {
             bullet.active = false;
           }
           
-          // Check collision with player
           if (checkCollision(bullet.x, bullet.y, bulletSize, playerX, playerY, shipSize)) {
             setComputerScore(prevScore => {
               const newScore = prevScore + 1;
@@ -381,16 +333,13 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         }
       });
       
-      // Remove inactive bullets
       playerBullets = playerBullets.filter(bullet => bullet.active);
       enemyBullets = enemyBullets.filter(bullet => bullet.active);
       
-      // Move asteroids
       asteroids.forEach(asteroid => {
         asteroid.x += asteroid.dx;
         asteroid.y += asteroid.dy;
         
-        // Bounce off walls
         if (asteroid.x > canvasWidth - asteroidSize || asteroid.x < asteroidSize) {
           asteroid.dx *= -1;
         }
@@ -399,22 +348,18 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         }
       });
 
-      // Draw game elements
       drawPlayerShip();
       drawEnemyShip();
       drawAsteroids();
       drawBullets();
       
-      // Continue the game loop if game is active
       if (gameActive) {
         animationFrameId = window.requestAnimationFrame(draw);
       }
     };
-    
-    // Start the game loop
+
     draw();
-    
-    // Cleanup
+
     return () => {
       window.cancelAnimationFrame(animationFrameId);
       document.removeEventListener('keydown', keyDownHandler);
@@ -422,12 +367,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       clearTimeout(instructionsTimer);
     };
   }, [gameState.gameOver, difficulty, isMobile, canvasWidth, canvasHeight, WINNING_SCORE]);
-  
+
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
       
-      {/* Fixed height container for instructions and score info */}
       <div className="h-[60px] mb-2">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
@@ -455,7 +399,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         />
       </div>
       
-      {/* Game results overlay */}
       {gameState.gameOver && (
         <GameResult 
           gameWon={gameState.gameWon}
@@ -464,7 +407,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         />
       )}
       
-      {/* Mobile controls */}
       {isMobile && (
         <div className="mt-4 w-full max-w-[600px]">
           <div className="grid grid-cols-2 gap-4">

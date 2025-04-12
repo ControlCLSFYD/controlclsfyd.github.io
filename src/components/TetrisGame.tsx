@@ -101,17 +101,16 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
   const requestRef = useRef<number>();
   const lastDropTime = useRef<number>(0);
   const gameSpeed = useRef<number>(isMobile ? MOBILE_GAME_SPEED : GAME_SPEED);
-  
-  // Adjust game speed based on difficulty
+  const [buttonCooldown, setButtonCooldown] = useState(false);
+  const cooldownDuration = 150; // ms
+
   useEffect(() => {
-    // Higher difficulty = faster falling speed
     const speedMultiplier = Math.max(0.7, 1 - (difficulty * 0.1)); // 0.9, 0.8, 0.7... lower is faster
     gameSpeed.current = isMobile 
       ? MOBILE_GAME_SPEED * speedMultiplier
       : GAME_SPEED * speedMultiplier;
   }, [difficulty, isMobile]);
 
-  // Generate a random tetromino
   const generateTetromino = () => {
     const index = Math.floor(Math.random() * SHAPES.length);
     return {
@@ -122,7 +121,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     };
   };
 
-  // Start the game
   const startGame = () => {
     setGrid(Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(0)));
     setScore(0);
@@ -134,7 +132,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     lastDropTime.current = 0;
   };
 
-  // Rotate the tetromino
   const rotateTetromino = () => {
     if (!gameStarted || gameOver || gameWon) return;
 
@@ -143,13 +140,11 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       tetromino.shape.map(row => row[index]).reverse()
     );
 
-    // Check if rotation is valid
     if (!checkCollision({ ...tetromino, shape: newShape })) {
       setCurrentTetromino({ ...tetromino, shape: newShape });
     }
   };
 
-  // Check for collisions
   const checkCollision = (tetromino: any) => {
     const { shape, position } = tetromino;
     for (let y = 0; y < shape.length; y++) {
@@ -158,12 +153,10 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
           const newX = position.x + x;
           const newY = position.y + y;
           
-          // Check boundaries
           if (
             newX < 0 || 
             newX >= GRID_WIDTH || 
             newY >= GRID_HEIGHT ||
-            // Check existing blocks in the grid
             (newY >= 0 && grid[newY] && grid[newY][newX] !== 0)
           ) {
             return true;
@@ -174,7 +167,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     return false;
   };
 
-  // Move tetromino
   const moveTetromino = (direction: 'LEFT' | 'RIGHT' | 'DOWN') => {
     if (!gameStarted || gameOver || gameWon) return;
     
@@ -195,12 +187,10 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     if (!checkCollision({ ...currentTetromino, position })) {
       setCurrentTetromino({ ...currentTetromino, position });
     } else if (direction === 'DOWN') {
-      // If can't move down, place tetromino and generate new one
       placeTetromino();
     }
   };
-  
-  // Place the tetromino on the grid
+
   const placeTetromino = () => {
     const newGrid = [...grid];
     const { shape, position, color } = currentTetromino;
@@ -210,7 +200,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
         if (shape[y][x] !== 0) {
           const gridY = position.y + y;
           
-          // Game over if tetromino is placed at the top
           if (gridY <= 0) {
             setGameOver(true);
             return;
@@ -218,7 +207,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
           
           const gridX = position.x + x;
           if (gridY >= 0 && gridY < GRID_HEIGHT && gridX >= 0 && gridX < GRID_WIDTH) {
-            const colorIndex = COLORS.indexOf(color) + 1; // Store color index + 1 (0 is empty)
+            const colorIndex = COLORS.indexOf(color) + 1;
             newGrid[gridY][gridX] = colorIndex;
           }
         }
@@ -229,42 +218,34 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     setCurrentTetromino(nextTetromino);
     setNextTetromino(generateTetromino());
     
-    // Check for completed rows
     checkRows(newGrid);
   };
-  
-  // Check for completed rows and clear them
+
   const checkRows = (currentGrid: number[][]) => {
     const newGrid = [...currentGrid];
     let rowsCleared = 0;
     
     for (let y = GRID_HEIGHT - 1; y >= 0; y--) {
       if (newGrid[y].every(cell => cell !== 0)) {
-        // Clear this row
         rowsCleared++;
         
-        // Move all rows above down
         for (let row = y; row > 0; row--) {
           newGrid[row] = [...newGrid[row - 1]];
         }
         
-        // Add empty row at top
         newGrid[0] = Array(GRID_WIDTH).fill(0);
         
-        // Since the rows have shifted, we need to check this row again
         y++;
       }
     }
     
     if (rowsCleared > 0) {
-      // Score points based on rows cleared
       const points = [40, 100, 300, 1200][rowsCleared - 1] || 0;
       const newScore = score + points;
       setScore(newScore);
       
       setGrid(newGrid);
       
-      // Check win condition
       if (newScore >= POINTS_TO_WIN && !winAchieved) {
         setWinAchieved(true);
         setShowWinMessage(true);
@@ -275,7 +256,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     }
   };
 
-  // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameOver || gameWon) {
@@ -289,7 +269,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       }
 
       switch (e.key.toLowerCase()) {
-        // Support arrow keys
         case 'arrowleft':
         case 'a':
           moveTetromino('LEFT');
@@ -307,7 +286,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
           rotateTetromino();
           break;
         case ' ': // Space for hard drop
-          // Quick drop to bottom
           let newPosition = { ...currentTetromino.position };
           while (!checkCollision({ ...currentTetromino, position: { ...newPosition, y: newPosition.y + 1 } })) {
             newPosition.y += 1;
@@ -322,11 +300,9 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameStarted, gameOver, gameWon, currentTetromino, grid]);
 
-  // Animation frame loop
   useEffect(() => {
     const animate = (time: number) => {
       if (gameStarted && !gameOver && !gameWon) {
-        // Apply gravity based on game speed
         if (time - lastDropTime.current >= gameSpeed.current) {
           moveTetromino('DOWN');
           lastDropTime.current = time;
@@ -344,7 +320,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     };
   }, [gameStarted, gameOver, gameWon, currentTetromino, grid]);
 
-  // Draw game
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -352,14 +327,11 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw grid background
     ctx.fillStyle = '#222';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw grid lines
     ctx.strokeStyle = '#333';
     ctx.lineWidth = 0.5;
     
@@ -377,7 +349,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       ctx.stroke();
     }
 
-    // Draw placed blocks
     for (let y = 0; y < GRID_HEIGHT; y++) {
       for (let x = 0; x < GRID_WIDTH; x++) {
         if (grid[y][x] !== 0) {
@@ -385,7 +356,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
           ctx.fillStyle = COLORS[colorIndex] || '#FFFFFF';
           ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
           
-          // Draw block outline
           ctx.strokeStyle = '#000';
           ctx.lineWidth = 1;
           ctx.strokeRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -393,7 +363,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       }
     }
     
-    // Draw current tetromino
     if (gameStarted && !gameOver && !gameWon) {
       const { shape, position, color } = currentTetromino;
       ctx.fillStyle = color;
@@ -406,7 +375,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
             
             ctx.fillRect(drawX, drawY, CELL_SIZE, CELL_SIZE);
             
-            // Draw block outline
             ctx.strokeStyle = '#000';
             ctx.lineWidth = 1;
             ctx.strokeRect(drawX, drawY, CELL_SIZE, CELL_SIZE);
@@ -415,7 +383,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       }
     }
     
-    // Draw game over or game won message
     if (gameOver || gameWon || !gameStarted) {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -472,14 +439,14 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       }
     }
     
-    // Draw border
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 2;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
   }, [grid, currentTetromino, gameOver, gameStarted, gameWon]);
 
-  // Handle mobile button presses
   const handleMobileButtonPress = (action: 'LEFT' | 'RIGHT' | 'DOWN' | 'ROTATE') => {
+    if (buttonCooldown) return;
+    
     if (gameOver) {
       startGame();
       return;
@@ -490,6 +457,9 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       return;
     }
     
+    setButtonCooldown(true);
+    setTimeout(() => setButtonCooldown(false), cooldownDuration);
+    
     if (action === 'ROTATE') {
       rotateTetromino();
     } else {
@@ -497,13 +467,11 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     }
   };
 
-  // Handle continuing to next level
   const handleContinue = () => {
     setShowWinMessage(false);
     onGameComplete();
   };
 
-  // Handle continue playing
   const handleContinuePlaying = () => {
     setShowWinMessage(false);
   };
@@ -527,8 +495,8 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       <div className="relative">
         <canvas 
           ref={canvasRef} 
-          width={GRID_WIDTH * CELL_SIZE} 
-          height={GRID_HEIGHT * CELL_SIZE}
+          width={GRID_WIDTH * (isMobile ? 15 : CELL_SIZE)} 
+          height={GRID_HEIGHT * (isMobile ? 15 : CELL_SIZE)}
           className="border border-terminal-green"
         />
         
@@ -539,14 +507,14 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
               <Button 
                 variant="outline" 
                 onClick={handleContinue}
-                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
+                className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-3 py-1"
               >
                 Continue
               </Button>
               <Button 
                 variant="outline" 
                 onClick={handleContinuePlaying}
-                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
+                className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-3 py-1"
               >
                 Continue Playing
               </Button>
@@ -561,7 +529,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
               <Button 
                 variant="outline" 
                 onClick={startGame}
-                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
+                className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-3 py-1"
               >
                 New Game
               </Button>
@@ -570,41 +538,41 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
         )}
         
         {isMobile && (
-          <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[300px] mx-auto">
+          <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[280px] mx-auto">
             <div className="col-start-2 col-span-1">
               <button 
-                className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
-                onTouchStart={() => handleMobileButtonPress('ROTATE')}
-                onClick={() => handleMobileButtonPress('ROTATE')}
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                onTouchStart={() => !buttonCooldown && handleMobileButtonPress('ROTATE')}
+                onClick={() => !buttonCooldown && handleMobileButtonPress('ROTATE')}
               >
-                <ArrowUp size={40} />
+                <ArrowUp size={30} />
               </button>
             </div>
             <div className="col-start-1 col-span-1 row-start-2">
               <button 
-                className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
-                onTouchStart={() => handleMobileButtonPress('LEFT')}
-                onClick={() => handleMobileButtonPress('LEFT')}
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                onTouchStart={() => !buttonCooldown && handleMobileButtonPress('LEFT')}
+                onClick={() => !buttonCooldown && handleMobileButtonPress('LEFT')}
               >
-                <ArrowLeft size={40} />
+                <ArrowLeft size={30} />
               </button>
             </div>
             <div className="col-start-3 col-span-1 row-start-2">
               <button 
-                className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
-                onTouchStart={() => handleMobileButtonPress('RIGHT')}
-                onClick={() => handleMobileButtonPress('RIGHT')}
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                onTouchStart={() => !buttonCooldown && handleMobileButtonPress('RIGHT')}
+                onClick={() => !buttonCooldown && handleMobileButtonPress('RIGHT')}
               >
-                <ArrowRight size={40} />
+                <ArrowRight size={30} />
               </button>
             </div>
             <div className="col-start-2 row-start-3">
               <button 
-                className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
-                onTouchStart={() => handleMobileButtonPress('DOWN')}
-                onClick={() => handleMobileButtonPress('DOWN')}
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                onTouchStart={() => !buttonCooldown && handleMobileButtonPress('DOWN')}
+                onClick={() => !buttonCooldown && handleMobileButtonPress('DOWN')}
               >
-                <ArrowDown size={40} />
+                <ArrowDown size={30} />
               </button>
             </div>
           </div>
