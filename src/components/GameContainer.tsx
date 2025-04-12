@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
@@ -143,10 +142,18 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(2);
   };
 
+  const handlePongPlayAgain = () => {
+    setShowPongGame(true);
+  };
+
   const handleSpacewarComplete = () => {
     setSpacewarCompleted(true);
     setShowSpacewarGame(false);
     setCurrentLevel(3);
+  };
+
+  const handleSpacewarPlayAgain = () => {
+    setShowSpacewarGame(true);
   };
 
   const handleTetrisComplete = () => {
@@ -155,10 +162,18 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(4);
   };
 
+  const handleTetrisPlayAgain = () => {
+    setShowTetrisGame(true);
+  };
+
   const handleSnakeComplete = () => {
     setSnakeCompleted(true);
     setShowSnakeGame(false);
     setCurrentLevel(5);
+  };
+
+  const handleSnakePlayAgain = () => {
+    setShowSnakeGame(true);
   };
 
   const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;

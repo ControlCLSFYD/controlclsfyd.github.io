@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface TetrisGameProps {
   onGameComplete: () => void;
@@ -12,7 +13,7 @@ const GRID_WIDTH = 10;
 const GRID_HEIGHT = 20;
 const GAME_SPEED = 800; // Base falling speed in ms
 const MOBILE_GAME_SPEED = 3200; // 4x slower on mobile
-const POINTS_TO_WIN = 1000;
+const POINTS_TO_WIN = 250; // Changed from 1000 to 250
 
 // Tetromino shapes
 const SHAPES = [
@@ -253,7 +254,6 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
       // Check win condition
       if (newScore >= POINTS_TO_WIN) {
         setGameWon(true);
-        setTimeout(onGameComplete, 2000);
       }
     }
   };
@@ -423,13 +423,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
         ctx.fillText(
           'YOU WIN!',
           canvas.width / 2,
-          canvas.height / 2 - 20
-        );
-        ctx.font = '16px VT323, monospace';
-        ctx.fillText(
-          'Continuing to next level...',
-          canvas.width / 2,
-          canvas.height / 2 + 20
+          canvas.height / 2 - 40
         );
       } else if (!gameStarted) {
         ctx.fillText(
@@ -449,7 +443,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
           canvas.height / 2 + 20
         );
         ctx.fillText(
-          'Score 1000 points to win',
+          'Score ' + POINTS_TO_WIN + ' points to win',
           canvas.width / 2,
           canvas.height / 2 + 40
         );
@@ -486,6 +480,15 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
     }
   };
 
+  // Handle continuing to next level or playing again
+  const handleContinue = () => {
+    onGameComplete();
+  };
+
+  const handlePlayAgain = () => {
+    startGame();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-terminal-black">
       <div className="mb-4 flex items-center gap-4">
@@ -500,6 +503,28 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
           height={GRID_HEIGHT * CELL_SIZE}
           className="border border-terminal-green"
         />
+        
+        {gameWon && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70">
+            <h2 className="text-terminal-green text-2xl font-mono mb-6">YOU WIN!</h2>
+            <div className="flex gap-4">
+              <Button 
+                variant="outline" 
+                onClick={handleContinue}
+                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+              >
+                Continue
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handlePlayAgain}
+                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+              >
+                Play Again
+              </Button>
+            </div>
+          </div>
+        )}
         
         {isMobile && (
           <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[300px] mx-auto">
