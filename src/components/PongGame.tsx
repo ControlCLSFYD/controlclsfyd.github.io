@@ -1,13 +1,11 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
+import { BaseGameProps } from '../interfaces/GameInterfaces';
 
-interface PongGameProps {
-  onGameComplete: () => void;
-}
+interface PongGameProps extends BaseGameProps {}
 
-const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
+const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
@@ -271,10 +269,10 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete }) => {
           <p className="text-red-500 mb-2">GAME OVER</p>
           <p className="mb-2">CPU scored {winningScore} points</p>
           <button 
-            onClick={resetGame}
+            onClick={onPlayAgain}
             className="px-4 py-1 border border-terminal-green hover:bg-terminal-green hover:bg-opacity-20"
           >
-            Restart Game
+            Play Again
           </button>
         </div>
       )}

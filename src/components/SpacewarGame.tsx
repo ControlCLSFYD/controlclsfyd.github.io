@@ -1,19 +1,20 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
+import { BaseGameProps } from '../interfaces/GameInterfaces';
+import { Button } from './ui/button';
 
-interface SpacewarGameProps {
-  onGameComplete: () => void;
-}
+interface SpacewarGameProps extends BaseGameProps {}
 
-const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
+const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
   const [gameActive, setGameActive] = useState(true);
   const [showInstructions, setShowInstructions] = useState(true);
   const [timeLeft, setTimeLeft] = useState(30); // 30 seconds game
+  const [gameWon, setGameWon] = useState(false);
+  const [gameLost, setGameLost] = useState(false);
   const isMobile = useIsMobile();
 
   // Canvas dimensions - responsive based on screen
@@ -369,7 +370,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
       clearTimeout(instructionsTimer);
       clearInterval(gameTimer);
     };
-  }, [onGameComplete, isMobile, canvasWidth, canvasHeight]);
+  }, [onGameComplete, isMobile, canvasWidth, canvasHeight, difficulty]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
@@ -404,7 +405,41 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete }) => {
         />
       </div>
       
-      {/* Mobile controls - larger buttons, no fire button needed since auto-fire is active */}
+      {/* Game results UI */}
+      {!gameActive && (
+        <div className="mt-6 flex flex-col items-center">
+          {userScore > computerScore && (
+            <div className="text-terminal-green mb-4">You won!</div>
+          )}
+          {userScore < computerScore && (
+            <div className="text-terminal-green mb-4">You lost!</div>
+          )}
+          {userScore === computerScore && (
+            <div className="text-terminal-green mb-4">It's a tie!</div>
+          )}
+          
+          <div className="flex gap-4">
+            {userScore > computerScore && (
+              <Button 
+                variant="outline" 
+                onClick={onGameComplete}
+                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+              >
+                Continue
+              </Button>
+            )}
+            <Button 
+              variant="outline" 
+              onClick={onPlayAgain}
+              className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+            >
+              Play Again
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      {/* Mobile controls */}
       {isMobile && (
         <div className="mt-4 w-full max-w-[600px]">
           <div className="grid grid-cols-2 gap-4">
