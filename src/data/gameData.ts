@@ -1,4 +1,3 @@
-
 import { Question } from '../components/GameLevel';
 
 export interface Level {
@@ -10,6 +9,17 @@ export interface Level {
 export const gameLevels: Level[] = [
   {
     id: 1,
+    imageSrc: "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png",
+    questions: [
+      {
+        id: "A",
+        text: "Who was accused of being the Ultimate Beneficial Owner of this aircraft?",
+        answer: "CIA"
+      }
+    ]
+  },
+  {
+    id: 2,
     imageSrc: "/lovable-uploads/bd22cfea-71dc-4646-adf7-5ef6a9073db5.png",
     questions: [
       {
@@ -26,17 +36,6 @@ export const gameLevels: Level[] = [
         id: "C",
         text: "Who was the developer?",
         answer: "Penta"
-      }
-    ]
-  },
-  {
-    id: 2,
-    imageSrc: "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png",
-    questions: [
-      {
-        id: "A",
-        text: "Who was accused of being the Ultimate Beneficial Owner of this aircraft?",
-        answer: "CIA"
       }
     ]
   },
