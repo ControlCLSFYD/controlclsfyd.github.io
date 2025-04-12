@@ -173,13 +173,11 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
       </div>
       
       {gameStatus !== 'playing' && (
-        <div className="relative">
-          <GameResult
-            gameWon={gameStatus === 'won'}
-            onContinue={handleContinue}
-            onPlayAgain={handlePlayAgain}
-          />
-        </div>
+        <GameResult
+          gameWon={gameStatus === 'won'}
+          onContinue={handleContinue}
+          onPlayAgain={handlePlayAgain}
+        />
       )}
     </div>
   );

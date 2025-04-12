@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -8,14 +9,13 @@ import GameResult from './GameResult';
 interface SnakeGameProps extends BaseGameProps {}
 
 // Game constants
-const CELL_SIZE = 20; // Increased from 15
+const CELL_SIZE = 20;
 const GRID_WIDTH = 20;
 const GRID_HEIGHT = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
 const INITIAL_DIRECTION = 'RIGHT';
-const GAME_SPEED = 1600; // Updated to 1600ms as requested
-const MOBILE_GAME_SPEED = 6400; // 4x slower on mobile
-const MOBILE_BUTTON_SIZE = 80; // Increased from 60
+const GAME_SPEED = 1600;
+const MOBILE_GAME_SPEED = 6400;
 
 // Direction vectors
 const DIRECTIONS = {
@@ -48,6 +48,9 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
   const requestRef = useRef<number>();
+  
+  // Adjust cell size for mobile
+  const actualCellSize = isMobile ? Math.min(15, window.innerWidth / (GRID_WIDTH + 2)) : CELL_SIZE;
 
   // Win condition - reduced to 3 apples
   const WIN_SCORE = 3;
@@ -123,7 +126,6 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
       // Check win condition
       if (newScore >= WIN_SCORE) {
         setGameWon(true);
-        setTimeout(onGameComplete, 2000); // Give player time to see they won
         return;
       }
     } else {
@@ -183,12 +185,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameStarted, direction]);
 
-  // Animation frame loop - with significantly reduced speed
+  // Animation frame loop
   useEffect(() => {
     let lastTime = 0;
     const animate = (time: number) => {
       const currentGameSpeed = isMobile ? MOBILE_GAME_SPEED : GAME_SPEED;
-      if (time - lastTime >= currentGameSpeed) { // Use appropriate game speed based on device
+      if (time - lastTime >= currentGameSpeed) {
         gameLoop();
         lastTime = time;
       }
@@ -204,22 +206,147 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
     };
   }, [snake, food, direction, nextDirection, gameOver, gameStarted, gameWon, score, isMobile]);
 
-  // Restart game
+  // Draw game
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameOver && e.key === 'Enter') {
-        setSnake(INITIAL_SNAKE);
-        setFood(generateFood(INITIAL_SNAKE));
-        setDirection(INITIAL_DIRECTION);
-        setNextDirection(INITIAL_DIRECTION);
-        setGameOver(false);
-        setScore(0);
-      }
-    };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameOver]);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw black background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw grid lines (lighter)
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 0.5;
+    
+    for (let x = 0; x <= GRID_WIDTH; x++) {
+      ctx.beginPath();
+      ctx.moveTo(x * actualCellSize, 0);
+      ctx.lineTo(x * actualCellSize, GRID_HEIGHT * actualCellSize);
+      ctx.stroke();
+    }
+    
+    for (let y = 0; y <= GRID_HEIGHT; y++) {
+      ctx.beginPath();
+      ctx.moveTo(0, y * actualCellSize);
+      ctx.lineTo(GRID_WIDTH * actualCellSize, y * actualCellSize);
+      ctx.stroke();
+    }
+
+    // Draw food
+    ctx.fillStyle = '#00FF00';
+    ctx.beginPath();
+    ctx.arc(
+      food.x * actualCellSize + actualCellSize / 2,
+      food.y * actualCellSize + actualCellSize / 2,
+      actualCellSize / 2,
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+
+    // Draw snake
+    ctx.fillStyle = '#00FF00';
+    snake.forEach((segment, index) => {
+      // Draw rounded segments for head, square for body
+      if (index === 0) {
+        // Head
+        ctx.fillRect(
+          segment.x * actualCellSize,
+          segment.y * actualCellSize,
+          actualCellSize,
+          actualCellSize
+        );
+        
+        // Eyes
+        ctx.fillStyle = '#000';
+        const eyeSize = actualCellSize / 5;
+        let eyeX1, eyeY1, eyeX2, eyeY2;
+        
+        switch (direction) {
+          case 'RIGHT':
+            eyeX1 = segment.x * actualCellSize + actualCellSize - eyeSize * 2;
+            eyeY1 = segment.y * actualCellSize + eyeSize;
+            eyeX2 = segment.x * actualCellSize + actualCellSize - eyeSize * 2;
+            eyeY2 = segment.y * actualCellSize + actualCellSize - eyeSize * 2;
+            break;
+          case 'LEFT':
+            eyeX1 = segment.x * actualCellSize + eyeSize;
+            eyeY1 = segment.y * actualCellSize + eyeSize;
+            eyeX2 = segment.x * actualCellSize + eyeSize;
+            eyeY2 = segment.y * actualCellSize + actualCellSize - eyeSize * 2;
+            break;
+          case 'UP':
+            eyeX1 = segment.x * actualCellSize + eyeSize;
+            eyeY1 = segment.y * actualCellSize + eyeSize;
+            eyeX2 = segment.x * actualCellSize + actualCellSize - eyeSize * 2;
+            eyeY2 = segment.y * actualCellSize + eyeSize;
+            break;
+          case 'DOWN':
+            eyeX1 = segment.x * actualCellSize + eyeSize;
+            eyeY1 = segment.y * actualCellSize + actualCellSize - eyeSize * 2;
+            eyeX2 = segment.x * actualCellSize + actualCellSize - eyeSize * 2;
+            eyeY2 = segment.y * actualCellSize + actualCellSize - eyeSize * 2;
+            break;
+        }
+        
+        ctx.fillRect(eyeX1, eyeY1, eyeSize, eyeSize);
+        ctx.fillRect(eyeX2, eyeY2, eyeSize, eyeSize);
+        
+        ctx.fillStyle = '#00FF00';
+      } else {
+        // Body segments slightly smaller
+        const padding = actualCellSize * 0.05;
+        ctx.fillRect(
+          segment.x * actualCellSize + padding,
+          segment.y * actualCellSize + padding,
+          actualCellSize - padding * 2,
+          actualCellSize - padding * 2
+        );
+      }
+    });
+    
+    // Draw border around game
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw text overlays if game not started or game over
+    if (!gameStarted || gameOver || gameWon) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#00FF00';
+      ctx.font = isMobile ? '16px VT323, monospace' : '24px VT323, monospace';
+      ctx.textAlign = 'center';
+      
+      if (!gameStarted) {
+        ctx.fillText(
+          'Press any key to start',
+          canvas.width / 2,
+          canvas.height / 2
+        );
+      }
+    }
+  }, [snake, food, direction, gameOver, gameStarted, gameWon, actualCellSize, isMobile]);
+
+  // Reset the game
+  const resetGame = () => {
+    setSnake(INITIAL_SNAKE);
+    setDirection(INITIAL_DIRECTION);
+    setNextDirection(INITIAL_DIRECTION);
+    setFood(generateFood(INITIAL_SNAKE));
+    setScore(0);
+    setGameOver(false);
+    setGameWon(false);
+    setGameStarted(false);
+  };
 
   // Handle mobile button presses
   const handleMobileButtonPress = (newDirection: Direction) => {
@@ -239,14 +366,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
 
   // Handle play again button press
   const handlePlayAgain = () => {
-    setSnake(INITIAL_SNAKE);
-    setFood(generateFood(INITIAL_SNAKE));
-    setDirection(INITIAL_DIRECTION);
-    setNextDirection(INITIAL_DIRECTION);
-    setGameOver(false);
-    setGameWon(false);
-    setScore(0);
-    setGameStarted(false);
+    resetGame();
     onPlayAgain();
   };
 
@@ -260,8 +380,8 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
       <div className="relative">
         <canvas 
           ref={canvasRef} 
-          width={GRID_WIDTH * CELL_SIZE} 
-          height={GRID_HEIGHT * CELL_SIZE}
+          width={GRID_WIDTH * actualCellSize} 
+          height={GRID_HEIGHT * actualCellSize}
           className="border border-terminal-green"
         />
         
@@ -275,37 +395,37 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
         )}
         
         {isMobile && (
-          <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[320px] mx-auto">
+          <div className="mt-4 grid grid-cols-3 gap-2 w-full mx-auto" style={{ maxWidth: GRID_WIDTH * actualCellSize }}>
             <div className="col-start-2">
               <button 
-                className="w-full h-[150px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('UP')}
               >
-                <ArrowUp size={60} />
+                <ArrowUp size={30} />
               </button>
             </div>
             <div className="col-start-1 col-span-1 row-start-2">
               <button 
-                className="w-full h-[150px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('LEFT')}
               >
-                <ArrowLeft size={60} />
+                <ArrowLeft size={30} />
               </button>
             </div>
             <div className="col-start-3 col-span-1 row-start-2">
               <button 
-                className="w-full h-[150px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('RIGHT')}
               >
-                <ArrowRight size={60} />
+                <ArrowRight size={30} />
               </button>
             </div>
             <div className="col-start-2 row-start-3">
               <button 
-                className="w-full h-[150px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
+                className="w-full h-[60px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('DOWN')}
               >
-                <ArrowDown size={60} />
+                <ArrowDown size={30} />
               </button>
             </div>
           </div>

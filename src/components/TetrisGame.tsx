@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -97,6 +96,8 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     position: { x: 3, y: 0 },
     rotation: 0
   });
+  const [winAchieved, setWinAchieved] = useState(false);
+  const [showWinMessage, setShowWinMessage] = useState(false);
   const requestRef = useRef<number>();
   const lastDropTime = useRef<number>(0);
   const gameSpeed = useRef<number>(isMobile ? MOBILE_GAME_SPEED : GAME_SPEED);
@@ -126,7 +127,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     setGrid(Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(0)));
     setScore(0);
     setGameOver(false);
-    setGameWon(false);
+    setShowWinMessage(false);
     setGameStarted(true);
     setCurrentTetromino(generateTetromino());
     setNextTetromino(generateTetromino());
@@ -264,8 +265,12 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       setGrid(newGrid);
       
       // Check win condition
-      if (newScore >= POINTS_TO_WIN) {
-        setGameWon(true);
+      if (newScore >= POINTS_TO_WIN && !winAchieved) {
+        setWinAchieved(true);
+        setShowWinMessage(true);
+        setTimeout(() => {
+          setShowWinMessage(false);
+        }, 5000);
       }
     }
   };
@@ -475,7 +480,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
 
   // Handle mobile button presses
   const handleMobileButtonPress = (action: 'LEFT' | 'RIGHT' | 'DOWN' | 'ROTATE') => {
-    if (gameOver || gameWon) {
+    if (gameOver) {
       startGame();
       return;
     }
@@ -492,13 +497,15 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
     }
   };
 
-  // Handle continuing to next level or playing again
+  // Handle continuing to next level
   const handleContinue = () => {
+    setShowWinMessage(false);
     onGameComplete();
   };
 
-  const handlePlayAgain = () => {
-    onPlayAgain();
+  // Handle continue playing
+  const handleContinuePlaying = () => {
+    setShowWinMessage(false);
   };
 
   return (
@@ -506,6 +513,15 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       <div className="mb-4 flex items-center gap-4">
         <span className="text-terminal-green text-2xl font-mono">TETRIS</span>
         <span className="text-terminal-green text-xl font-mono">Score: {score}/{POINTS_TO_WIN}</span>
+        {winAchieved && (
+          <Button 
+            variant="outline" 
+            onClick={handleContinue}
+            className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black px-3 py-1 h-8 uppercase font-mono text-xs tracking-wider"
+          >
+            Next Question
+          </Button>
+        )}
       </div>
       
       <div className="relative">
@@ -516,23 +532,23 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
           className="border border-terminal-green"
         />
         
-        {gameWon && (
+        {showWinMessage && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70">
             <h2 className="text-terminal-green text-2xl font-mono mb-6">YOU WIN!</h2>
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
                 onClick={handleContinue}
-                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
               >
                 Continue
               </Button>
               <Button 
                 variant="outline" 
-                onClick={handlePlayAgain}
-                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+                onClick={handleContinuePlaying}
+                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
               >
-                Play Again
+                Continue Playing
               </Button>
             </div>
           </div>
@@ -544,10 +560,10 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
             <div className="flex gap-4">
               <Button 
                 variant="outline" 
-                onClick={handlePlayAgain}
-                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+                onClick={startGame}
+                className="border-2 border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black uppercase font-mono text-sm tracking-wider px-4 py-2"
               >
-                Play Again
+                New Game
               </Button>
             </div>
           </div>

@@ -108,15 +108,15 @@ const GameLevel: React.FC<GameLevelProps> = ({
         </div>
       )}
       
-      <div className="space-y-6">
+      <div className="space-y-2">
         {questions.map((question) => {
           const answerKey = `${level}-${question.id}`;
           const savedAnswer = savedAnswers[answerKey] || '';
           
           return (
-            <div key={question.id} className="mb-6">
-              {/* Fixed height container for question text to prevent layout shifts */}
-              <div className="min-h-[80px] mb-4">
+            <div key={question.id} className="mb-4">
+              {/* Reduced height container for question text */}
+              <div className="min-h-[40px] mb-1">
                 <TypewriterText 
                   text={question.text} 
                   className="block"
