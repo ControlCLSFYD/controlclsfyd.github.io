@@ -507,6 +507,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
               <button 
                 className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('ROTATE')}
+                onClick={() => handleMobileButtonPress('ROTATE')}
               >
                 <ArrowUp size={40} />
               </button>
@@ -515,6 +516,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
               <button 
                 className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('LEFT')}
+                onClick={() => handleMobileButtonPress('LEFT')}
               >
                 <ArrowLeft size={40} />
               </button>
@@ -523,6 +525,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
               <button 
                 className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('RIGHT')}
+                onClick={() => handleMobileButtonPress('RIGHT')}
               >
                 <ArrowRight size={40} />
               </button>
@@ -531,6 +534,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
               <button 
                 className="w-full h-[80px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"
                 onTouchStart={() => handleMobileButtonPress('DOWN')}
+                onClick={() => handleMobileButtonPress('DOWN')}
               >
                 <ArrowDown size={40} />
               </button>
