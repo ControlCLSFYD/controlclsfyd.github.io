@@ -16,3 +16,9 @@ export interface GameControlHandlers {
   handleContinue: () => void;
   handlePlayAgain: () => void;
 }
+
+export interface GameResultProps {
+  gameWon: boolean;
+  onContinue: () => void; 
+  onPlayAgain: () => void;
+}

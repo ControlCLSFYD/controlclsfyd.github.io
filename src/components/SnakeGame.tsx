@@ -3,6 +3,7 @@ import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { Button } from './ui/button';
+import GameResult from './GameResult';
 
 interface SnakeGameProps extends BaseGameProps {}
 
@@ -231,6 +232,24 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
     }
   };
 
+  // Handle continue button press
+  const handleContinue = () => {
+    onGameComplete();
+  };
+
+  // Handle play again button press
+  const handlePlayAgain = () => {
+    setSnake(INITIAL_SNAKE);
+    setFood(generateFood(INITIAL_SNAKE));
+    setDirection(INITIAL_DIRECTION);
+    setNextDirection(INITIAL_DIRECTION);
+    setGameOver(false);
+    setGameWon(false);
+    setScore(0);
+    setGameStarted(false);
+    onPlayAgain();
+  };
+
   return (
     <div className="flex flex-col items-center justify-center p-4 bg-terminal-black">
       <div className="mb-4 flex items-center gap-4">
@@ -248,43 +267,11 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
         
         {/* Game results UI */}
         {(gameOver || gameWon) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-80">
-            {gameWon && (
-              <div className="text-terminal-green text-2xl mb-4">You Won!</div>
-            )}
-            {gameOver && !gameWon && (
-              <div className="text-terminal-green text-2xl mb-4">Game Over!</div>
-            )}
-            
-            <div className="flex gap-4">
-              {gameWon && (
-                <Button 
-                  variant="outline" 
-                  onClick={onGameComplete}
-                  className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
-                >
-                  Continue
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setSnake(INITIAL_SNAKE);
-                  setFood(generateFood(INITIAL_SNAKE));
-                  setDirection(INITIAL_DIRECTION);
-                  setNextDirection(INITIAL_DIRECTION);
-                  setGameOver(false);
-                  setGameWon(false);
-                  setScore(0);
-                  setGameStarted(false);
-                  onPlayAgain();
-                }}
-                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
-              >
-                Play Again
-              </Button>
-            </div>
-          </div>
+          <GameResult
+            gameWon={gameWon}
+            onContinue={handleContinue}
+            onPlayAgain={handlePlayAgain}
+          />
         )}
         
         {isMobile && (
