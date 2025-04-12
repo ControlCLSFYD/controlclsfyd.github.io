@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -240,6 +241,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     };
 
     let gameActive = !gameState.gameOver;
+    // Add a variable to store the animation frame ID
+    let animationFrameId: number;
 
     const draw = () => {
       if (!ctx || !gameActive) return;
