@@ -1,4 +1,3 @@
-
 export interface BaseGameProps {
   onGameComplete: () => void;
   onPlayAgain: () => void;
@@ -19,6 +18,7 @@ export interface GameControlHandlers {
 
 export interface GameResultProps {
   gameWon: boolean;
-  onContinue: () => void; 
+  onContinue: () => void;
   onPlayAgain: () => void;
+  alwaysShowContinue?: boolean;
 }

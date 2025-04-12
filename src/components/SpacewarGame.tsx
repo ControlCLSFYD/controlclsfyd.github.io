@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
 import GameResult from './GameResult';
@@ -16,6 +16,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
+  const [hasWonBefore, setHasWonBefore] = useState(false);
   
   const { 
     userScore,
@@ -36,6 +37,13 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
     onGameComplete 
   });
 
+  useEffect(() => {
+    // Set hasWonBefore to true if the player has won
+    if (gameState.gameWon && !hasWonBefore) {
+      setHasWonBefore(true);
+    }
+  }, [gameState.gameWon, hasWonBefore]);
+
   const handlePlayAgain = () => {
     resetGame();
     onPlayAgain();
@@ -48,6 +56,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
         winningScore={WINNING_SCORE}
         userScore={userScore}
         computerScore={computerScore}
+        difficulty={difficulty}
       />
       
       <div className="border border-terminal-green">
@@ -64,6 +73,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
           gameWon={gameState.gameWon}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
+          alwaysShowContinue={hasWonBefore}
         />
       )}
       

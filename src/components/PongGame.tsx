@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -104,9 +103,9 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     let ballY = canvasHeight / 8; // Much closer to the CPU (top)
     
     // Initial direction - always towards player (bottom)
-    // Reduced speed for mobile, slightly slower in general
-    const baseHorizontalSpeed = isMobile ? 2 : 2.5; 
-    const baseVerticalSpeed = isMobile ? 3.5 : 4;
+    // Speed increases with difficulty
+    const baseHorizontalSpeed = isMobile ? 2 + (difficulty * 0.3) : 2.5 + (difficulty * 0.3); 
+    const baseVerticalSpeed = isMobile ? 3.5 + (difficulty * 0.4) : 4 + (difficulty * 0.4);
     
     let ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1); // Initial horizontal speed
     let ballDY = baseVerticalSpeed; // Positive value means ball goes towards player
@@ -167,15 +166,17 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       ctx.fill();
       ctx.closePath();
       
-      // Computer AI - follow the ball with a delay
-      const computerSpeed = 1.2; // Reduced from 1.5 to be slower and easier
+      // Computer AI - follow the ball with a speed that increases with difficulty
+      const computerSpeed = 1.2 + (difficulty * 0.2); // Computer gets faster with higher difficulty
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Add some "intelligence" - only move when the ball is moving towards the computer
       if (ballDY < 0) {
-        if (computerPaddleX < computerTargetX - 10) {
+        // Computer becomes more precise with higher difficulty
+        const precisionThreshold = Math.max(10 - (difficulty * 1.5), 2);
+        if (computerPaddleX < computerTargetX - precisionThreshold) {
           computerPaddleX += computerSpeed;
-        } else if (computerPaddleX > computerTargetX + 10) {
+        } else if (computerPaddleX > computerTargetX + precisionThreshold) {
           computerPaddleX -= computerSpeed;
         }
       }
@@ -281,12 +282,15 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight]);
+  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight, difficulty]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">PONG CHALLENGE</h2>
       <p className="mb-2">Score {winningScore} points to continue</p>
+      {difficulty > 1 && (
+        <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+      )}
       
       {showInstructions && (
         <div className="flex items-center mb-4 p-2 border border-terminal-green">
