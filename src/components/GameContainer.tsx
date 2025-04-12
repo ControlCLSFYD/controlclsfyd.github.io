@@ -247,7 +247,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           {gameCompleted ? (
             <div className="p-4">
               <TypewriterText
-                text="Thank you for completing Level 1 of the CLSFYD Game (Pre-Alpha). Please purchase a CLSFYD Product to gain access to Level 2 of the Game."
+                text="Congratulations! That wasn't easy. You should email control@classifiedaccessories.com a hello message with your CV and the code: 112233YD.\n\nTo buy Protection from the Game, and access Level 2, please purchase a CLSFYD Product."
                 className="text-xl"
               />
             </div>
