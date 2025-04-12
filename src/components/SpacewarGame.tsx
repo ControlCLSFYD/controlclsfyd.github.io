@@ -1,8 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
-import { BaseGameProps } from '../interfaces/GameInterfaces';
-import { Button } from './ui/button';
+import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
+import GameResult from './GameResult';
 
 interface SpacewarGameProps extends BaseGameProps {}
 
@@ -10,12 +11,17 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
-  const [gameActive, setGameActive] = useState(true);
+  const [gameState, setGameState] = useState<GameState>({
+    gameStarted: true,
+    gameOver: false,
+    gameWon: false,
+    score: 0
+  });
   const [showInstructions, setShowInstructions] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(30); // 30 seconds game
-  const [gameWon, setGameWon] = useState(false);
-  const [gameLost, setGameLost] = useState(false);
   const isMobile = useIsMobile();
+
+  // Victory condition
+  const WINNING_SCORE = 20;
 
   // Canvas dimensions - responsive based on screen
   const canvasWidth = isMobile ? 320 : 600;
@@ -33,6 +39,16 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
   const handleButtonUp = () => {
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
+  };
+
+  // Handle game completion
+  const handleContinue = () => {
+    onGameComplete();
+  };
+
+  // Handle play again with increased difficulty
+  const handlePlayAgain = () => {
+    onPlayAgain();
   };
 
   useEffect(() => {
@@ -79,7 +95,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     // Enemy ship
     let enemyX = canvasWidth / 2;
     let enemyY = shipSize * 2;
-    const enemySpeed = 4.5; // Increased from 3.0 to make CPU smarter
+    // Adjust enemy speed based on difficulty (1-5)
+    const enemySpeed = 3.0 + (difficulty * 0.5); // Increases with difficulty
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
     let enemyMoveDirection = 1; // 1 for right, -1 for left
     
@@ -97,26 +114,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     let lastAutoFireTime = Date.now();
     
     // Auto firing for mobile (and now all platforms)
-    const autoFireInterval = 400; // Fire every 400ms
-
-    // Countdown timer
-    const gameTimer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        const newTime = prevTime - 1;
-        if (newTime <= 0) {
-          clearInterval(gameTimer);
-          setGameActive(false);
-          
-          // Determine the winner
-          setTimeout(() => {
-            onGameComplete();
-          }, 2000);
-          
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
+    const autoFireInterval = 400 - (difficulty * 20); // Fire faster with higher difficulty
     
     // Key event listeners
     const keyDownHandler = (e: KeyboardEvent) => {
@@ -139,9 +137,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     document.addEventListener('keyup', keyUpHandler);
 
     let lastEnemyFireTime = Date.now();
+    // Adjust enemy firing interval based on difficulty
+    const enemyFireInterval = 800 - (difficulty * 50); // Fire faster with higher difficulty
 
     // Animation setup
     let animationFrameId: number;
+    let gameActive = true;
 
     // Draw player ship
     const drawPlayerShip = () => {
@@ -220,8 +221,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
 
     // Improved enemy AI - track player position for better targeting
     const updateEnemyAI = () => {
-      // Track player position with 70% accuracy (smarter CPU)
-      if (Math.random() < 0.7) { // Increased from 0.5
+      // Track player position with accuracy based on difficulty
+      if (Math.random() < (0.5 + difficulty * 0.05)) { // Smarter with higher difficulty
         if (playerX < enemyX - 10) {
           enemyMoveDirection = -1;
         } else if (playerX > enemyX + 10) {
@@ -230,15 +231,15 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       }
       
       // Occasionally change direction to be less predictable
-      if (Math.random() < 0.02) {
+      if (Math.random() < (0.02 - difficulty * 0.003)) { // Less erratic with higher difficulty
         enemyMoveDirection *= -1;
       }
       
-      // Increase firing frequency when aligned with player (improved aim)
+      // Firing logic adjusted for difficulty
       const currentTime = Date.now();
-      if (currentTime - lastEnemyFireTime > 700) { // Fire more frequently (was 800ms)
-        // Improved targeting - higher chance to fire when aligned with player
-        if (Math.abs(enemyX - playerX) < shipSize * 2 || Math.random() > 0.4) { // Better accuracy
+      if (currentTime - lastEnemyFireTime > enemyFireInterval) {
+        // Improved targeting based on difficulty
+        if (Math.abs(enemyX - playerX) < (shipSize * (4 - difficulty * 0.5)) || Math.random() > (0.5 - difficulty * 0.08)) { 
           enemyBullets.push({
             x: enemyX,
             y: enemyY + shipSize / 2,
@@ -252,6 +253,29 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     // Game loop
     const draw = () => {
       if (!ctx || !gameActive) return;
+      
+      // Check for game end condition
+      if (userScore >= WINNING_SCORE) {
+        setGameState({
+          gameStarted: false,
+          gameOver: true,
+          gameWon: true,
+          score: userScore
+        });
+        gameActive = false;
+        return;
+      }
+      
+      if (computerScore >= WINNING_SCORE) {
+        setGameState({
+          gameStarted: false,
+          gameOver: true,
+          gameWon: false,
+          score: userScore
+        });
+        gameActive = false;
+        return;
+      }
       
       // Clear canvas
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -278,7 +302,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       // Auto fire for player (always shooting)
       const currentTime = Date.now();
       if (currentTime - lastAutoFireTime > autoFireInterval) {
-        if (playerBullets.length < 5) { // Increased from 3 to compensate for smarter CPU
+        if (playerBullets.length < (3 + difficulty)) { // More bullets with higher difficulty
           playerBullets.push({
             x: playerX,
             y: playerY - shipSize / 2,
@@ -368,7 +392,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       document.removeEventListener('keydown', keyDownHandler);
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
-      clearInterval(gameTimer);
     };
   }, [onGameComplete, isMobile, canvasWidth, canvasHeight, difficulty]);
   
@@ -376,7 +399,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
       
-      {/* Fixed height container for instructions and timer */}
+      {/* Fixed height container for instructions and score info */}
       <div className="h-[60px] mb-2">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
@@ -386,13 +409,12 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
             <span>keys to move. Auto-firing enabled!</span>
           </div>
         ) : (
-          <p className="mb-2">Score more points than the CPU in {timeLeft} seconds</p>
+          <p className="mb-2">First to score {WINNING_SCORE} points wins!</p>
         )}
       </div>
       
       <div className="mb-4 flex justify-between w-full max-w-[600px] px-4">
         <span>Player: {userScore}</span>
-        <span>Time: {timeLeft}s</span>
         <span>CPU: {computerScore}</span>
       </div>
       
@@ -405,38 +427,13 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
         />
       </div>
       
-      {/* Game results UI */}
-      {!gameActive && (
-        <div className="mt-6 flex flex-col items-center">
-          {userScore > computerScore && (
-            <div className="text-terminal-green mb-4">You won!</div>
-          )}
-          {userScore < computerScore && (
-            <div className="text-terminal-green mb-4">You lost!</div>
-          )}
-          {userScore === computerScore && (
-            <div className="text-terminal-green mb-4">It's a tie!</div>
-          )}
-          
-          <div className="flex gap-4">
-            {userScore > computerScore && (
-              <Button 
-                variant="outline" 
-                onClick={onGameComplete}
-                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
-              >
-                Continue
-              </Button>
-            )}
-            <Button 
-              variant="outline" 
-              onClick={onPlayAgain}
-              className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
-            >
-              Play Again
-            </Button>
-          </div>
-        </div>
+      {/* Game results - use GameResult component */}
+      {gameState.gameOver && (
+        <GameResult 
+          gameWon={gameState.gameWon}
+          onContinue={handleContinue}
+          onPlayAgain={handlePlayAgain}
+        />
       )}
       
       {/* Mobile controls */}
