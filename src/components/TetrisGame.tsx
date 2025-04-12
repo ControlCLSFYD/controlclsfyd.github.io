@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -5,6 +6,8 @@ import { Button } from './ui/button';
 
 interface TetrisGameProps {
   onGameComplete: () => void;
+  onPlayAgain: () => void;
+  difficulty?: number;
 }
 
 // Game constants
@@ -72,7 +75,7 @@ const COLORS = [
   "#FF0000"  // Red - Z
 ];
 
-const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
+const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   const [score, setScore] = useState(0);
@@ -98,6 +101,15 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
   const lastDropTime = useRef<number>(0);
   const gameSpeed = useRef<number>(isMobile ? MOBILE_GAME_SPEED : GAME_SPEED);
   
+  // Adjust game speed based on difficulty
+  useEffect(() => {
+    // Higher difficulty = faster falling speed
+    const speedMultiplier = Math.max(0.7, 1 - (difficulty * 0.1)); // 0.9, 0.8, 0.7... lower is faster
+    gameSpeed.current = isMobile 
+      ? MOBILE_GAME_SPEED * speedMultiplier
+      : GAME_SPEED * speedMultiplier;
+  }, [difficulty, isMobile]);
+
   // Generate a random tetromino
   const generateTetromino = () => {
     const index = Math.floor(Math.random() * SHAPES.length);
@@ -486,7 +498,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
   };
 
   const handlePlayAgain = () => {
-    startGame();
+    onPlayAgain();
   };
 
   return (
@@ -515,6 +527,21 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
               >
                 Continue
               </Button>
+              <Button 
+                variant="outline" 
+                onClick={handlePlayAgain}
+                className="border-terminal-green text-terminal-green hover:bg-terminal-green hover:text-black"
+              >
+                Play Again
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {gameOver && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70">
+            <h2 className="text-terminal-green text-2xl font-mono mb-6">GAME OVER</h2>
+            <div className="flex gap-4">
               <Button 
                 variant="outline" 
                 onClick={handlePlayAgain}

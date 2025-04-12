@@ -27,14 +27,19 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
   const [showPongGame, setShowPongGame] = useState(false);
   const [pongCompleted, setPongCompleted] = useState(false);
+  const [pongDifficulty, setPongDifficulty] = useState(1);
   const [showOxoGame, setShowOxoGame] = useState(false);
   const [oxoCompleted, setOxoCompleted] = useState(false);
+  const [oxoDifficulty, setOxoDifficulty] = useState(1);
   const [showSpacewarGame, setShowSpacewarGame] = useState(false);
   const [spacewarCompleted, setSpacewarCompleted] = useState(false);
+  const [spacewarDifficulty, setSpacewarDifficulty] = useState(1);
   const [showTetrisGame, setShowTetrisGame] = useState(false);
   const [tetrisCompleted, setTetrisCompleted] = useState(false);
+  const [tetrisDifficulty, setTetrisDifficulty] = useState(1);
   const [showSnakeGame, setShowSnakeGame] = useState(false);
   const [snakeCompleted, setSnakeCompleted] = useState(false);
+  const [snakeDifficulty, setSnakeDifficulty] = useState(1);
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -112,6 +117,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(1);
   };
 
+  const handleOxoPlayAgain = () => {
+    setOxoDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
+    setShowOxoGame(true);
+  };
+
   const handleLevelComplete = () => {
     if (!completedLevels.includes(currentLevel)) {
       setCompletedLevels(prev => [...prev, currentLevel]);
@@ -143,6 +153,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handlePongPlayAgain = () => {
+    setPongDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
     setShowPongGame(true);
   };
 
@@ -153,6 +164,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handleSpacewarPlayAgain = () => {
+    setSpacewarDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
     setShowSpacewarGame(true);
   };
 
@@ -163,6 +175,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handleTetrisPlayAgain = () => {
+    setTetrisDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
     setShowTetrisGame(true);
   };
 
@@ -173,6 +186,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handleSnakePlayAgain = () => {
+    setSnakeDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
     setShowSnakeGame(true);
   };
 
@@ -238,15 +252,35 @@ const GameContainer: React.FC<GameContainerProps> = ({
               />
             </div>
           ) : showOxoGame ? (
-            <OxoGame onGameComplete={handleOxoComplete} />
+            <OxoGame 
+              onGameComplete={handleOxoComplete} 
+              onPlayAgain={handleOxoPlayAgain} 
+              difficulty={oxoDifficulty}
+            />
           ) : showPongGame ? (
-            <PongGame onGameComplete={handlePongComplete} />
+            <PongGame 
+              onGameComplete={handlePongComplete} 
+              onPlayAgain={handlePongPlayAgain}
+              difficulty={pongDifficulty}
+            />
           ) : showSpacewarGame ? (
-            <SpacewarGame onGameComplete={handleSpacewarComplete} />
+            <SpacewarGame 
+              onGameComplete={handleSpacewarComplete} 
+              onPlayAgain={handleSpacewarPlayAgain}
+              difficulty={spacewarDifficulty}
+            />
           ) : showTetrisGame ? (
-            <TetrisGame onGameComplete={handleTetrisComplete} />
+            <TetrisGame 
+              onGameComplete={handleTetrisComplete} 
+              onPlayAgain={handleTetrisPlayAgain}
+              difficulty={tetrisDifficulty}
+            />
           ) : showSnakeGame ? (
-            <SnakeGame onGameComplete={handleSnakeComplete} />
+            <SnakeGame 
+              onGameComplete={handleSnakeComplete} 
+              onPlayAgain={handleSnakePlayAgain}
+              difficulty={snakeDifficulty}
+            />
           ) : (
             currentLevel > 0 && currentLevel <= gameLevels.length && (
               <GameLevel
