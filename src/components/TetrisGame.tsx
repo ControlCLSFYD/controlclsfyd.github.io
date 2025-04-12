@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -118,6 +117,7 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
     setGameStarted(true);
     setCurrentTetromino(generateTetromino());
     setNextTetromino(generateTetromino());
+    lastDropTime.current = 0;
   };
 
   // Rotate the tetromino
@@ -261,6 +261,11 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
   // Handle keyboard input
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameOver || gameWon) {
+        startGame();
+        return;
+      }
+
       if (!gameStarted) {
         startGame();
         return;
@@ -460,11 +465,15 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete }) => {
     ctx.strokeStyle = '#00FF00';
     ctx.lineWidth = 2;
     ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
   }, [grid, currentTetromino, gameOver, gameStarted, gameWon]);
 
   // Handle mobile button presses
   const handleMobileButtonPress = (action: 'LEFT' | 'RIGHT' | 'DOWN' | 'ROTATE') => {
+    if (gameOver || gameWon) {
+      startGame();
+      return;
+    }
+    
     if (!gameStarted) {
       startGame();
       return;
