@@ -142,7 +142,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
 
     // Animation setup
     let animationFrameId: number;
-    let gameActive = true;
+    let gameActive = !gameState.gameOver;
 
     // Draw player ship
     const drawPlayerShip = () => {
@@ -250,32 +250,37 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       }
     };
 
-    // Game loop
-    const draw = () => {
-      if (!ctx || !gameActive) return;
-      
-      // Check for game end condition
+    // Check if game is over
+    const checkGameOver = () => {
+      // Check if player or CPU reached winning score
       if (userScore >= WINNING_SCORE) {
+        gameActive = false;
         setGameState({
           gameStarted: false,
-          gameOver: true,
+          gameOver: true, 
           gameWon: true,
           score: userScore
         });
-        gameActive = false;
-        return;
+        return true;
       }
       
       if (computerScore >= WINNING_SCORE) {
+        gameActive = false;
         setGameState({
           gameStarted: false,
           gameOver: true,
           gameWon: false,
-          score: userScore
+          score: computerScore
         });
-        gameActive = false;
-        return;
+        return true;
       }
+      
+      return false;
+    };
+
+    // Game loop
+    const draw = () => {
+      if (!ctx || !gameActive) return;
       
       // Clear canvas
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
@@ -323,7 +328,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
           
           // Check collision with enemy
           if (checkCollision(bullet.x, bullet.y, bulletSize, enemyX, enemyY, shipSize)) {
-            setUserScore(score => score + 1);
+            const newScore = userScore + 1;
+            setUserScore(newScore);
+            if (newScore >= WINNING_SCORE) {
+              checkGameOver();
+            }
             bullet.active = false;
           }
           
@@ -349,7 +358,11 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
           
           // Check collision with player
           if (checkCollision(bullet.x, bullet.y, bulletSize, playerX, playerY, shipSize)) {
-            setComputerScore(score => score + 1);
+            const newScore = computerScore + 1;
+            setComputerScore(newScore);
+            if (newScore >= WINNING_SCORE) {
+              checkGameOver();
+            }
             bullet.active = false;
           }
         }
@@ -393,7 +406,8 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({ onGameComplete, onPlayAgain
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [onGameComplete, isMobile, canvasWidth, canvasHeight, difficulty]);
+  }, [gameState.gameOver, onGameComplete, isMobile, canvasWidth, canvasHeight, difficulty, 
+      userScore, computerScore, WINNING_SCORE]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">

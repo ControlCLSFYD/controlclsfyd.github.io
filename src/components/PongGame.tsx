@@ -1,7 +1,9 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
-import { BaseGameProps } from '../interfaces/GameInterfaces';
+import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
+import GameResult from './GameResult';
 
 interface PongGameProps extends BaseGameProps {}
 
@@ -9,9 +11,13 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
-  const [gameActive, setGameActive] = useState(true);
+  const [gameState, setGameState] = useState<GameState>({
+    gameStarted: true,
+    gameOver: false,
+    gameWon: false,
+    score: 0
+  });
   const [showInstructions, setShowInstructions] = useState(true);
-  const [gameOver, setGameOver] = useState(false);
 
   // Canvas dimensions - responsive based on screen
   const isMobile = useIsMobile();
@@ -26,12 +32,26 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
   // Winning score - 3 points to win
   const winningScore = 3;
 
+  // Handle game completion
+  const handleContinue = () => {
+    onGameComplete();
+  };
+
+  // Handle play again with increased difficulty
+  const handlePlayAgain = () => {
+    onPlayAgain();
+  };
+
   // Reset the game state
   const resetGame = () => {
     setUserScore(0);
     setComputerScore(0);
-    setGameActive(true);
-    setGameOver(false);
+    setGameState({
+      gameStarted: true,
+      gameOver: false,
+      gameWon: false,
+      score: 0
+    });
   };
 
   // Mobile controls
@@ -115,6 +135,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
 
     // Animation setup
     let animationFrameId: number;
+    let gameActive = !gameState.gameOver;
 
     // Game loop
     const draw = () => {
@@ -201,8 +222,13 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         setUserScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
-            setGameActive(false);
-            setTimeout(() => onGameComplete(), 1000);
+            gameActive = false;
+            setGameState({
+              gameStarted: false,
+              gameOver: true,
+              gameWon: true,
+              score: newScore
+            });
           }
           return newScore;
         });
@@ -212,8 +238,13 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         setComputerScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
-            setGameActive(false);
-            setGameOver(true);
+            gameActive = false;
+            setGameState({
+              gameStarted: false,
+              gameOver: true,
+              gameWon: false,
+              score: 0
+            });
           }
           return newScore;
         });
@@ -248,7 +279,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [gameActive, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight]);
+  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
@@ -261,19 +292,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
           <ArrowLeft className="mx-1" size={20} />
           <ArrowRight className="mx-1" size={20} />
           <span>keys to move your paddle</span>
-        </div>
-      )}
-      
-      {gameOver && (
-        <div className="mb-4 p-2 border border-terminal-green text-center">
-          <p className="text-red-500 mb-2">GAME OVER</p>
-          <p className="mb-2">CPU scored {winningScore} points</p>
-          <button 
-            onClick={onPlayAgain}
-            className="px-4 py-1 border border-terminal-green hover:bg-terminal-green hover:bg-opacity-20"
-          >
-            Play Again
-          </button>
         </div>
       )}
       
@@ -290,6 +308,15 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
           className="bg-black"
         />
       </div>
+
+      {/* Game results overlay */}
+      {gameState.gameOver && (
+        <GameResult 
+          gameWon={gameState.gameWon}
+          onContinue={handleContinue}
+          onPlayAgain={handlePlayAgain}
+        />
+      )}
       
       {/* Mobile controls - visible for all mobile devices */}
       {isMobile && (
