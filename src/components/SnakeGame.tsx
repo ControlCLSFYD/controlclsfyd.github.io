@@ -13,6 +13,7 @@ const GRID_HEIGHT = 20;
 const INITIAL_SNAKE = [{ x: 10, y: 10 }];
 const INITIAL_DIRECTION = 'RIGHT';
 const GAME_SPEED = 1600; // Updated to 1600ms as requested
+const MOBILE_GAME_SPEED = 6400; // 4x slower on mobile
 const MOBILE_BUTTON_SIZE = 80; // Increased from 60
 
 // Direction vectors
@@ -181,158 +182,12 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameStarted, direction]);
 
-  // Draw game
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw snake
-    snake.forEach((segment, index) => {
-      ctx.fillStyle = index === 0 ? '#00AA00' : '#00FF00';
-      ctx.fillRect(
-        segment.x * CELL_SIZE,
-        segment.y * CELL_SIZE,
-        CELL_SIZE,
-        CELL_SIZE
-      );
-
-      // Draw snake eye (on head only)
-      if (index === 0) {
-        ctx.fillStyle = 'black';
-        let eyeOffsetX = 4;
-        let eyeOffsetY = 4;
-        
-        switch (direction) {
-          case 'RIGHT':
-            eyeOffsetX = CELL_SIZE * 0.7;
-            eyeOffsetY = CELL_SIZE * 0.2;
-            break;
-          case 'LEFT':
-            eyeOffsetX = CELL_SIZE * 0.2;
-            eyeOffsetY = CELL_SIZE * 0.2;
-            break;
-          case 'UP':
-            eyeOffsetX = CELL_SIZE * 0.2;
-            eyeOffsetY = CELL_SIZE * 0.2;
-            break;
-          case 'DOWN':
-            eyeOffsetX = CELL_SIZE * 0.2;
-            eyeOffsetY = CELL_SIZE * 0.7;
-            break;
-        }
-        
-        ctx.fillRect(
-          segment.x * CELL_SIZE + eyeOffsetX,
-          segment.y * CELL_SIZE + eyeOffsetY,
-          CELL_SIZE * 0.25,
-          CELL_SIZE * 0.25
-        );
-      }
-    });
-
-    // Draw food
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(
-      food.x * CELL_SIZE + CELL_SIZE / 2,
-      food.y * CELL_SIZE + CELL_SIZE / 2,
-      CELL_SIZE / 2,
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-
-    // Draw grid (subtle borders)
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 0.5;
-    for (let x = 0; x <= GRID_WIDTH; x++) {
-      ctx.beginPath();
-      ctx.moveTo(x * CELL_SIZE, 0);
-      ctx.lineTo(x * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
-      ctx.stroke();
-    }
-    for (let y = 0; y <= GRID_HEIGHT; y++) {
-      ctx.beginPath();
-      ctx.moveTo(0, y * CELL_SIZE);
-      ctx.lineTo(GRID_WIDTH * CELL_SIZE, y * CELL_SIZE);
-      ctx.stroke();
-    }
-
-    // Draw border
-    ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE);
-
-    // Draw game over or win message
-    if (gameOver) {
-      ctx.fillStyle = '#00FF00';
-      ctx.font = '30px VT323, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        'GAME OVER',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2
-      );
-      ctx.font = '20px VT323, monospace';
-      ctx.fillText(
-        'Press ENTER to restart',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2 + 30
-      );
-    } else if (gameWon) {
-      ctx.fillStyle = '#00FF00';
-      ctx.font = '30px VT323, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        'YOU WIN!',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2
-      );
-      ctx.font = '20px VT323, monospace';
-      ctx.fillText(
-        'Continuing to next level...',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2 + 30
-      );
-    } else if (!gameStarted) {
-      ctx.fillStyle = '#00FF00';
-      ctx.font = '24px VT323, monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(
-        'SNAKE',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2 - 40
-      );
-      ctx.font = '20px VT323, monospace';
-      ctx.fillText(
-        'Use arrow keys or WASD to move',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2
-      );
-      ctx.fillText(
-        'Collect 3 apples to win',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2 + 30
-      );
-      ctx.fillText(
-        'Press any movement key to start',
-        (GRID_WIDTH * CELL_SIZE) / 2,
-        (GRID_HEIGHT * CELL_SIZE) / 2 + 60
-      );
-    }
-  }, [snake, food, gameOver, gameWon, gameStarted, direction, score]);
-
   // Animation frame loop - with significantly reduced speed
   useEffect(() => {
     let lastTime = 0;
     const animate = (time: number) => {
-      if (time - lastTime >= GAME_SPEED) { // Using the much slower GAME_SPEED constant (800ms)
+      const currentGameSpeed = isMobile ? MOBILE_GAME_SPEED : GAME_SPEED;
+      if (time - lastTime >= currentGameSpeed) { // Use appropriate game speed based on device
         gameLoop();
         lastTime = time;
       }
@@ -346,7 +201,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [snake, food, direction, nextDirection, gameOver, gameStarted, gameWon, score]);
+  }, [snake, food, direction, nextDirection, gameOver, gameStarted, gameWon, score, isMobile]);
 
   // Restart game
   useEffect(() => {
@@ -392,7 +247,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete }) => {
         />
         
         {isMobile && (
-          <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[320px]">
+          <div className="mt-6 grid grid-cols-3 gap-2 w-full max-w-[320px] mx-auto">
             <div className="col-start-2">
               <button 
                 className="w-full h-[150px] flex items-center justify-center bg-terminal-black border-2 border-terminal-green text-terminal-green rounded-md active:bg-terminal-green active:bg-opacity-30"

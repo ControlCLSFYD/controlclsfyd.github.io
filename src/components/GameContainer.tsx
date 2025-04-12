@@ -6,6 +6,7 @@ import PongGame from './PongGame';
 import OxoGame from './OxoGame';
 import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
+import TetrisGame from './TetrisGame';
 import { gameLevels } from '../data/gameData';
 
 interface GameContainerProps {
@@ -31,6 +32,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [oxoCompleted, setOxoCompleted] = useState(false);
   const [showSpacewarGame, setShowSpacewarGame] = useState(false);
   const [spacewarCompleted, setSpacewarCompleted] = useState(false);
+  const [showTetrisGame, setShowTetrisGame] = useState(false);
+  const [tetrisCompleted, setTetrisCompleted] = useState(false);
   const [showSnakeGame, setShowSnakeGame] = useState(false);
   const [snakeCompleted, setSnakeCompleted] = useState(false);
 
@@ -81,7 +84,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
         setSpacewarCompleted(true);
       }
       
-      if (newCompletedLevels.includes(3) && currentLevel >= 4 && !snakeCompleted) {
+      if (newCompletedLevels.includes(3) && currentLevel >= 4 && !tetrisCompleted) {
+        setTetrisCompleted(true);
+      }
+      
+      if (newCompletedLevels.includes(4) && currentLevel >= 5 && !snakeCompleted) {
         setSnakeCompleted(true);
       }
       
@@ -89,7 +96,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
         setOxoCompleted(true);
       }
     }
-  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, snakeCompleted, gameStarted, oxoCompleted]);
+  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, tetrisCompleted, snakeCompleted, gameStarted, oxoCompleted]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,7 +124,10 @@ const GameContainer: React.FC<GameContainerProps> = ({
     else if (currentLevel === 2 && !spacewarCompleted) {
       setShowSpacewarGame(true);
     }
-    else if (currentLevel === 3 && !snakeCompleted) {
+    else if (currentLevel === 3 && !tetrisCompleted) {
+      setShowTetrisGame(true);
+    }
+    else if (currentLevel === 4 && !snakeCompleted) {
       setShowSnakeGame(true);
     }
     else if (currentLevel < gameLevels.length) {
@@ -139,13 +149,19 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(3);
   };
 
-  const handleSnakeComplete = () => {
-    setSnakeCompleted(true);
-    setShowSnakeGame(false);
+  const handleTetrisComplete = () => {
+    setTetrisCompleted(true);
+    setShowTetrisGame(false);
     setCurrentLevel(4);
   };
 
-  const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showSnakeGame;
+  const handleSnakeComplete = () => {
+    setSnakeCompleted(true);
+    setShowSnakeGame(false);
+    setCurrentLevel(5);
+  };
+
+  const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;
 
   const renderLoadingScreen = () => {
     return (
@@ -212,6 +228,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <PongGame onGameComplete={handlePongComplete} />
           ) : showSpacewarGame ? (
             <SpacewarGame onGameComplete={handleSpacewarComplete} />
+          ) : showTetrisGame ? (
+            <TetrisGame onGameComplete={handleTetrisComplete} />
           ) : showSnakeGame ? (
             <SnakeGame onGameComplete={handleSnakeComplete} />
           ) : (
