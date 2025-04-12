@@ -39,6 +39,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
 
   // Handle play again with increased difficulty
   const handlePlayAgain = () => {
+    // Reset the game state before calling onPlayAgain
+    resetGame();
     onPlayAgain();
   };
 
