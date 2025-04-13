@@ -86,8 +86,13 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     let ballX = canvasWidth / 2;
     let ballY = canvasHeight / 8;
     
-    const baseHorizontalSpeed = isMobile ? 2 + (difficulty * 0.3) : 2.5 + (difficulty * 0.3); 
-    const baseVerticalSpeed = isMobile ? 3.5 + (difficulty * 0.4) : 4 + (difficulty * 0.4);
+    // Increased base speeds by 20%
+    const baseHorizontalSpeed = isMobile ? 
+      (2 + (difficulty * 0.3)) * 1.2 : 
+      (2.5 + (difficulty * 0.3)) * 1.2; 
+    const baseVerticalSpeed = isMobile ? 
+      (3.5 + (difficulty * 0.4)) * 1.2 : 
+      (4 + (difficulty * 0.4)) * 1.2;
     
     let ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1);
     let ballDY = baseVerticalSpeed;
@@ -154,7 +159,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       ctx.fill();
       ctx.closePath();
       
-      const computerSpeed = 1.2 + (difficulty * 0.2);
+      // Increased computer speed by 20%
+      const computerSpeed = (1.2 + (difficulty * 0.2)) * 1.2;
       const computerTargetX = ballX - paddleWidth / 2;
       
       // Computer AI movement - only move when ball is coming toward computer
@@ -167,8 +173,8 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         }
       }
       
-      // User paddle movement
-      const userPaddleSpeed = 7;
+      // Increased user paddle speed by 20%
+      const userPaddleSpeed = 7 * 1.2;
       if (rightPressed && userPaddleX < canvasWidth - paddleWidth) {
         userPaddleX += userPaddleSpeed;
       } else if (leftPressed && userPaddleX > 0) {
