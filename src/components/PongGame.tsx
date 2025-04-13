@@ -296,7 +296,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
           gameWon={gameState.gameWon}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={true}
         />
       )}
       
