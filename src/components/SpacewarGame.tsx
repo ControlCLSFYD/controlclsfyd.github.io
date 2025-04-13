@@ -17,6 +17,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   const [hasWonBefore, setHasWonBefore] = useState(false);
+  const [currentDifficulty, setCurrentDifficulty] = useState(difficulty);
   
   const { 
     userScore,
@@ -33,7 +34,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
     resetGame
   } = useSpacewarGame({ 
     canvasRef, 
-    difficulty, 
+    difficulty: currentDifficulty, 
     onGameComplete 
   });
 
@@ -45,6 +46,10 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
   }, [gameState.gameWon, hasWonBefore]);
 
   const handlePlayAgain = () => {
+    // Only increase difficulty if player has won at least once
+    if (gameState.gameWon) {
+      setCurrentDifficulty(prev => Math.min(prev + 1, 5));
+    }
     resetGame();
     onPlayAgain();
   };
@@ -56,7 +61,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
         winningScore={WINNING_SCORE}
         userScore={userScore}
         computerScore={computerScore}
-        difficulty={difficulty}
+        difficulty={currentDifficulty}
       />
       
       <div className="border border-terminal-green">

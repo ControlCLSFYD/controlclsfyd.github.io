@@ -1,5 +1,5 @@
 
-import { useState, useEffect, RefObject } from 'react';
+import { useState, useEffect, RefObject, useCallback } from 'react';
 import { GameState } from '../interfaces/GameInterfaces';
 import { useIsMobile } from './use-mobile';
 import { 
@@ -39,24 +39,25 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
   const canvasWidth = isMobile ? 320 : 600;
   const canvasHeight = isMobile ? 240 : 400;
 
-  const handleLeftButton = () => {
+  // Use useCallback to prevent recreation of these handlers on each render
+  const handleLeftButton = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
-  };
+  }, []);
 
-  const handleRightButton = () => {
+  const handleRightButton = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-  };
+  }, []);
 
-  const handleButtonUp = () => {
+  const handleButtonUp = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
-  };
+  }, []);
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     onGameComplete();
-  };
+  }, [onGameComplete]);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setUserScore(0);
     setComputerScore(0);
     setGameState({
@@ -65,7 +66,7 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
       gameWon: false,
       score: 0
     });
-  };
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -89,7 +90,7 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
     const bulletSize = Math.max(1.5, Math.floor(canvasWidth * 0.003));
     const enemySize = isMobile ? 10 : 15;
     const asteroidSize = isMobile ? 7 : 10;
-    const starCount = 70;
+    const starCount = isMobile ? 50 : 70; // Reduce star count on mobile
 
     const stars = generateStars(starCount, canvasWidth, canvasHeight);
 
@@ -104,13 +105,15 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
     let enemyBullets: { x: number; y: number; active: boolean }[] = [];
     let enemyMoveDirection = 1;
 
-    const asteroids = generateAsteroids(5, canvasWidth, canvasHeight);
+    // Limit the number of asteroids on mobile for better performance
+    const asteroidCount = isMobile ? 3 : 5;
+    const asteroids = generateAsteroids(asteroidCount, canvasWidth, canvasHeight);
 
     let rightPressed = false;
     let leftPressed = false;
     let lastAutoFireTime = Date.now();
     const autoFireInterval = 420 - (difficulty * 20);
-    const enemyFireInterval = 380 - (difficulty * 50); // Enemy fires slightly faster than player
+    const enemyFireInterval = 380 - (difficulty * 50);
 
     const keyDownHandler = (e: KeyboardEvent) => {
       if (e.key === 'Right' || e.key === 'ArrowRight') {
@@ -132,6 +135,9 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
     document.addEventListener('keyup', keyUpHandler);
 
     let lastEnemyFireTime = Date.now();
+    let lastFrameTime = performance.now();
+    const targetFPS = 60;
+    const frameDelay = 1000 / targetFPS;
 
     const updateEnemyAI = () => {
       if (Math.random() < (0.5 + difficulty * 0.05)) {
@@ -159,25 +165,19 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
       }
     };
 
-    const checkGameOver = (score: number, isPlayer: boolean) => {
-      if (score >= WINNING_SCORE) {
-        gameActive = false;
-        setGameState({
-          gameStarted: false,
-          gameOver: true,
-          gameWon: isPlayer,
-          score: score
-        });
-        return true;
-      }
-      return false;
-    };
-
     let gameActive = !gameState.gameOver;
     let animationFrameId: number;
 
-    const draw = () => {
+    const draw = (timestamp: number) => {
       if (!ctx || !gameActive) return;
+      
+      // Throttle the frame rate for consistent performance
+      const elapsed = timestamp - lastFrameTime;
+      if (elapsed < frameDelay) {
+        animationFrameId = window.requestAnimationFrame(draw);
+        return;
+      }
+      lastFrameTime = timestamp - (elapsed % frameDelay);
       
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       
@@ -208,6 +208,7 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
         lastAutoFireTime = currentTime;
       }
       
+      // Update bullets and check for collisions
       playerBullets.forEach(bullet => {
         if (bullet.active) {
           bullet.y -= 8;
@@ -232,16 +233,20 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
             bullet.active = false;
           }
           
-          asteroids.forEach(asteroid => {
+          // Batch check asteroid collisions for better performance
+          for (let i = 0; i < asteroids.length; i++) {
+            const asteroid = asteroids[i];
             if (checkCollision(bullet.x, bullet.y, bulletSize, asteroid.x, asteroid.y, asteroidSize)) {
               bullet.active = false;
               asteroid.x = Math.random() * canvasWidth;
               asteroid.y = Math.random() * (canvasHeight / 2) + 100;
+              break;
             }
-          });
+          }
         }
       });
       
+      // Process enemy bullets
       enemyBullets.forEach(bullet => {
         if (bullet.active) {
           bullet.y += 6;
@@ -268,11 +273,14 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
         }
       });
       
+      // Filter active bullets for rendering efficiency
       playerBullets = playerBullets.filter(bullet => bullet.active);
       enemyBullets = enemyBullets.filter(bullet => bullet.active);
       
+      // Update asteroid positions
       updateAsteroids(asteroids, canvasWidth, canvasHeight, asteroidSize);
 
+      // Draw game elements
       drawPlayerShip(ctx, playerX, playerY, shipSize);
       drawEnemyShip(ctx, enemyX, enemyY, shipSize);
       drawAsteroids(ctx, asteroids, asteroidSize);
@@ -283,7 +291,7 @@ const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarG
       }
     };
 
-    draw();
+    animationFrameId = window.requestAnimationFrame(draw);
 
     return () => {
       window.cancelAnimationFrame(animationFrameId);
