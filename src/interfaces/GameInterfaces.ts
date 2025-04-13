@@ -1,3 +1,4 @@
+
 export interface BaseGameProps {
   onGameComplete: () => void;
   onPlayAgain: () => void;

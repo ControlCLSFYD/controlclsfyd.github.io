@@ -42,6 +42,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [snakeCompleted, setSnakeCompleted] = useState(false);
   const [snakeDifficulty, setSnakeDifficulty] = useState(1);
   const [randomPsalm, setRandomPsalm] = useState("");
+  const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -193,6 +194,10 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setShowSnakeGame(true);
   };
 
+  const handleEndMessageComplete = () => {
+    setShowEndScreenPsalm(true);
+  };
+
   const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;
 
   const renderLoadingScreen = () => {
@@ -219,7 +224,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
 
         {loadingStep === 4 && (
           <div>
-            <TypewriterText text="Send your access code." className="mb-4 block" />
+            <TypewriterText text="Enter your access code." className="mb-4 block" />
             <form onSubmit={handleAccessCodeSubmit} className="mt-4">
               <input
                 type="text"
@@ -258,10 +263,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
               <TypewriterText
                 text="Congratulations! That wasn't easy. You should email control@classifiedaccessories.com a hello message with your CV and the code: 112233YD. To buy Protection from the Game, and access Level 2, please purchase a CLSFYD Product."
                 className="text-xl"
+                onComplete={handleEndMessageComplete}
               />
-              <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
-                "{endScreenPsalm}"
-              </div>
+              {showEndScreenPsalm && (
+                <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
+                  "{endScreenPsalm}"
+                </div>
+              )}
             </div>
           ) : showOxoGame ? (
             <OxoGame 

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -391,6 +390,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
             gameWon={gameWon}
             onContinue={handleContinue}
             onPlayAgain={handlePlayAgain}
+            alwaysShowContinue={true}
           />
         )}
         
