@@ -7,7 +7,7 @@ import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
 import TetrisGame from './TetrisGame';
 import { gameLevels } from '../data/gameData';
-import { getRandomPsalm } from '../utils/psalms';
+import { getRandomPsalm, endScreenPsalm } from '../utils/psalms';
 
 interface GameContainerProps {
   savedAnswers: Record<string, string>;
@@ -259,6 +259,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 text="Congratulations! That wasn't easy. You should email control@classifiedaccessories.com a hello message with your CV and the code: 112233YD. To buy Protection from the Game, and access Level 2, please purchase a CLSFYD Product."
                 className="text-xl"
               />
+              <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
+                "{endScreenPsalm}"
+              </div>
             </div>
           ) : showOxoGame ? (
             <OxoGame 
