@@ -7,6 +7,7 @@ import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
 import TetrisGame from './TetrisGame';
 import { gameLevels } from '../data/gameData';
+import { getRandomPsalm } from '../utils/psalms';
 
 interface GameContainerProps {
   savedAnswers: Record<string, string>;
@@ -40,6 +41,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [showSnakeGame, setShowSnakeGame] = useState(false);
   const [snakeCompleted, setSnakeCompleted] = useState(false);
   const [snakeDifficulty, setSnakeDifficulty] = useState(1);
+  const [randomPsalm, setRandomPsalm] = useState("");
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -52,6 +54,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
 
     const codeTimeout = setTimeout(() => {
       setLoadingStep(4); // Show access code prompt
+      setRandomPsalm(getRandomPsalm()); // Set a random psalm when showing access code
     }, 5000);
 
     return () => {
@@ -232,6 +235,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 Submit
               </button>
             </form>
+            
+            {randomPsalm && (
+              <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
+                "{randomPsalm}"
+              </div>
+            )}
           </div>
         )}
       </div>
