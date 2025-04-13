@@ -19,26 +19,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
   const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
-    const setupNearWinBoard = (): BoardState => {
-      const patterns: BoardState[] = [
-        [null, 'O', 'O', 'X', null, null, 'X', null, 'X'],
-        ['O', 'O', null, null, 'X', null, 'X', null, 'X'],
-        ['O', 'X', 'X', 'O', null, null, null, null, 'X'],
-        ['X', 'O', 'X', null, 'O', null, null, null, 'X'],
-        ['O', 'X', null, 'X', 'O', null, null, null, 'X'],
-        ['X', null, 'O', null, 'O', 'X', null, 'X', null]
-      ];
-      
-      if (difficulty > 3) {
-        return Array(9).fill(null);
-      } else if (difficulty > 1) {
-        return patterns[Math.floor(Math.random() * 3) + 3];
-      }
-      
-      return patterns[Math.floor(Math.random() * patterns.length)];
-    };
-    
-    setBoard(setupNearWinBoard());
+    setBoard(Array(9).fill(null));
     setGameStatus('playing');
     setIsPlayerTurn(true);
     

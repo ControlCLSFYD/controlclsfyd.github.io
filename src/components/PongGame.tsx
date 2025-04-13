@@ -240,19 +240,24 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">PONG CHALLENGE</h2>
-      <p className="mb-2">Score {winningScore} points to continue</p>
-      {difficulty > 1 && (
-        <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-      )}
       
-      {showInstructions && (
-        <div className="flex items-center mb-4 p-2 border border-terminal-green">
-          <span>Use</span>
-          <ArrowLeft className="mx-1" size={20} />
-          <ArrowRight className="mx-1" size={20} />
-          <span>keys to move your paddle</span>
-        </div>
-      )}
+      <div className="h-20">
+        {showInstructions ? (
+          <div className="flex items-center justify-center p-2 border border-terminal-green">
+            <span>Use</span>
+            <ArrowLeft className="mx-1" size={20} />
+            <ArrowRight className="mx-1" size={20} />
+            <span>keys to move your paddle</span>
+          </div>
+        ) : (
+          <div>
+            <p className="mb-2">Score {winningScore} points to continue</p>
+            {difficulty > 1 && (
+              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+            )}
+          </div>
+        )}
+      </div>
       
       <div className="mt-4 flex justify-between w-full max-w-[600px] px-4 mb-2">
         <div className="text-lg">YOU: {userScore}</div>
