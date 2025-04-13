@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
@@ -156,8 +157,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(2);
   };
 
-  const handlePongPlayAgain = () => {
-    setPongDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
+  const handlePongPlayAgain = (playerWon: boolean) => {
+    // Only increase difficulty if the player won
+    if (playerWon) {
+      setPongDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
+    }
     setShowPongGame(true);
   };
 

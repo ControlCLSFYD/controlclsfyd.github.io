@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -18,6 +17,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     score: 0
   });
   const [showInstructions, setShowInstructions] = useState(true);
+  const [playerWon, setPlayerWon] = useState(false);
 
   const isMobile = useIsMobile();
   const canvasWidth = isMobile ? 320 : 600;
@@ -35,12 +35,13 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
 
   const handlePlayAgain = useCallback(() => {
     resetGame();
-    onPlayAgain();
-  }, [onPlayAgain]);
+    onPlayAgain(playerWon);
+  }, [onPlayAgain, playerWon]);
 
   const resetGame = useCallback(() => {
     setUserScore(0);
     setComputerScore(0);
+    setPlayerWon(false);
     setGameState({
       gameStarted: true,
       gameOver: false,
@@ -86,7 +87,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     let ballX = canvasWidth / 2;
     let ballY = canvasHeight / 8;
     
-    // Increased base speeds by 20%
     const baseHorizontalSpeed = isMobile ? 
       (2 + (difficulty * 0.3)) * 1.2 : 
       (2.5 + (difficulty * 0.3)) * 1.2; 
@@ -128,7 +128,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     const draw = (timestamp: number) => {
       if (!ctx || !gameActive) return;
       
-      // Frame rate limiting for consistent performance
       const elapsed = timestamp - lastFrameTime;
       if (elapsed < frameDelay) {
         animationFrameId = window.requestAnimationFrame(draw);
@@ -138,32 +137,27 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       
-      // Draw ball
       ctx.beginPath();
       ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
       ctx.fillStyle = '#9b87f5';
       ctx.fill();
       ctx.closePath();
       
-      // Draw user paddle
       ctx.beginPath();
       ctx.rect(userPaddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
       ctx.fillStyle = '#D6BCFA';
       ctx.fill();
       ctx.closePath();
       
-      // Draw computer paddle
       ctx.beginPath();
       ctx.rect(computerPaddleX, 0, paddleWidth, paddleHeight);
       ctx.fillStyle = '#7E69AB';
       ctx.fill();
       ctx.closePath();
       
-      // Increased computer speed by 20%
       const computerSpeed = (1.2 + (difficulty * 0.2)) * 1.2;
       const computerTargetX = ballX - paddleWidth / 2;
       
-      // Computer AI movement - only move when ball is coming toward computer
       if (ballDY < 0) {
         const precisionThreshold = Math.max(10 - (difficulty * 1.5), 2);
         if (computerPaddleX < computerTargetX - precisionThreshold) {
@@ -173,7 +167,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         }
       }
       
-      // Increased user paddle speed by 20%
       const userPaddleSpeed = 7 * 1.2;
       if (rightPressed && userPaddleX < canvasWidth - paddleWidth) {
         userPaddleX += userPaddleSpeed;
@@ -181,7 +174,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         userPaddleX -= userPaddleSpeed;
       }
       
-      // Collision detection with paddles
       if (
         ballY + ballDY > canvasHeight - paddleHeight - ballRadius &&
         ballX > userPaddleX &&
@@ -202,16 +194,15 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         ballDX = baseHorizontalSpeed * 2.5 * (hitPosition - 0.5);
       }
       
-      // Wall collision
       if (ballX + ballDX > canvasWidth - ballRadius || ballX + ballDX < ballRadius) {
         ballDX = -ballDX;
       }
       
-      // Score tracking
       if (ballY + ballDY < 0) {
         setUserScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
+            setPlayerWon(true);
             gameActive = false;
             setGameState({
               gameStarted: false,
@@ -227,6 +218,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         setComputerScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
+            setPlayerWon(false);
             gameActive = false;
             setGameState({
               gameStarted: false,
@@ -240,7 +232,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         resetBall();
       }
       
-      // Update ball position
       ballX += ballDX;
       ballY += ballDY;
       
