@@ -95,8 +95,8 @@ export default {
 					'to': { width: '100%' },
 				},
 				'float': {
-					'0%, 100%': { transform: 'translateY(0)' },
-					'50%': { transform: 'translateY(-5px)' },
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-8px)' },
 				}
 			},
 			animation: {
@@ -104,7 +104,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'blink': 'blink 1s step-end infinite',
 				'typing': 'typing 3.5s steps(40, end)',
-				'float': 'float 2s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
 			}
 		}
 	},

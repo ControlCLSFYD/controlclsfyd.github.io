@@ -96,13 +96,13 @@
     50% { opacity: 1; }
   }
 
-  /* Animation for floating heart */
+  /* Floating animation for the heart */
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-5px); }
+    50% { transform: translateY(-8px); }
   }
-  
-  .float-heart {
-    animation: float 2s ease-in-out infinite;
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 }
