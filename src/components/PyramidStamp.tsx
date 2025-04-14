@@ -4,47 +4,39 @@ import React from 'react';
 const PyramidStamp: React.FC = () => {
   return (
     <div className="fixed bottom-4 right-4 flex flex-col items-center" style={{ zIndex: 1000 }}>
-      {/* Heart with Chi Ro symbol that floats up and down */}
-      <div className="relative mb-1 animate-float">
-        <svg width="30" height="26" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">
-          {/* Heart shape */}
-          <path 
-            d="M150,60 C150,60 120,0 60,0 C0,0 0,50 0,50 C0,100 50,150 150,240 C250,150 300,100 300,50 C300,50 300,0 240,0 C180,0 150,60 150,60 Z" 
-            fill="#1e517c" 
-            stroke="#000000" 
-            strokeWidth="6"
+      {/* Image container with proper spacing between heart and pyramid */}
+      <div className="flex flex-col items-center">
+        {/* Floating heart */}
+        <div className="animate-float mb-1">
+          <img 
+            src="/lovable-uploads/50d0099d-6365-4d6b-9f6c-116f66395a03.png" 
+            alt="Pixel Heart" 
+            className="w-10"
+            style={{
+              imageRendering: 'pixelated',
+              clipPath: 'polygon(0% 15%, 15% 0%, 30% 0%, 50% 15%, 70% 0%, 85% 0%, 100% 15%, 100% 30%, 85% 50%, 100% 70%, 100% 85%, 85% 100%, 70% 100%, 50% 85%, 30% 100%, 15% 100%, 0% 85%, 0% 70%, 15% 50%, 0% 30%)',
+              height: '40px',
+              display: 'block',
+              marginBottom: '10px'
+            }}
           />
-          
-          {/* Chi Rho symbol */}
-          <g transform="translate(115, 70) scale(0.7)">
-            {/* P (Rho) */}
-            <path 
-              d="M80,20 L80,140 M80,20 C120,20 120,70 80,70" 
-              stroke="#333" 
-              strokeWidth="12" 
-              fill="none"
-            />
-            
-            {/* X (Chi) */}
-            <path 
-              d="M40,30 L120,130 M40,130 L120,30" 
-              stroke="#333" 
-              strokeWidth="12" 
-              fill="none"
-            />
-          </g>
-        </svg>
-      </div>
-      
-      {/* Pyramid base */}
-      <svg width="60" height="40" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
-        <path 
-          d="M20,380 L300,20 L580,380 Z" 
-          fill="#1e517c" 
-          stroke="#000000" 
-          strokeWidth="6"
+        </div>
+        
+        {/* Static pyramid base */}
+        <img 
+          src="/lovable-uploads/50d0099d-6365-4d6b-9f6c-116f66395a03.png" 
+          alt="Pixel Pyramid" 
+          className="w-20"
+          style={{
+            imageRendering: 'pixelated',
+            clipPath: 'polygon(0% 100%, 100% 100%, 50% 0%)',
+            clipPath: 'polygon(5% 100%, 95% 100%, 50% 41%)',
+            height: '60px',
+            display: 'block',
+            marginTop: '-10px'
+          }}
         />
-      </svg>
+      </div>
     </div>
   );
 };
