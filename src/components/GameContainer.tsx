@@ -6,7 +6,6 @@ import OxoGame from './OxoGame';
 import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
 import TetrisGame from './TetrisGame';
-import PixelArtLogo from './PixelArtLogo';
 import { gameLevels } from '../data/gameData';
 import { getRandomPsalm, endScreenPsalm } from '../utils/psalms';
 
@@ -157,10 +156,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setCurrentLevel(2);
   };
 
-  const handlePongPlayAgain = (playerWon: boolean) => {
-    if (playerWon) {
-      setPongDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
-    }
+  const handlePongPlayAgain = () => {
+    setPongDifficulty(prev => Math.min(prev + 1, 5)); // Increase difficulty up to max of 5
     setShowPongGame(true);
   };
 
@@ -249,8 +246,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 "{randomPsalm}"
               </div>
             )}
-            
-            <PixelArtLogo />
           </div>
         )}
       </div>

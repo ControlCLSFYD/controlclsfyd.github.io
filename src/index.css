@@ -95,11 +95,4 @@
     0%, 100% { opacity: 0; }
     50% { opacity: 1; }
   }
-  
-  /* Floating animation for the pixel heart */
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
 }
-

@@ -1,7 +1,7 @@
 
 export interface BaseGameProps {
   onGameComplete: () => void;
-  onPlayAgain: (playerWon?: boolean) => void;
+  onPlayAgain: () => void;
   difficulty?: number;
 }
 

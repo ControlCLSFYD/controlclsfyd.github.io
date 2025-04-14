@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Circle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -20,7 +19,26 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
   const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
-    setBoard(Array(9).fill(null));
+    const setupNearWinBoard = (): BoardState => {
+      const patterns: BoardState[] = [
+        [null, 'O', 'O', 'X', null, null, 'X', null, 'X'],
+        ['O', 'O', null, null, 'X', null, 'X', null, 'X'],
+        ['O', 'X', 'X', 'O', null, null, null, null, 'X'],
+        ['X', 'O', 'X', null, 'O', null, null, null, 'X'],
+        ['O', 'X', null, 'X', 'O', null, null, null, 'X'],
+        ['X', null, 'O', null, 'O', 'X', null, 'X', null]
+      ];
+      
+      if (difficulty > 3) {
+        return Array(9).fill(null);
+      } else if (difficulty > 1) {
+        return patterns[Math.floor(Math.random() * 3) + 3];
+      }
+      
+      return patterns[Math.floor(Math.random() * patterns.length)];
+    };
+    
+    setBoard(setupNearWinBoard());
     setGameStatus('playing');
     setIsPlayerTurn(true);
     
@@ -142,21 +160,16 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">OXO CHALLENGE</h2>
+      <p className="mb-2">Win the game to continue</p>
+      {difficulty > 1 && (
+        <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+      )}
       
-      <div className="h-20 flex items-center justify-center">
-        {showInstructions ? (
-          <div className="flex items-center p-2 border border-terminal-green">
-            <span>You play as O. Click an empty cell to make your move.</span>
-          </div>
-        ) : (
-          <div>
-            <p className="mb-2">Win the game to continue</p>
-            {difficulty > 1 && (
-              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-            )}
-          </div>
-        )}
-      </div>
+      {showInstructions && (
+        <div className="flex items-center mb-4 p-2 border border-terminal-green">
+          <span>You play as O. Click an empty cell to make your move.</span>
+        </div>
+      )}
       
       <div className="grid grid-cols-3 gap-1 w-64 h-64 border border-terminal-green p-2 bg-black">
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => renderCell(index))}
