@@ -106,7 +106,7 @@ const PyramidStamp: React.FC = () => {
         <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2">
           {/* Top row of pyramid */}
           <div className="flex justify-center">
-            <div className="w-7 h-0.5 border-t border-terminal-green"></div>
+            <div className="w-5 h-0.5 border-t border-terminal-green"></div>
           </div>
           
           {/* Middle rows */}
@@ -115,8 +115,8 @@ const PyramidStamp: React.FC = () => {
             <div className="absolute right-0 top-0 h-full w-0.5 bg-terminal-green transform skew-x-12"></div>
           </div>
           
-          {/* Bottom row of pyramid */}
-          <div className="w-10 h-0.5 bg-terminal-green"></div>
+          {/* Bottom row of pyramid - wider base */}
+          <div className="w-14 h-0.5 bg-terminal-green"></div>
         </div>
       </div>
     </div>
