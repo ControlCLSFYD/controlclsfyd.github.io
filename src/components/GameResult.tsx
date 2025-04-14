@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from './ui/button';
 import { GameResultProps } from '../interfaces/GameInterfaces';
 
-const GameResult: React.FC<GameResultProps> = ({ gameWon, onContinue, onPlayAgain, alwaysShowContinue = false }) => {
+const GameResult: React.FC<GameResultProps> = ({ gameWon, onContinue, onPlayAgain, alwaysShowContinue }) => {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-80">
       <div className="text-terminal-green text-2xl mb-6 font-mono">

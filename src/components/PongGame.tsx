@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
@@ -17,6 +17,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     score: 0
   });
   const [showInstructions, setShowInstructions] = useState(true);
+  const [playerWon, setPlayerWon] = useState(false);
 
   const isMobile = useIsMobile();
   const canvasWidth = isMobile ? 320 : 600;
@@ -28,38 +29,39 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
 
   const winningScore = 3;
 
-  const handleContinue = () => {
+  const handleContinue = useCallback(() => {
     onGameComplete();
-  };
+  }, [onGameComplete]);
 
-  const handlePlayAgain = () => {
+  const handlePlayAgain = useCallback(() => {
     resetGame();
-    onPlayAgain();
-  };
+    onPlayAgain(playerWon);
+  }, [onPlayAgain, playerWon]);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setUserScore(0);
     setComputerScore(0);
+    setPlayerWon(false);
     setGameState({
       gameStarted: true,
       gameOver: false,
       gameWon: false,
       score: 0
     });
-  };
+  }, []);
 
-  const handleLeftButton = () => {
+  const handleLeftButton = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
-  };
+  }, []);
 
-  const handleRightButton = () => {
+  const handleRightButton = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
-  };
+  }, []);
 
-  const handleButtonUp = () => {
+  const handleButtonUp = useCallback(() => {
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
     document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
-  };
+  }, []);
 
   useEffect(() => {
     if (isMobile) {
@@ -85,8 +87,12 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
     let ballX = canvasWidth / 2;
     let ballY = canvasHeight / 8;
     
-    const baseHorizontalSpeed = isMobile ? 2 + (difficulty * 0.3) : 2.5 + (difficulty * 0.3); 
-    const baseVerticalSpeed = isMobile ? 3.5 + (difficulty * 0.4) : 4 + (difficulty * 0.4);
+    const baseHorizontalSpeed = isMobile ? 
+      (2 + (difficulty * 0.3)) * 1.2 : 
+      (2.5 + (difficulty * 0.3)) * 1.2; 
+    const baseVerticalSpeed = isMobile ? 
+      (3.5 + (difficulty * 0.4)) * 1.2 : 
+      (4 + (difficulty * 0.4)) * 1.2;
     
     let ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1);
     let ballDY = baseVerticalSpeed;
@@ -115,9 +121,19 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
 
     let animationFrameId: number;
     let gameActive = !gameState.gameOver;
+    let lastFrameTime = performance.now();
+    const targetFPS = 60;
+    const frameDelay = 1000 / targetFPS;
 
-    const draw = () => {
+    const draw = (timestamp: number) => {
       if (!ctx || !gameActive) return;
+      
+      const elapsed = timestamp - lastFrameTime;
+      if (elapsed < frameDelay) {
+        animationFrameId = window.requestAnimationFrame(draw);
+        return;
+      }
+      lastFrameTime = timestamp - (elapsed % frameDelay);
       
       ctx.clearRect(0, 0, canvasWidth, canvasHeight);
       
@@ -139,7 +155,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       ctx.fill();
       ctx.closePath();
       
-      const computerSpeed = 1.2 + (difficulty * 0.2);
+      const computerSpeed = (1.2 + (difficulty * 0.2)) * 1.2;
       const computerTargetX = ballX - paddleWidth / 2;
       
       if (ballDY < 0) {
@@ -151,7 +167,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         }
       }
       
-      const userPaddleSpeed = 7;
+      const userPaddleSpeed = 7 * 1.2;
       if (rightPressed && userPaddleX < canvasWidth - paddleWidth) {
         userPaddleX += userPaddleSpeed;
       } else if (leftPressed && userPaddleX > 0) {
@@ -186,6 +202,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         setUserScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
+            setPlayerWon(true);
             gameActive = false;
             setGameState({
               gameStarted: false,
@@ -201,6 +218,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
         setComputerScore(prevScore => {
           const newScore = prevScore + 1;
           if (newScore >= winningScore) {
+            setPlayerWon(false);
             gameActive = false;
             setGameState({
               gameStarted: false,
@@ -227,7 +245,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       ballDY = baseVerticalSpeed;
     };
     
-    draw();
+    animationFrameId = window.requestAnimationFrame(draw);
     
     return () => {
       window.cancelAnimationFrame(animationFrameId);
@@ -235,24 +253,29 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
       document.removeEventListener('keyup', keyUpHandler);
       clearTimeout(instructionsTimer);
     };
-  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight, difficulty]);
+  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight, difficulty, paddleHeight, paddleWidth, ballRadius]);
   
   return (
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">PONG CHALLENGE</h2>
-      <p className="mb-2">Score {winningScore} points to continue</p>
-      {difficulty > 1 && (
-        <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-      )}
       
-      {showInstructions && (
-        <div className="flex items-center mb-4 p-2 border border-terminal-green">
-          <span>Use</span>
-          <ArrowLeft className="mx-1" size={20} />
-          <ArrowRight className="mx-1" size={20} />
-          <span>keys to move your paddle</span>
-        </div>
-      )}
+      <div className="h-20">
+        {showInstructions ? (
+          <div className="flex items-center justify-center p-2 border border-terminal-green">
+            <span>Use</span>
+            <ArrowLeft className="mx-1" size={20} />
+            <ArrowRight className="mx-1" size={20} />
+            <span>keys to move your paddle</span>
+          </div>
+        ) : (
+          <div>
+            <p className="mb-2">Score {winningScore} points to continue</p>
+            {difficulty > 1 && (
+              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+            )}
+          </div>
+        )}
+      </div>
       
       <div className="mt-4 flex justify-between w-full max-w-[600px] px-4 mb-2">
         <div className="text-lg">YOU: {userScore}</div>
@@ -273,7 +296,6 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
           gameWon={gameState.gameWon}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={true}
         />
       )}
       
