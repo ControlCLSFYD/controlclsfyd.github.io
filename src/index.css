@@ -95,13 +95,4 @@
     0%, 100% { opacity: 0; }
     50% { opacity: 1; }
   }
-  
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-  
-  .animate-float-heart {
-    animation: float 3s ease-in-out infinite;
-  }
 }
