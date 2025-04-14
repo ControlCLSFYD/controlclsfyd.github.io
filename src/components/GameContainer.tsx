@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
@@ -8,7 +7,8 @@ import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
 import TetrisGame from './TetrisGame';
 import { gameLevels } from '../data/gameData';
-import { getRandomPsalm, endScreenPsalm } from '../utils/psalms';
+import { getRandomPsalm } from '../utils/psalms';
+import PyramidStamp from './PyramidStamp';
 
 interface GameContainerProps {
   savedAnswers: Record<string, string>;
@@ -43,7 +43,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [snakeCompleted, setSnakeCompleted] = useState(false);
   const [snakeDifficulty, setSnakeDifficulty] = useState(1);
   const [randomPsalm, setRandomPsalm] = useState("");
-  const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -199,7 +198,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   const handleEndMessageComplete = () => {
-    setShowEndScreenPsalm(true);
+    setShowEndScreenPsalm(false);
   };
 
   const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;
@@ -257,11 +256,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
   };
 
   return (
-    <div className="terminal p-4">
+    <div className="terminal p-4 relative">
       {!gameStarted ? (
         renderLoadingScreen()
       ) : (
-        <div>
+        <div className="relative">
           {gameCompleted ? (
             <div className="p-4">
               <TypewriterText
@@ -269,11 +268,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 className="text-xl"
                 onComplete={handleEndMessageComplete}
               />
-              {showEndScreenPsalm && (
-                <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
-                  "{endScreenPsalm}"
-                </div>
-              )}
             </div>
           ) : showOxoGame ? (
             <OxoGame 
@@ -321,6 +315,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           )}
         </div>
       )}
+      <PyramidStamp />
     </div>
   );
 };
