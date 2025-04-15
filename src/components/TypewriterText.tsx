@@ -42,7 +42,7 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
       timeoutRef.current = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prevIndex => prevIndex + 1);
-      }, speed);
+      }, 1000 / speed); // Convert speed to milliseconds per character
 
       return () => {
         if (timeoutRef.current) {
@@ -59,7 +59,7 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
         timeoutRef.current = setTimeout(() => {
           console.log("TypewriterText calling onComplete for:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
           onComplete();
-        }, 800); // Further increased delay to ensure reliability
+        }, 1000); // Increased delay to ensure reliability
         
         return () => {
           if (timeoutRef.current) {

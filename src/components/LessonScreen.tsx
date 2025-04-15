@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
+import { Card, CardContent } from './ui/card';
 
 export interface LessonContent {
   id: number;
@@ -58,7 +59,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
         if (paragraphsRef.current) {
           paragraphsRef.current.scrollTop = paragraphsRef.current.scrollHeight;
         }
-      }, 800); // Further increased for reliability
+      }, 1000); // Increased for reliability
     } else {
       console.log("All paragraphs completed, setting typingComplete to true");
       setTypingComplete(true);
@@ -67,40 +68,43 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
 
   return (
     <div className="flex flex-col items-start p-4 max-w-3xl mx-auto">
-      <div className="mb-6 w-full">
-        <h2 className="text-xl text-terminal-green mb-4">
-          <TypewriterText
-            text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
-            speed={30}
-            onComplete={handleTitleComplete}
-          />
-        </h2>
-        
-        <ScrollArea className="h-[60vh] rounded-md border p-4">
-          <div 
-            className="space-y-4 text-left"
-            ref={paragraphsRef}
-          >
-            {titleComplete && (
-              <>
-                {lesson.content.map((paragraph, index) => (
-                  <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
-                    {index === currentParagraphIndex ? (
-                      <TypewriterText
-                        text={paragraph}
-                        speed={20}
-                        onComplete={handleParagraphComplete}
-                      />
-                    ) : (
-                      <span>{paragraph}</span>
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+      <Card className="w-full shadow-md">
+        <CardContent className="pt-6">
+          <h2 className="text-xl text-terminal-green mb-4">
+            <TypewriterText
+              text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
+              speed={30}
+              onComplete={handleTitleComplete}
+            />
+          </h2>
+          
+          <ScrollArea className="h-[60vh] rounded-md border p-4">
+            <div 
+              className="space-y-4 text-left"
+              ref={paragraphsRef}
+            >
+              {titleComplete && (
+                <>
+                  {lesson.content.map((paragraph, index) => (
+                    <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
+                      {index === currentParagraphIndex ? (
+                        <TypewriterText
+                          text={paragraph}
+                          speed={20}
+                          onComplete={handleParagraphComplete}
+                          className="block"
+                        />
+                      ) : (
+                        <span className="block">{paragraph}</span>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
       
       {typingComplete && (
         <div className="self-center mt-6">
