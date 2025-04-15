@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
 @tailwind base;
@@ -52,7 +53,7 @@
     position: relative;
   }
   
-  /* Enhanced VHS screen effect */
+  /* VHS screen effect */
   .vhs-screen {
     position: relative;
     overflow: hidden;
@@ -90,7 +91,6 @@
     z-index: 11;
   }
   
-  /* Improved flicker animation with more noticeable effect */
   @keyframes flicker {
     0% { opacity: 0.15; }
     25% { opacity: 0.12; }
@@ -104,36 +104,9 @@
     100% { background-position: 0 32px; }
   }
   
-  /* Text glow effect - enhanced and applied to all text elements */
-  .terminal, .terminal * {
+  /* Text glow effect */
+  .terminal {
     text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-  }
-  
-  /* Apply VHS text effect to all buttons and interactive elements */
-  button, input, .char-placeholder, h1, h2, h3, h4, h5, h6, p, span, div {
-    position: relative;
-  }
-  
-  button::after, input::after, .char-placeholder::after, 
-  h1::after, h2::after, h3::after, h4::after, h5::after, h6::after, 
-  p::after, span::after, div::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: transparent;
-    animation: vhs-flicker 8s infinite;
-    pointer-events: none;
-  }
-  
-  @keyframes vhs-flicker {
-    0%, 100% { opacity: 0; }
-    98% { opacity: 0; }
-    98.5% { opacity: 0.2; }
-    99% { opacity: 0; }
-    99.5% { opacity: 0.1; }
   }
   
   .cursor-blink::after {
@@ -145,12 +118,11 @@
     @apply bg-terminal-black text-terminal-green font-mono m-0 p-0;
   }
 
-  /* Character placeholder styles - updated for better visibility with consistent glow */
+  /* Character placeholder styles - updated for better visibility without the box */
   .char-placeholder {
-    @apply inline-flex justify-center items-end w-6 h-8 mx-1 border-b-2 border-terminal-green text-2xl font-mono;
+    @apply inline-flex justify-center items-end w-6 h-8 mx-1 border-b-2 border-terminal-green text-terminal-green text-2xl font-mono;
     position: relative;
     text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-    color: #00FF00;
   }
   
   .char-placeholder.has-char {
@@ -194,54 +166,4 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-}
-
-/* Global VHS glowing effect for game elements */
-.terminal button, .terminal input {
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-}
-
-/* Add styles directly for terminal green elements */
-.terminal [class*="text-terminal-green"] {
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-}
-
-/* Enhanced glow effect for game grid and cells */
-.grid, .grid > div {
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-  position: relative;
-}
-
-/* Extra flicker overlay for game elements */
-.grid::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  animation: game-flicker 10s infinite;
-  background: linear-gradient(transparent, rgba(0, 255, 0, 0.03));
-  z-index: 5;
-}
-
-@keyframes game-flicker {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 0.02; }
-  52% { opacity: 0.08; }
-  54% { opacity: 0.02; }
-  70% { opacity: 0.05; }
-  72% { opacity: 0; }
-}
-
-/* Ensuring all game-related text has consistent glow */
-.border-terminal-green {
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
-}
-
-/* Direct color application instead of using the utility class */
-[class*="text-terminal-green"] {
-  color: #00FF00;
-  text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
 }
