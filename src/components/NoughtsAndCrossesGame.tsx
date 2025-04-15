@@ -15,17 +15,24 @@ type BoardState = (Player)[];
 
 const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
-  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(true);
+  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(false); // CPU starts first
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'draw'>('playing');
   const [showInstructions, setShowInstructions] = useState(true);
 
   useEffect(() => {
     setBoard(Array(9).fill(null));
     setGameStatus('playing');
-    setIsPlayerTurn(true);
+    setIsPlayerTurn(false); // CPU always starts first
     
     const timer = setTimeout(() => {
       setShowInstructions(false);
+      // Make CPU's first move after instructions disappear
+      const initialBoard = Array(9).fill(null);
+      const computerMoveIndex = getBestMove(initialBoard, 'X');
+      const newBoard = [...initialBoard];
+      newBoard[computerMoveIndex] = 'X';
+      setBoard(newBoard);
+      setIsPlayerTurn(true);
     }, 3000);
     
     return () => clearTimeout(timer);
@@ -42,44 +49,61 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameCom
       pattern.every(index => board[index] === player)
     );
   };
+
+  // Advanced minimax algorithm for optimal CPU moves
+  const minimax = (board: BoardState, depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity): number => {
+    // Check terminal states
+    if (checkWinner(board, 'X')) return 10 - depth;
+    if (checkWinner(board, 'O')) return depth - 10;
+    if (!board.includes(null)) return 0;
+    
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          const newBoard = [...board];
+          newBoard[i] = 'X';
+          const score = minimax(newBoard, depth + 1, false, alpha, beta);
+          bestScore = Math.max(bestScore, score);
+          alpha = Math.max(alpha, bestScore);
+          if (beta <= alpha) break; // Alpha-beta pruning
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (!board[i]) {
+          const newBoard = [...board];
+          newBoard[i] = 'O';
+          const score = minimax(newBoard, depth + 1, true, alpha, beta);
+          bestScore = Math.min(bestScore, score);
+          beta = Math.min(beta, bestScore);
+          if (beta <= alpha) break; // Alpha-beta pruning
+        }
+      }
+      return bestScore;
+    }
+  };
   
-  const getComputerMove = (board: BoardState): number => {
-    const smartnessChance = Math.min(0.4 + (difficulty * 0.12), 0.95);
-    
-    if (Math.random() > smartnessChance) {
-      const emptyCells = board.reduce((acc, cell, index) => 
-        !cell ? [...acc, index] : acc, [] as number[]);
-      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    }
+  const getBestMove = (board: BoardState, player: Player): number => {
+    // Always play perfectly regardless of difficulty
+    let bestScore = -Infinity;
+    let bestMove = 0;
     
     for (let i = 0; i < 9; i++) {
       if (!board[i]) {
         const newBoard = [...board];
-        newBoard[i] = 'X';
-        if (checkWinner(newBoard, 'X')) return i;
+        newBoard[i] = player;
+        const score = minimax(newBoard, 0, false);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = i;
+        }
       }
     }
     
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        const newBoard = [...board];
-        newBoard[i] = 'O';
-        if (checkWinner(newBoard, 'O')) return i;
-      }
-    }
-    
-    if (!board[4]) return 4;
-    
-    const corners = [0, 2, 6, 8];
-    const availableCorners = corners.filter(corner => !board[corner]);
-    if (availableCorners.length > 0) {
-      return availableCorners[Math.floor(Math.random() * availableCorners.length)];
-    }
-    
-    const emptyCells = board.reduce((acc, cell, index) => 
-      !cell ? [...acc, index] : acc, [] as number[]);
-    
-    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    return bestMove;
   };
   
   const handleCellClick = (index: number) => {
@@ -101,7 +125,7 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameCom
     
     setIsPlayerTurn(false);
     setTimeout(() => {
-      const computerMoveIndex = getComputerMove(newBoard);
+      const computerMoveIndex = getBestMove(newBoard, 'X');
       const finalBoard = [...newBoard];
       finalBoard[computerMoveIndex] = 'X';
       setBoard(finalBoard);
@@ -146,13 +170,13 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameCom
       <div className="h-20 flex items-center justify-center mb-4">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
-            <span>You play as O. Click an empty cell to make your move.</span>
+            <span>You play as O. CPU moves first. Try to win if you can!</span>
           </div>
         ) : (
           <div className="text-center">
             <p className="mb-2">Win the game to continue</p>
             {difficulty > 1 && (
-              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+              <p className="mb-2 text-yellow-400">CPU Difficulty Level: Maximum</p>
             )}
           </div>
         )}
