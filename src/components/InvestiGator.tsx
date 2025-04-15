@@ -12,7 +12,7 @@ interface InvestiGatorProps {
 const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
   const [hasSeenIntro, setHasSeenIntro] = useState<boolean>(false);
   const [showingIntro, setShowingIntro] = useState<boolean>(true);
-  const [currentContentIndex, setCurrentContentIndex] = useState<number>(-1); // Start at -1 for intro
+  const [currentContentIndex, setCurrentContentIndex] = useState<number>(-1);
   const [typingComplete, setTypingComplete] = useState<boolean>(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
     if (hasSeenIntroLS === 'true') {
       setHasSeenIntro(true);
       setShowingIntro(false);
-      setCurrentContentIndex(0); // Skip intro
+      setCurrentContentIndex(0);
     }
   }, []);
 
@@ -51,7 +51,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
             <img 
               src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" 
               alt="Investi Gator" 
-              className="w-32 h-auto mx-auto md:w-full max-w-[200px]"
+              className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain"
             />
             <div className="text-terminal-green font-bold mt-2">INVESTI GATOR</div>
           </div>
@@ -68,7 +68,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
             </h2>
             
             <div className="space-y-4 text-left text-terminal-green">
-              {showingIntro && (
+              {!hasSeenIntro && showingIntro && (
                 <div className="mb-2">
                   <TypewriterText
                     text="Hi there CLSFYD Adventurer! I'm Investi Gator, the Investigative Alligator..."
@@ -91,7 +91,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
                       ) : (
                         <span>{paragraph}</span>
                       )}
-                    </div>
+                </div>
                   ))}
                 </div>
               )}
@@ -115,3 +115,4 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
 };
 
 export default InvestiGator;
+
