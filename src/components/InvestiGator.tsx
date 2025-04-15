@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { LessonContent } from './LessonScreen';
 import TypewriterText from './TypewriterText';
@@ -16,7 +15,6 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
   const [typingComplete, setTypingComplete] = useState<boolean>(false);
 
   useEffect(() => {
-    // Check localStorage if the user has seen the intro before
     const hasSeenIntroLS = localStorage.getItem('hasSeenInvestiGatorIntro');
     if (hasSeenIntroLS === 'true') {
       setHasSeenIntro(true);
@@ -26,7 +24,6 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
   }, []);
 
   const handleIntroComplete = () => {
-    // Save to localStorage that user has seen intro
     localStorage.setItem('hasSeenInvestiGatorIntro', 'true');
     setHasSeenIntro(true);
     setShowingIntro(false);
@@ -49,11 +46,16 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 text-center mb-4 md:mb-0">
             <img 
-              src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" 
+              src="/lovable-uploads/b721b90f-fd57-4feb-aecd-e7a1f7f2ab94.png" 
               alt="Investi Gator" 
-              className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain"
+              className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain bg-black"
             />
-            <div className="text-terminal-green font-bold mt-2">INVESTI GATOR</div>
+            <div className="text-terminal-green font-bold mt-2">
+              INVESTI GATOR
+            </div>
+            <div className="text-terminal-green font-bold">
+              the Investigative Alligator
+            </div>
             
             {/* Bio information */}
             <div className="text-terminal-green text-sm mt-3 text-left mx-auto max-w-[180px]">
@@ -65,7 +67,6 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
           </div>
           
           <div className="w-full md:w-2/3 bg-black border border-terminal-green p-3 md:p-4 rounded-lg relative min-h-[200px]">
-            {/* Speech bubble pointer - hidden on mobile */}
             <div className="hidden md:block absolute w-4 h-4 bg-black border-l border-b border-terminal-green transform rotate-45 left-[-8px] top-6"></div>
             
             <h2 className="text-xl text-terminal-green mb-4">
@@ -99,7 +100,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
                       ) : (
                         <span>{paragraph}</span>
                       )}
-                </div>
+                    </div>
                   ))}
                 </div>
               )}

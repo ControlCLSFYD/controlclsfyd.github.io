@@ -110,11 +110,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" 
+                    src="/lovable-uploads/b721b90f-fd57-4feb-aecd-e7a1f7f2ab94.png" 
                     alt="Investi Gator" 
-                    className="w-24 h-auto mb-4 object-contain"
+                    className="w-24 h-auto mb-4 object-contain bg-black"
                   />
-                  <div className="text-terminal-green font-bold mb-4">INVESTI GATOR</div>
+                  <div className="text-terminal-green font-bold mb-2">
+                    INVESTI GATOR
+                  </div>
+                  <div className="text-terminal-green font-bold mb-2">
+                    the Investigative Alligator
+                  </div>
                   <div className="bg-black border border-terminal-green p-3 rounded-lg">
                     <TypewriterText
                       text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
