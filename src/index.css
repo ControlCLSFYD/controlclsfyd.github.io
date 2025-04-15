@@ -50,6 +50,63 @@
   .terminal {
     @apply bg-terminal-black text-terminal-green font-mono;
     min-height: 100vh;
+    position: relative;
+  }
+  
+  /* VHS screen effect */
+  .vhs-screen {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .vhs-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0, 255, 0, 0.03), rgba(0, 255, 0, 0.02));
+    pointer-events: none;
+    z-index: 10;
+  }
+  
+  .vhs-screen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 1px,
+      rgba(0, 0, 0, 0.2) 1px,
+      rgba(0, 0, 0, 0.2) 2px
+    );
+    animation: flicker 0.2s infinite, scanlines 1s linear infinite;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 11;
+  }
+  
+  @keyframes flicker {
+    0% { opacity: 0.15; }
+    25% { opacity: 0.12; }
+    50% { opacity: 0.15; }
+    75% { opacity: 0.17; }
+    100% { opacity: 0.15; }
+  }
+  
+  @keyframes scanlines {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 32px; }
+  }
+  
+  /* Text glow effect */
+  .terminal {
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
   }
   
   .cursor-blink::after {
@@ -65,6 +122,7 @@
   .char-placeholder {
     @apply inline-flex justify-center items-end w-6 h-8 mx-1 border-b-2 border-terminal-green text-terminal-green text-2xl font-mono;
     position: relative;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
   }
   
   .char-placeholder.has-char {
@@ -73,10 +131,12 @@
   
   .char-placeholder.correct-char {
     @apply border-green-500 text-green-500;
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.9);
   }
   
   .char-placeholder.incorrect-char {
     @apply border-red-500 text-red-500;
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.9);
   }
   
   /* Flashing cursor styles */
@@ -89,6 +149,7 @@
     right: 0;
     top: 10%;
     animation: blink 1s infinite;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
   }
   
   @keyframes blink {

@@ -3,7 +3,6 @@ import React from 'react';
 import GameLevel from './GameLevel';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
-import PyramidStamp from './PyramidStamp';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
 
@@ -53,7 +52,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   } = gameState;
 
   return (
-    <div className="terminal p-4">
+    <div className="terminal p-4 vhs-screen">
       {!gameStarted ? (
         <LoadingScreen onAccessGranted={handleAccessGranted} />
       ) : (
@@ -97,8 +96,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
               />
             )
           )}
-          
-          <PyramidStamp />
         </div>
       )}
     </div>

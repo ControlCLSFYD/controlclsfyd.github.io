@@ -1,9 +1,13 @@
 
 import React from 'react';
 
-const PyramidStamp: React.FC = () => {
+interface PyramidStampProps {
+  centered?: boolean;
+}
+
+const PyramidStamp: React.FC<PyramidStampProps> = ({ centered = false }) => {
   return (
-    <div className="fixed bottom-2 right-2 flex flex-col items-center" style={{ zIndex: 1000 }}>
+    <div className={`${centered ? 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' : 'fixed bottom-2 right-2'} flex flex-col items-center`} style={{ zIndex: 1000 }}>
       {/* Small floating heart without Chi Ro symbol */}
       <div className="relative mb-1 animate-float">
         <svg width="15" height="13" viewBox="0 0 300 260" xmlns="http://www.w3.org/2000/svg">

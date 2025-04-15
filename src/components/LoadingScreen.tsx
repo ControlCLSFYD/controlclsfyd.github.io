@@ -56,7 +56,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   };
   
   return (
-    <div className="flex flex-col items-start">
+    <div className="flex flex-col items-center justify-center min-h-[80vh]">
       {loadingStep === 2 && (
         <div className="mb-8">
           <TypewriterText 
@@ -77,7 +77,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
       )}
 
       {loadingStep === 4 && !accessCodeCorrect && (
-        <div>
+        <div className="text-center">
           <TypewriterText text="Enter your access code." className="mb-4 block" />
           <form onSubmit={handleAccessCodeSubmit} className="mt-4">
             <input
@@ -129,17 +129,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               </DialogContent>
             </Dialog>
           </div>
-          
-          {randomPsalm && (
-            <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
-              "{randomPsalm}"
-            </div>
-          )}
         </div>
       )}
 
       {showWarning && (
-        <div>
+        <div className="text-center max-w-lg">
           <TypewriterText 
             text="NOTE: 
 
