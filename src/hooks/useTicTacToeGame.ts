@@ -15,36 +15,60 @@ export const useTicTacToeGame = (
   const [cpuWins, setCpuWins] = useState<number>(0);
   const [playerFirstMove, setPlayerFirstMove] = useState<boolean>(false);
   
+  // Function to make CPU move
+  const makeCpuMove = useCallback((currentBoard: BoardState) => {
+    const computerMoveIndex = getBestMove(currentBoard, 'X');
+    const newBoard = [...currentBoard];
+    newBoard[computerMoveIndex] = 'X';
+    setBoard(newBoard);
+    
+    if (checkWinner(newBoard, 'X')) {
+      setGameStatus('lost');
+    } else if (!newBoard.includes(null)) {
+      setGameStatus('draw');
+    } else {
+      setIsPlayerTurn(true);
+    }
+  }, []);
+  
   const resetGame = useCallback(() => {
-    setBoard(Array(9).fill(null));
+    const initialBoard = Array(9).fill(null);
+    setBoard(initialBoard);
     setGameStatus('playing');
     setIsPlayerTurn(playerFirstMove); // Use playerFirstMove to determine who goes first
-    
-    // If it's CPU's turn, make its move after instructions disappear
-    if (!playerFirstMove) {
+  }, [playerFirstMove]);
+  
+  // Handle CPU's first move
+  useEffect(() => {
+    if (gameStatus === 'playing' && !isPlayerTurn && !showInstructions) {
       const timer = setTimeout(() => {
-        const initialBoard = Array(9).fill(null);
-        const computerMoveIndex = getBestMove(initialBoard, 'X');
-        const newBoard = [...initialBoard];
-        newBoard[computerMoveIndex] = 'X';
-        setBoard(newBoard);
-        setIsPlayerTurn(true);
-      }, showInstructions ? 3000 : 500); // Shorter delay if instructions aren't showing
+        makeCpuMove([...board]);
+      }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [playerFirstMove, showInstructions]);
+  }, [board, isPlayerTurn, gameStatus, makeCpuMove, showInstructions]);
   
+  // Initial setup and instructions
   useEffect(() => {
     setShowInstructions(true);
     
     const timer = setTimeout(() => {
       setShowInstructions(false);
       resetGame();
+      
+      // If CPU goes first, make its move shortly after instructions disappear
+      if (!playerFirstMove) {
+        const cpuMoveTimer = setTimeout(() => {
+          makeCpuMove(Array(9).fill(null));
+        }, 500);
+        
+        return () => clearTimeout(cpuMoveTimer);
+      }
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [difficulty, resetGame]);
+  }, [difficulty, resetGame, playerFirstMove, makeCpuMove]);
 
   const handleCellClick = (index: number) => {
     if (board[index] || !isPlayerTurn || gameStatus !== 'playing') return;
@@ -65,18 +89,7 @@ export const useTicTacToeGame = (
     
     setIsPlayerTurn(false);
     setTimeout(() => {
-      const computerMoveIndex = getBestMove(newBoard, 'X');
-      const finalBoard = [...newBoard];
-      finalBoard[computerMoveIndex] = 'X';
-      setBoard(finalBoard);
-      
-      if (checkWinner(finalBoard, 'X')) {
-        setGameStatus('lost');
-      } else if (!finalBoard.includes(null)) {
-        setGameStatus('draw');
-      } else {
-        setIsPlayerTurn(true);
-      }
+      makeCpuMove(newBoard);
     }, 500);
   };
 
