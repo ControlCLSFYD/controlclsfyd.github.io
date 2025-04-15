@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Circle } from 'lucide-react';
 import { Button } from './ui/button';
 import GameResult from './GameResult';
@@ -15,28 +15,42 @@ type BoardState = (Player)[];
 
 const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
-  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(false); // CPU starts first
+  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(false); // CPU starts first by default
   const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'draw'>('playing');
   const [showInstructions, setShowInstructions] = useState(true);
-
-  useEffect(() => {
+  const [cpuWins, setCpuWins] = useState<number>(0);
+  const [playerFirstMove, setPlayerFirstMove] = useState<boolean>(false);
+  
+  const resetGame = useCallback(() => {
     setBoard(Array(9).fill(null));
     setGameStatus('playing');
-    setIsPlayerTurn(false); // CPU always starts first
+    setIsPlayerTurn(playerFirstMove); // Use playerFirstMove to determine who goes first
+    
+    // If it's CPU's turn, make its move after instructions disappear
+    if (!playerFirstMove) {
+      const timer = setTimeout(() => {
+        const initialBoard = Array(9).fill(null);
+        const computerMoveIndex = getBestMove(initialBoard, 'X');
+        const newBoard = [...initialBoard];
+        newBoard[computerMoveIndex] = 'X';
+        setBoard(newBoard);
+        setIsPlayerTurn(true);
+      }, showInstructions ? 3000 : 500); // Shorter delay if instructions aren't showing
+      
+      return () => clearTimeout(timer);
+    }
+  }, [playerFirstMove, showInstructions]);
+  
+  useEffect(() => {
+    setShowInstructions(true);
     
     const timer = setTimeout(() => {
       setShowInstructions(false);
-      // Make CPU's first move after instructions disappear
-      const initialBoard = Array(9).fill(null);
-      const computerMoveIndex = getBestMove(initialBoard, 'X');
-      const newBoard = [...initialBoard];
-      newBoard[computerMoveIndex] = 'X';
-      setBoard(newBoard);
-      setIsPlayerTurn(true);
+      resetGame();
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [difficulty]);
+  }, [difficulty, resetGame]);
   
   const checkWinner = (board: BoardState, player: Player): boolean => {
     const winPatterns = [
@@ -160,7 +174,19 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameCom
   };
   
   const handlePlayAgain = () => {
+    if (gameStatus === 'lost') {
+      // If player lost, increment CPU win counter
+      const newCpuWins = cpuWins + 1;
+      setCpuWins(newCpuWins);
+      
+      // After 2 CPU wins, let player go first
+      if (newCpuWins >= 2 && !playerFirstMove) {
+        setPlayerFirstMove(true);
+      }
+    }
+    
     onPlayAgain();
+    resetGame();
   };
   
   return (
@@ -170,11 +196,14 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({ onGameCom
       <div className="h-20 flex items-center justify-center mb-4">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
-            <span>You play as O. CPU moves first. Try to win if you can!</span>
+            <span>You play as O. {playerFirstMove ? 'You move first' : 'CPU moves first'}. Try to win if you can!</span>
           </div>
         ) : (
           <div className="text-center">
             <p className="mb-2">Win the game to continue</p>
+            {cpuWins > 0 && (
+              <p className="mb-2 text-yellow-400">CPU Wins: {cpuWins}</p>
+            )}
             {difficulty > 1 && (
               <p className="mb-2 text-yellow-400">CPU Difficulty Level: Maximum</p>
             )}
