@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface TypewriterTextProps {
   text: string;
@@ -17,12 +17,14 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-
+  const onCompleteCalledRef = useRef(false);
+  
   useEffect(() => {
     // Reset when text changes
     setDisplayedText('');
     setCurrentIndex(0);
     setIsComplete(false);
+    onCompleteCalledRef.current = false;
   }, [text]);
 
   useEffect(() => {
@@ -35,12 +37,13 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
       return () => clearTimeout(timer);
     } else if (!isComplete && text.length > 0) { 
       setIsComplete(true);
-      if (onComplete) {
+      if (onComplete && !onCompleteCalledRef.current) {
         // Increased delay to ensure UI updates before callback
+        onCompleteCalledRef.current = true;
         setTimeout(() => {
           console.log("TypewriterText completed:", text.substring(0, 20) + "...");
           onComplete();
-        }, 100);
+        }, 300);
       }
     }
   }, [currentIndex, text, speed, isComplete, onComplete]);

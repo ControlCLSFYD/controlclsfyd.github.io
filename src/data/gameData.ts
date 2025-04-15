@@ -1,3 +1,4 @@
+
 import { Question } from '../components/GameLevel';
 import { LessonContent } from '../components/LessonScreen';
 
@@ -53,8 +54,8 @@ export const gameLevels: Level[] = [
     hasLesson: true,
     imageSrc: [
       "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png", // Image for WGA question (aircraft)
-      "/lovable-uploads/7c8d732e-f995-4259-8888-27d11e656608.png", // Image for Kenneth Arnold question
-      "/lovable-uploads/e58b4a40-b9dd-4fd2-93f1-e458919837ba.png"  // Image for Benito Mussolini question
+      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png", // Image for Kenneth Arnold question
+      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png"  // Image for Benito Mussolini question
     ],
     questions: [
       [
