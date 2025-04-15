@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
+import { Button } from './ui/button';
+import { RefreshCw } from 'lucide-react';
 
 export interface Question {
   id: string;
@@ -32,6 +34,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
+  const [imageKey, setImageKey] = useState<number>(Date.now());
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -85,6 +88,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
       }
     }
   };
+  
+  const handleReloadImage = () => {
+    // Update the imageKey to force React to reload the image
+    setImageKey(Date.now());
+  };
 
   return (
     <div className="p-4" ref={containerRef}>
@@ -103,8 +111,13 @@ const GameLevel: React.FC<GameLevelProps> = ({
       </div>
       
       {imageSrc && (
-        <div className="mb-4 border border-terminal-green p-1">
-          <img src={imageSrc} alt={`Level ${level} Reference`} className="w-full max-h-96 object-contain" />
+        <div className="mb-4 border border-terminal-green p-1 relative">
+          <img 
+            src={`${imageSrc}?key=${imageKey}`} 
+            alt={`Level ${level} Reference`} 
+            className="w-full max-h-96 object-contain"
+            onError={() => console.log("Image failed to load")}
+          />
         </div>
       )}
       
@@ -132,6 +145,20 @@ const GameLevel: React.FC<GameLevelProps> = ({
           );
         })}
       </div>
+      
+      {imageSrc && (
+        <div className="mt-4 flex justify-center">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleReloadImage}
+            className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+          >
+            <RefreshCw size={16} />
+            Reload Image
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
