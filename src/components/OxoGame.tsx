@@ -90,7 +90,7 @@ const OxoGame: React.FC<OxoGameProps> = ({
           gameWon={gameStatus === 'won'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={gameStatus === 'draw'}
+          alwaysShowContinue={gameStatus === 'draw' && drawCount >= 2}
         />
       )}
     </div>
