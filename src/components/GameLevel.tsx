@@ -52,7 +52,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
         onLevelComplete();
       }, 1000);
     }
-  }, [level, questions, savedAnswers]);
+  }, [level, questions, savedAnswers, onLevelComplete]);
 
   useEffect(() => {
     // Ensure the component is focused when it becomes active

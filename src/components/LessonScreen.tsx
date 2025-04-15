@@ -15,15 +15,27 @@ interface LessonScreenProps {
 }
 
 const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
+  const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
+  const [titleComplete, setTitleComplete] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
 
   // Reset typing state when lesson changes
   useEffect(() => {
+    setCurrentParagraphIndex(0);
+    setTitleComplete(false);
     setTypingComplete(false);
   }, [lesson.id]);
 
-  const handleTypingComplete = () => {
-    setTypingComplete(true);
+  const handleTitleComplete = () => {
+    setTitleComplete(true);
+  };
+
+  const handleParagraphComplete = () => {
+    if (currentParagraphIndex < lesson.content.length - 1) {
+      setCurrentParagraphIndex(prevIndex => prevIndex + 1);
+    } else {
+      setTypingComplete(true);
+    }
   };
 
   return (
@@ -33,19 +45,24 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
           <TypewriterText
             text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
             speed={30}
+            onComplete={handleTitleComplete}
           />
         </h2>
         
         <div className="space-y-4 text-left">
-          {lesson.content.map((paragraph, index) => (
-            <div key={index} className="mb-4">
-              <TypewriterText
-                text={paragraph}
-                speed={20}
-                onComplete={index === lesson.content.length - 1 ? handleTypingComplete : undefined}
-              />
-            </div>
-          ))}
+          {titleComplete && (
+            <>
+              {lesson.content.map((paragraph, index) => (
+                <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
+                  <TypewriterText
+                    text={paragraph}
+                    speed={20}
+                    onComplete={index === currentParagraphIndex ? handleParagraphComplete : undefined}
+                  />
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
       
