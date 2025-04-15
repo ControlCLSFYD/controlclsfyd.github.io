@@ -18,6 +18,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
   const [titleComplete, setTitleComplete] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
+  const [isDebugMode] = useState(false); // Debug mode toggle for quick testing
 
   // Reset typing state when lesson changes
   useEffect(() => {
@@ -26,14 +27,26 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
     setTypingComplete(false);
   }, [lesson.id]);
 
+  // For debug mode - instantly complete the lesson
+  useEffect(() => {
+    if (isDebugMode) {
+      setTitleComplete(true);
+      setCurrentParagraphIndex(lesson.content.length - 1);
+      setTypingComplete(true);
+    }
+  }, [isDebugMode, lesson.content.length]);
+
   const handleTitleComplete = () => {
+    console.log("Title completed");
     setTitleComplete(true);
   };
 
   const handleParagraphComplete = () => {
+    console.log("Paragraph completed:", currentParagraphIndex);
     if (currentParagraphIndex < lesson.content.length - 1) {
       setCurrentParagraphIndex(prevIndex => prevIndex + 1);
     } else {
+      console.log("All paragraphs completed");
       setTypingComplete(true);
     }
   };

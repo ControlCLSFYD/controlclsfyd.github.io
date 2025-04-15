@@ -33,10 +33,13 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
       }, speed);
 
       return () => clearTimeout(timer);
-    } else if (!isComplete) {
+    } else if (!isComplete && text.length > 0) { // Only trigger onComplete if there's text to type
       setIsComplete(true);
       if (onComplete) {
-        onComplete();
+        // Small delay to ensure UI updates before callback
+        setTimeout(() => {
+          onComplete();
+        }, 50);
       }
     }
   }, [currentIndex, text, speed, isComplete, onComplete]);
