@@ -6,7 +6,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Button } from './ui/button';
-import { HelpCircle, Image, RefreshCw } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import InvestiGator from './InvestiGator';
 import { LessonContent } from './LessonScreen';
 
@@ -37,7 +37,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
           Investi Gator Help
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[90vw] max-w-[800px] bg-black text-terminal-green border border-terminal-green">
+      <DialogContent className="w-[95vw] max-w-[800px] h-auto max-h-[90vh] overflow-y-auto bg-black text-terminal-green border border-terminal-green p-2 md:p-4">
         <InvestiGator lesson={lesson} onClose={() => setIsOpen(false)} />
       </DialogContent>
     </Dialog>
