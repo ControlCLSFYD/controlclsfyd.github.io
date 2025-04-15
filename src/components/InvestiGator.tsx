@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { LessonContent } from './LessonScreen';
 import TypewriterText from './TypewriterText';
@@ -54,6 +53,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
               className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain"
             />
             <div className="text-terminal-green font-bold mt-2">INVESTI GATOR</div>
+            <div className="text-terminal-green text-sm">THE INVESTIGATIVE ALLIGATOR</div>
             
             {/* Bio information */}
             <div className="text-terminal-green text-sm mt-3 text-left mx-auto max-w-[180px]">

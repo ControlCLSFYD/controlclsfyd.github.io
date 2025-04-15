@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "./ui/dialog";
-import { HelpCircle } from 'lucide-react';
+import { Avatar, AvatarImage } from './ui/avatar';
 
 interface LoadingScreenProps {
   onAccessGranted: () => void;
@@ -103,8 +103,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                   className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
                   onClick={() => setShowInvestiGator(true)}
                 >
-                  <HelpCircle size={16} />
-                  Investi Gator Help
+                  <Avatar className="h-5 w-5">
+                    <AvatarImage src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" alt="Investi Gator" />
+                  </Avatar>
+                  Investi Gator's Help
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
@@ -114,7 +116,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain"
                   />
-                  <div className="text-terminal-green font-bold mb-4">INVESTI GATOR</div>
+                  <div className="text-terminal-green font-bold mb-2">INVESTI GATOR</div>
+                  <div className="text-terminal-green text-sm mb-4">THE INVESTIGATIVE ALLIGATOR</div>
+                  
+                  <div className="text-terminal-green text-sm mb-4 text-left mx-auto">
+                    <div><span className="font-bold">First Name:</span> Investi</div>
+                    <div><span className="font-bold">Surname:</span> Gator</div>
+                    <div><span className="font-bold">Profession:</span> Investigator</div>
+                    <div><span className="font-bold">Creature:</span> Alligator</div>
+                  </div>
+                  
                   <div className="bg-black border border-terminal-green p-3 rounded-lg">
                     <TypewriterText
                       text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
