@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import { Button } from './ui/button';
+import { ScrollArea } from './ui/scroll-area';
 
 export interface LessonContent {
   id: number;
@@ -57,7 +58,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
         if (paragraphsRef.current) {
           paragraphsRef.current.scrollTop = paragraphsRef.current.scrollHeight;
         }
-      }, 500); // Increased for reliability
+      }, 800); // Further increased for reliability
     } else {
       console.log("All paragraphs completed, setting typingComplete to true");
       setTypingComplete(true);
@@ -75,28 +76,30 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
           />
         </h2>
         
-        <div 
-          className="space-y-4 text-left overflow-y-auto max-h-[60vh]"
-          ref={paragraphsRef}
-        >
-          {titleComplete && (
-            <>
-              {lesson.content.map((paragraph, index) => (
-                <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
-                  {index === currentParagraphIndex ? (
-                    <TypewriterText
-                      text={paragraph}
-                      speed={20}
-                      onComplete={handleParagraphComplete}
-                    />
-                  ) : (
-                    <span>{paragraph}</span>
-                  )}
-                </div>
-              ))}
-            </>
-          )}
-        </div>
+        <ScrollArea className="h-[60vh] rounded-md border p-4">
+          <div 
+            className="space-y-4 text-left"
+            ref={paragraphsRef}
+          >
+            {titleComplete && (
+              <>
+                {lesson.content.map((paragraph, index) => (
+                  <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
+                    {index === currentParagraphIndex ? (
+                      <TypewriterText
+                        text={paragraph}
+                        speed={20}
+                        onComplete={handleParagraphComplete}
+                      />
+                    ) : (
+                      <span>{paragraph}</span>
+                    )}
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </ScrollArea>
       </div>
       
       {typingComplete && (
