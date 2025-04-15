@@ -1,9 +1,7 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
-import { Card, CardContent } from './ui/card';
 
 export interface LessonContent {
   id: number;
@@ -21,14 +19,12 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   const [titleComplete, setTitleComplete] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
   const [isDebugMode] = useState(false); // Debug mode toggle for quick testing
-  const paragraphsRef = useRef<HTMLDivElement>(null);
 
   // Reset typing state when lesson changes
   useEffect(() => {
     setCurrentParagraphIndex(0);
     setTitleComplete(false);
     setTypingComplete(false);
-    console.log("Lesson Screen reset for lesson:", lesson.id);
   }, [lesson.id]);
 
   // For debug mode - instantly complete the lesson
@@ -41,70 +37,56 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   }, [isDebugMode, lesson.content.length]);
 
   const handleTitleComplete = () => {
-    console.log("Title completed for lesson:", lesson.id);
+    console.log("Title completed");
     setTitleComplete(true);
   };
 
   const handleParagraphComplete = () => {
-    console.log("Paragraph completed:", currentParagraphIndex, "of", lesson.content.length - 1);
+    console.log("Paragraph completed:", currentParagraphIndex);
     
     // Make sure we're not at the end of the content array
     if (currentParagraphIndex < lesson.content.length - 1) {
-      // Set a timeout before advancing to next paragraph
+      // Set a small timeout before advancing to next paragraph
       setTimeout(() => {
-        console.log("Advancing to next paragraph:", currentParagraphIndex + 1);
         setCurrentParagraphIndex(prevIndex => prevIndex + 1);
-        
-        // Scroll to the bottom if needed
-        if (paragraphsRef.current) {
-          paragraphsRef.current.scrollTop = paragraphsRef.current.scrollHeight;
-        }
-      }, 1000); // Increased for reliability
+      }, 200);
     } else {
-      console.log("All paragraphs completed, setting typingComplete to true");
+      console.log("All paragraphs completed");
       setTypingComplete(true);
     }
   };
 
   return (
     <div className="flex flex-col items-start p-4 max-w-3xl mx-auto">
-      <Card className="w-full shadow-md">
-        <CardContent className="pt-6">
-          <h2 className="text-xl text-terminal-green mb-4">
-            <TypewriterText
-              text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
-              speed={30}
-              onComplete={handleTitleComplete}
-            />
-          </h2>
-          
-          <ScrollArea className="h-[60vh] rounded-md border p-4">
-            <div 
-              className="space-y-4 text-left"
-              ref={paragraphsRef}
-            >
-              {titleComplete && (
-                <>
-                  {lesson.content.map((paragraph, index) => (
-                    <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
-                      {index === currentParagraphIndex ? (
-                        <TypewriterText
-                          text={paragraph}
-                          speed={20}
-                          onComplete={handleParagraphComplete}
-                          className="block"
-                        />
-                      ) : (
-                        <span className="block">{paragraph}</span>
-                      )}
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-          </ScrollArea>
-        </CardContent>
-      </Card>
+      <div className="mb-6">
+        <h2 className="text-xl text-terminal-green mb-4">
+          <TypewriterText
+            text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
+            speed={30}
+            onComplete={handleTitleComplete}
+          />
+        </h2>
+        
+        <div className="space-y-4 text-left">
+          {titleComplete && (
+            <>
+              {lesson.content.map((paragraph, index) => (
+                <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
+                  {index === currentParagraphIndex ? (
+                    <TypewriterText
+                      text={paragraph}
+                      speed={20}
+                      onComplete={handleParagraphComplete}
+                    />
+                  ) : (
+                    <span>{paragraph}</span>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
       
       {typingComplete && (
         <div className="self-center mt-6">

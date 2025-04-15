@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TypewriterTextProps {
   text: string;
@@ -17,55 +17,30 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
-  const completedRef = useRef(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Reset when text changes
   useEffect(() => {
+    // Reset when text changes
     setDisplayedText('');
     setCurrentIndex(0);
     setIsComplete(false);
-    completedRef.current = false;
-    
-    // Clear any existing timeout
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    
-    console.log("TypewriterText reset for:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
   }, [text]);
 
   useEffect(() => {
     if (currentIndex < text.length) {
-      // Store the timeout in the ref so we can clear it if needed
-      timeoutRef.current = setTimeout(() => {
+      const timer = setTimeout(() => {
         setDisplayedText(prev => prev + text[currentIndex]);
         setCurrentIndex(prevIndex => prevIndex + 1);
-      }, 1000 / speed); // Convert speed to milliseconds per character
+      }, speed);
 
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      };
-    } else if (!isComplete && text.length > 0 && !completedRef.current) { 
-      console.log("TypewriterText reached end of text:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
+      return () => clearTimeout(timer);
+    } else if (!isComplete && text.length > 0) { 
       setIsComplete(true);
-      completedRef.current = true; // Prevent multiple onComplete calls
-      
       if (onComplete) {
         // Increased delay to ensure UI updates before callback
-        timeoutRef.current = setTimeout(() => {
-          console.log("TypewriterText calling onComplete for:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
+        setTimeout(() => {
+          console.log("TypewriterText completed:", text.substring(0, 20) + "...");
           onComplete();
-        }, 1000); // Increased delay to ensure reliability
-        
-        return () => {
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-          }
-        };
+        }, 100);
       }
     }
   }, [currentIndex, text, speed, isComplete, onComplete]);
