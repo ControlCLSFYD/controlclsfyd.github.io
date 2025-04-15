@@ -8,8 +8,6 @@ interface GameInfoProps {
   userScore: number;
   computerScore: number;
   difficulty?: number;
-  cpuWins?: number;
-  playerMovesFirst?: boolean;
 }
 
 const GameInfo: React.FC<GameInfoProps> = ({ 
@@ -17,13 +15,11 @@ const GameInfo: React.FC<GameInfoProps> = ({
   winningScore, 
   userScore, 
   computerScore,
-  difficulty = 1,
-  cpuWins = 0,
-  playerMovesFirst = false
+  difficulty = 1
 }) => {
   return (
     <>
-      <h2 className="text-xl mb-4">SPACE PEACE CHALLENGE</h2>
+      <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
       
       <div className="h-[60px] mb-2">
         {showInstructions ? (
@@ -38,12 +34,6 @@ const GameInfo: React.FC<GameInfoProps> = ({
             <p className="mb-2">First to score {winningScore} points wins!</p>
             {difficulty > 1 && (
               <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-            )}
-            {cpuWins > 0 && (
-              <p className="mb-2 text-orange-400">CPU Wins: {cpuWins}</p>
-            )}
-            {playerMovesFirst && (
-              <p className="mb-2 text-green-400">You move first!</p>
             )}
           </>
         )}
