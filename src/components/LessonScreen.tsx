@@ -43,8 +43,13 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
 
   const handleParagraphComplete = () => {
     console.log("Paragraph completed:", currentParagraphIndex);
+    
+    // Make sure we're not at the end of the content array
     if (currentParagraphIndex < lesson.content.length - 1) {
-      setCurrentParagraphIndex(prevIndex => prevIndex + 1);
+      // Set a small timeout before advancing to next paragraph
+      setTimeout(() => {
+        setCurrentParagraphIndex(prevIndex => prevIndex + 1);
+      }, 200);
     } else {
       console.log("All paragraphs completed");
       setTypingComplete(true);
@@ -67,11 +72,15 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
             <>
               {lesson.content.map((paragraph, index) => (
                 <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
-                  <TypewriterText
-                    text={paragraph}
-                    speed={20}
-                    onComplete={index === currentParagraphIndex ? handleParagraphComplete : undefined}
-                  />
+                  {index === currentParagraphIndex ? (
+                    <TypewriterText
+                      text={paragraph}
+                      speed={20}
+                      onComplete={handleParagraphComplete}
+                    />
+                  ) : (
+                    <span>{paragraph}</span>
+                  )}
                 </div>
               ))}
             </>
