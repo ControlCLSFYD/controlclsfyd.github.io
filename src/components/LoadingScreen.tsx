@@ -3,6 +3,12 @@ import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { getRandomPsalm } from '../utils/psalms';
 import { Button } from './ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "./ui/dialog";
+import { HelpCircle } from 'lucide-react';
 
 interface LoadingScreenProps {
   onAccessGranted: () => void;
@@ -14,6 +20,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   const [randomPsalm, setRandomPsalm] = useState("");
   const [accessCodeCorrect, setAccessCodeCorrect] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [showInvestiGator, setShowInvestiGator] = useState(false);
   
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -87,6 +94,38 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               Submit
             </button>
           </form>
+          
+          <div className="mt-6">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+                  onClick={() => setShowInvestiGator(true)}
+                >
+                  <HelpCircle size={16} />
+                  Investi Gator Help
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
+                <div className="flex flex-col items-center">
+                  <img 
+                    src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" 
+                    alt="Investi Gator" 
+                    className="w-24 h-auto mb-4 object-contain"
+                  />
+                  <div className="text-terminal-green font-bold mb-4">INVESTI GATOR</div>
+                  <div className="bg-black border border-terminal-green p-3 rounded-lg">
+                    <TypewriterText
+                      text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
+                      speed={30}
+                    />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           
           {randomPsalm && (
             <div className="mt-12 text-terminal-green opacity-70 max-w-lg whitespace-pre-line">
