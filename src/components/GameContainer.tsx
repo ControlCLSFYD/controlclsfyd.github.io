@@ -22,29 +22,29 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const {
     gameStarted,
     gameCompleted,
-    showOxoGame,
-    showPongGame,
-    showSpacewarGame,
-    showTetrisGame,
-    showSnakeGame,
+    showNoughtsAndCrossesGame,
+    showCourtGame,
+    showSpacePeaceGame,
+    showUATGame,
+    showSnekGame,
     currentLevel,
     isGameActive,
-    oxoDifficulty,
-    pongDifficulty,
-    spacewarDifficulty,
-    tetrisDifficulty,
-    snakeDifficulty,
+    noughtsAndCrossesDifficulty,
+    courtDifficulty,
+    spacePeaceDifficulty,
+    uatDifficulty,
+    snekDifficulty,
     handleAccessGranted,
-    handleOxoComplete,
-    handleOxoPlayAgain,
-    handlePongComplete,
-    handlePongPlayAgain,
-    handleSpacewarComplete,
-    handleSpacewarPlayAgain,
-    handleTetrisComplete,
-    handleTetrisPlayAgain,
-    handleSnakeComplete,
-    handleSnakePlayAgain,
+    handleNoughtsAndCrossesComplete,
+    handleNoughtsAndCrossesPlayAgain,
+    handleCourtComplete,
+    handleCourtPlayAgain,
+    handleSpacePeaceComplete,
+    handleSpacePeacePlayAgain,
+    handleUATComplete,
+    handleUATPlayAgain,
+    handleSnekComplete,
+    handleSnekPlayAgain,
     handleLevelComplete,
     handleEndMessageComplete,
     getCurrentLevelQuestions,
@@ -61,26 +61,26 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
           ) : isGameActive ? (
             <GameHandler 
-              showOxoGame={showOxoGame}
-              showPongGame={showPongGame}
-              showSpacewarGame={showSpacewarGame}
-              showTetrisGame={showTetrisGame}
-              showSnakeGame={showSnakeGame}
-              handleOxoComplete={handleOxoComplete}
-              handleOxoPlayAgain={handleOxoPlayAgain}
-              handlePongComplete={handlePongComplete}
-              handlePongPlayAgain={handlePongPlayAgain}
-              handleSpacewarComplete={handleSpacewarComplete}
-              handleSpacewarPlayAgain={handleSpacewarPlayAgain}
-              handleTetrisComplete={handleTetrisComplete}
-              handleTetrisPlayAgain={handleTetrisPlayAgain}
-              handleSnakeComplete={handleSnakeComplete}
-              handleSnakePlayAgain={handleSnakePlayAgain}
-              oxoDifficulty={oxoDifficulty}
-              pongDifficulty={pongDifficulty}
-              spacewarDifficulty={spacewarDifficulty}
-              tetrisDifficulty={tetrisDifficulty}
-              snakeDifficulty={snakeDifficulty}
+              showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
+              showCourtGame={showCourtGame}
+              showSpacePeaceGame={showSpacePeaceGame}
+              showUATGame={showUATGame}
+              showSnekGame={showSnekGame}
+              handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
+              handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
+              handleCourtComplete={handleCourtComplete}
+              handleCourtPlayAgain={handleCourtPlayAgain}
+              handleSpacePeaceComplete={handleSpacePeaceComplete}
+              handleSpacePeacePlayAgain={handleSpacePeacePlayAgain}
+              handleUATComplete={handleUATComplete}
+              handleUATPlayAgain={handleUATPlayAgain}
+              handleSnekComplete={handleSnekComplete}
+              handleSnekPlayAgain={handleSnekPlayAgain}
+              noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
+              courtDifficulty={courtDifficulty}
+              spacePeaceDifficulty={spacePeaceDifficulty}
+              uatDifficulty={uatDifficulty}
+              snekDifficulty={snekDifficulty}
             />
           ) : (
             currentLevel > 0 && (

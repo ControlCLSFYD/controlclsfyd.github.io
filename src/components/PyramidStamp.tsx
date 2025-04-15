@@ -35,4 +35,3 @@ const PyramidStamp: React.FC<PyramidStampProps> = ({ centered = false }) => {
 };
 
 export default PyramidStamp;
-
