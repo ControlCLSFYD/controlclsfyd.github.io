@@ -34,13 +34,17 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
 
       return () => clearTimeout(timer);
     } else if (!isComplete && text.length > 0) { 
+      console.log("TypewriterText reached end of text:", text.substring(0, 20) + "...");
       setIsComplete(true);
+      
       if (onComplete) {
         // Increased delay to ensure UI updates before callback
-        setTimeout(() => {
-          console.log("TypewriterText completed:", text.substring(0, 20) + "...");
+        const timeoutId = setTimeout(() => {
+          console.log("TypewriterText calling onComplete for:", text.substring(0, 20) + "...");
           onComplete();
-        }, 100);
+        }, 200);
+        
+        return () => clearTimeout(timeoutId);
       }
     }
   }, [currentIndex, text, speed, isComplete, onComplete]);

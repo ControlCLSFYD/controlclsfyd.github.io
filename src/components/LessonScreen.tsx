@@ -42,16 +42,17 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   };
 
   const handleParagraphComplete = () => {
-    console.log("Paragraph completed:", currentParagraphIndex);
+    console.log("Paragraph completed:", currentParagraphIndex, "of", lesson.content.length - 1);
     
     // Make sure we're not at the end of the content array
     if (currentParagraphIndex < lesson.content.length - 1) {
       // Set a small timeout before advancing to next paragraph
       setTimeout(() => {
+        console.log("Advancing to next paragraph:", currentParagraphIndex + 1);
         setCurrentParagraphIndex(prevIndex => prevIndex + 1);
-      }, 200);
+      }, 300);
     } else {
-      console.log("All paragraphs completed");
+      console.log("All paragraphs completed, setting typingComplete to true");
       setTypingComplete(true);
     }
   };
