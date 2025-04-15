@@ -5,6 +5,8 @@ import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
 import { Button } from './ui/button';
 import { RefreshCw } from 'lucide-react';
+import LessonModal from './LessonModal';
+import { lessonData } from '../data/gameData';
 
 export interface Question {
   id: string;
@@ -35,6 +37,9 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
   const [imageKey, setImageKey] = useState<number>(Date.now());
+
+  // Find the matching lesson for this level
+  const currentLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -149,8 +154,13 @@ const GameLevel: React.FC<GameLevelProps> = ({
         })}
       </div>
       
-      {imageSrc && (
-        <div className="mt-4 flex justify-center">
+      {/* Help and Reload buttons */}
+      <div className="mt-6 flex flex-col items-center space-y-3">
+        {/* Investi Gator Help button */}
+        <LessonModal lesson={currentLesson} levelId={level} />
+        
+        {/* Reload Image button */}
+        {imageSrc && (
           <Button 
             variant="outline" 
             size="sm"
@@ -160,8 +170,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
             <RefreshCw size={16} />
             Reload Image
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

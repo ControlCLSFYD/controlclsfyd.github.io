@@ -1,11 +1,9 @@
-
 import React from 'react';
 import PongGame from '../PongGame';
 import OxoGame from '../OxoGame';
 import SpacewarGame from '../SpacewarGame';
 import SnakeGame from '../SnakeGame';
 import TetrisGame from '../TetrisGame';
-import { GameProps } from '../../interfaces/GameInterfaces';
 
 interface GameHandlerProps {
   showOxoGame: boolean;

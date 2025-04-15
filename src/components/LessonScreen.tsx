@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { Button } from './ui/button';
+import InvestiGator from './InvestiGator';
 
 export interface LessonContent {
   id: number;
@@ -12,9 +13,10 @@ export interface LessonContent {
 interface LessonScreenProps {
   lesson: LessonContent;
   onComplete: () => void;
+  isModal?: boolean;
 }
 
-const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
+const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete, isModal = false }) => {
   const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
   const [titleComplete, setTitleComplete] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
@@ -60,9 +62,11 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
     }
   };
 
+  const buttonText = isModal ? "Return to Question" : "Continue to Challenges";
+
   return (
     <div className="flex flex-col items-start p-4 max-w-3xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-6 w-full">
         <h2 className="text-xl text-terminal-green mb-4">
           <TypewriterText
             text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
@@ -71,21 +75,30 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
           />
         </h2>
         
-        <div className="space-y-4 text-left">
+        <div className="space-y-4 text-left w-full">
           {titleComplete && (
             <>
+              <InvestiGator 
+                message={currentParagraphIndex <= 0 ? lesson.content[0] : ""}
+                isIntroduction={true}
+              />
+
               {lesson.content.map((paragraph, index) => (
-                <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
-                  {index === currentParagraphIndex ? (
-                    <TypewriterText
-                      text={paragraph}
-                      speed={contentSpeed}
-                      onComplete={handleParagraphComplete}
-                    />
-                  ) : (
-                    <span>{paragraph}</span>
-                  )}
-                </div>
+                index > 0 && (
+                  <div key={index} className="mb-4" style={{ display: index <= currentParagraphIndex ? 'block' : 'none' }}>
+                    {index === currentParagraphIndex ? (
+                      <InvestiGator
+                        message={paragraph}
+                        isIntroduction={false}
+                      />
+                    ) : (
+                      <InvestiGator
+                        message={paragraph}
+                        isIntroduction={false}
+                      />
+                    )}
+                  </div>
+                )
               ))}
             </>
           )}
@@ -98,7 +111,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
             onClick={onComplete}
             className="border border-terminal-green text-terminal-green px-4 py-2 bg-black hover:bg-terminal-green hover:text-black"
           >
-            Continue to Challenges
+            {buttonText}
           </Button>
         </div>
       )}
