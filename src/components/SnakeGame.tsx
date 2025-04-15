@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -6,7 +5,9 @@ import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { Button } from './ui/button';
 import GameResult from './GameResult';
 
-interface SnakeGameProps extends BaseGameProps {}
+interface SnakeGameProps extends BaseGameProps {
+  forceWin?: boolean;
+}
 
 // Game constants
 const CELL_SIZE = 20;
@@ -36,7 +37,7 @@ const OPPOSITE_DIRECTIONS = {
 type Position = { x: number; y: number };
 type Direction = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT';
 
-const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
+const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1, forceWin = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   const [snake, setSnake] = useState<Position[]>(INITIAL_SNAKE);
@@ -49,7 +50,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
   const [gameWon, setGameWon] = useState(false);
   const [hasWonBefore, setHasWonBefore] = useState(false);
   const requestRef = useRef<number>();
-  
+
   // Adjust cell size for mobile
   const actualCellSize = isMobile ? Math.min(15, window.innerWidth / (GRID_WIDTH + 2)) : CELL_SIZE;
 
@@ -146,6 +147,13 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
       setHasWonBefore(true);
     }
   }, [gameWon, hasWonBefore]);
+
+  // Effect to handle the forceWin prop
+  useEffect(() => {
+    if (forceWin && !gameWon && !gameOver) {
+      setGameWon(true);
+    }
+  }, [forceWin]);
 
   // Handle keyboard input
   useEffect(() => {

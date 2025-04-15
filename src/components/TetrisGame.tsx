@@ -7,6 +7,7 @@ interface TetrisGameProps {
   onGameComplete: () => void;
   onPlayAgain: () => void;
   difficulty?: number;
+  forceWin?: boolean;
 }
 
 // Game constants
@@ -74,7 +75,7 @@ const COLORS = [
   "#FF0000"  // Red - Z
 ];
 
-const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
+const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1, forceWin = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
   const [score, setScore] = useState(0);
@@ -110,6 +111,16 @@ const TetrisGame: React.FC<TetrisGameProps> = ({ onGameComplete, onPlayAgain, di
       ? MOBILE_GAME_SPEED * speedMultiplier
       : GAME_SPEED * speedMultiplier;
   }, [difficulty, isMobile]);
+
+  useEffect(() => {
+    if (forceWin && !gameWon) {
+      setScore(POINTS_TO_WIN);
+      setWinAchieved(true);
+      setGameWon(true);
+      
+      setShowWinMessage(true);
+    }
+  }, [forceWin, gameWon]);
 
   const generateTetromino = () => {
     const index = Math.floor(Math.random() * SHAPES.length);
