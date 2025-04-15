@@ -77,7 +77,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
       )}
 
       {loadingStep === 4 && !accessCodeCorrect && (
-        <div className="text-center">
+        <div className="text-center flex flex-col items-center">
           <TypewriterText text="Enter your access code." className="mb-4 block" />
           <form onSubmit={handleAccessCodeSubmit} className="mt-4">
             <input
