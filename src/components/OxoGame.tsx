@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { X, Circle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -157,7 +158,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
         )}
       </div>
       
-      <div className="grid grid-cols-3 gap-1 w-64 h-64 border border-terminal-green p-2 bg-black">
+      <div className="grid grid-cols-3 gap-1 w-64 h-64 bg-black p-2">
         {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => renderCell(index))}
       </div>
       
