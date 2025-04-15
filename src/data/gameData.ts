@@ -44,6 +44,18 @@ export const lessonData: LessonContent[] = [
       "Specific questions follow from general questions.",
       "This next level will prove whether you can build a basic search query based on prior search results."
     ]
+  },
+  {
+    id: 3,
+    title: "Introduction to exact match Boolean search",
+    content: [
+      "Boolean is the method used to construct accurate parameters for an online search engine query.",
+      "Boolean queries are binoculars for a search engine user. They let you see much further and with greater precision.",
+      "The primary Boolean operator used by an OSINT investigator are \"quotation marks\".",
+      "Quotation marks force a search engine to find an exact match of the terms in the quotation marks.",
+      "You should use these quotation marks around key words which you know are essential to find the desired search results.",
+      "Can you combine the lessons of the previous lesson with this one? We'll see."
+    ]
   }
 ];
 
@@ -54,8 +66,8 @@ export const gameLevels: Level[] = [
     hasLesson: true,
     imageSrc: [
       "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png", // Image for WGA question (aircraft)
-      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png",  // SWAPPED - Now for Kenneth Arnold question (hanging scene)
-      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png"  // SWAPPED - Now for Benito Mussolini question (man holding drawing)
+      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png",  // SWAPPED - Now for Kenneth Arnold question (man holding drawing)
+      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png"  // SWAPPED - Now for Benito Mussolini question (hanging scene)
     ],
     questions: [
       [
@@ -109,12 +121,32 @@ export const gameLevels: Level[] = [
   },
   {
     id: 3,
+    hasLesson: true,
+    imageSrc: [
+      "/lovable-uploads/2d21d6a5-c93e-411b-a503-f0d65c58db81.png", // Level 3 Revolving 1 (men with pistols)
+      "/lovable-uploads/a1c6d5da-783c-46a6-bf5c-2675953ea3bc.png", // Level 3 Revolving 2 (hanging scene)
+      "/lovable-uploads/a1c6d5da-783c-46a6-bf5c-2675953ea3bc.png"  // Level 3 Revolving 3 (same image as 2)
+    ],
     questions: [
       [
         {
           id: "A",
-          text: "Two citizens of which country were arrested armed with explosives on 10 October 2001 in the Mexican legislative assembly?",
-          answer: "Israel"
+          text: "What brand of pistol were these men found with?",
+          answer: "GLOCK"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "What colour was the rope?",
+          answer: "BLACK"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "What infamous company of investigators did this man's family hire to look into his death?",
+          answer: "KROLL"
         }
       ]
     ],

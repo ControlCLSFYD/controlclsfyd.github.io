@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -46,6 +47,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
   const [score, setScore] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameWon, setGameWon] = useState(false);
+  const [hasWonBefore, setHasWonBefore] = useState(false);
   const requestRef = useRef<number>();
   
   // Adjust cell size for mobile
@@ -125,6 +127,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
       // Check win condition
       if (newScore >= WIN_SCORE) {
         setGameWon(true);
+        setHasWonBefore(true); // Set that player has won at least once
         return;
       }
     } else {
@@ -135,6 +138,14 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
     setSnake(newSnake);
     setDirection(currentDirection);
   };
+
+  // Track if the player has won before
+  useEffect(() => {
+    // If the player wins, we mark that they've won at least once
+    if (gameWon && !hasWonBefore) {
+      setHasWonBefore(true);
+    }
+  }, [gameWon, hasWonBefore]);
 
   // Handle keyboard input
   useEffect(() => {
@@ -390,7 +401,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
             gameWon={gameWon}
             onContinue={handleContinue}
             onPlayAgain={handlePlayAgain}
-            alwaysShowContinue={true}
+            alwaysShowContinue={hasWonBefore && gameWon}
           />
         )}
         

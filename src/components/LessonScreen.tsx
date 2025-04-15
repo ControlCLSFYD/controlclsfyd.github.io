@@ -20,6 +20,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   const [typingComplete, setTypingComplete] = useState(false);
   const [isDebugMode] = useState(false); // Debug mode toggle for quick testing
 
+  // Increased typing speed for lessons (3x faster)
+  const titleSpeed = 10; // was 30
+  const contentSpeed = 7; // was 20
+
   // Reset typing state when lesson changes
   useEffect(() => {
     setCurrentParagraphIndex(0);
@@ -62,7 +66,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
         <h2 className="text-xl text-terminal-green mb-4">
           <TypewriterText
             text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
-            speed={30}
+            speed={titleSpeed}
             onComplete={handleTitleComplete}
           />
         </h2>
@@ -75,7 +79,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
                   {index === currentParagraphIndex ? (
                     <TypewriterText
                       text={paragraph}
-                      speed={20}
+                      speed={contentSpeed}
                       onComplete={handleParagraphComplete}
                     />
                   ) : (

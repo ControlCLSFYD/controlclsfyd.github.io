@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import GameLevel from './GameLevel';
 import TypewriterText from './TypewriterText';
@@ -135,7 +136,10 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const handleSpacewarComplete = () => {
     setSpacewarCompleted(true);
     setShowSpacewarGame(false);
-    setCurrentLevel(3);
+    
+    // Show lesson 3 before proceeding to level 3
+    setCurrentLesson(3);
+    setShowLesson(true);
   };
 
   const handleSpacewarPlayAgain = () => {
