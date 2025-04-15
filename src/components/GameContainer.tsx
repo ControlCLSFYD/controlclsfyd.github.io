@@ -6,7 +6,8 @@ import OxoGame from './OxoGame';
 import SpacewarGame from './SpacewarGame';
 import SnakeGame from './SnakeGame';
 import TetrisGame from './TetrisGame';
-import { gameLevels } from '../data/gameData';
+import LessonScreen from './LessonScreen';
+import { gameData, lessonData } from '../data/gameData';
 import { getRandomPsalm } from '../utils/psalms';
 import PyramidStamp from './PyramidStamp';
 
@@ -44,6 +45,21 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [snakeDifficulty, setSnakeDifficulty] = useState(1);
   const [randomPsalm, setRandomPsalm] = useState("");
   const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
+  const [showLesson, setShowLesson] = useState(false);
+  const [currentLesson, setCurrentLesson] = useState<number>(0);
+  const [revolvingQuestions, setRevolvingQuestions] = useState<{[key: number]: number}>({});
+
+  useEffect(() => {
+    const initialRevolvingState: {[key: number]: number} = {};
+    gameData.levels.forEach(level => {
+      if (level.questions.length > 1) {
+        initialRevolvingState[level.id] = Math.floor(Math.random() * level.questions.length);
+      } else {
+        initialRevolvingState[level.id] = 0;
+      }
+    });
+    setRevolvingQuestions(initialRevolvingState);
+  }, []);
 
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -70,9 +86,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
     if (Object.keys(savedAnswers).length > 0) {
       const newCompletedLevels: number[] = [];
       
-      gameLevels.forEach((level, index) => {
+      gameData.levels.forEach((level, index) => {
         const levelNum = index + 1;
-        const allQuestionsAnswered = level.questions.every(question => {
+        const questionSet = level.questions[revolvingQuestions[levelNum] || 0];
+        
+        const allQuestionsAnswered = questionSet.every(question => {
           const answerKey = `${levelNum}-${question.id}`;
           const savedAnswer = savedAnswers[answerKey];
           return savedAnswer && savedAnswer.trim().toLowerCase() === question.answer.toLowerCase();
@@ -105,7 +123,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
         setOxoCompleted(true);
       }
     }
-  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, tetrisCompleted, snakeCompleted, gameStarted, oxoCompleted]);
+  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, tetrisCompleted, snakeCompleted, gameStarted, oxoCompleted, revolvingQuestions]);
 
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +137,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const handleOxoComplete = () => {
     setOxoCompleted(true);
     setShowOxoGame(false);
-    setCurrentLevel(1);
+    
+    if (gameData.levels[0]?.hasLesson) {
+      setCurrentLesson(1);
+      setShowLesson(true);
+    } else {
+      setCurrentLevel(1);
+    }
   };
 
   const handleOxoPlayAgain = () => {
@@ -144,8 +168,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
     else if (currentLevel === 4 && !snakeCompleted) {
       setShowSnakeGame(true);
     }
-    else if (currentLevel < gameLevels.length) {
-      setCurrentLevel(currentLevel + 1);
+    else if (currentLevel < gameData.levels.length) {
+      const nextLevel = currentLevel + 1;
+      
+      if (nextLevel <= gameData.levels.length && gameData.levels[nextLevel - 1]?.hasLesson) {
+        setCurrentLesson(nextLevel);
+        setShowLesson(true);
+      } else {
+        setCurrentLevel(nextLevel);
+      }
     } else {
       setGameCompleted(true);
     }
@@ -154,7 +185,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const handlePongComplete = () => {
     setPongCompleted(true);
     setShowPongGame(false);
-    setCurrentLevel(2);
+    
+    if (gameData.levels[1]?.hasLesson) {
+      setCurrentLesson(2);
+      setShowLesson(true);
+    } else {
+      setCurrentLevel(2);
+    }
   };
 
   const handlePongPlayAgain = (playerWon: boolean) => {
@@ -197,8 +234,33 @@ const GameContainer: React.FC<GameContainerProps> = ({
     setShowSnakeGame(true);
   };
 
+  const handleLessonComplete = () => {
+    setShowLesson(false);
+    setCurrentLevel(currentLesson);
+  };
+
   const handleEndMessageComplete = () => {
     setShowEndScreenPsalm(false);
+  };
+
+  const getCurrentImageSrc = (level: number) => {
+    const levelData = gameData.levels[level - 1];
+    if (!levelData) return undefined;
+    
+    if (Array.isArray(levelData.imageSrc)) {
+      const questionIndex = revolvingQuestions[level] || 0;
+      return levelData.imageSrc[questionIndex];
+    }
+    
+    return levelData.imageSrc;
+  };
+
+  const getCurrentQuestions = (level: number) => {
+    const levelData = gameData.levels[level - 1];
+    if (!levelData) return [];
+    
+    const questionIndex = revolvingQuestions[level] || 0;
+    return levelData.questions[questionIndex] || [];
   };
 
   const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;
@@ -269,6 +331,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 onComplete={handleEndMessageComplete}
               />
             </div>
+          ) : showLesson ? (
+            <LessonScreen 
+              lesson={lessonData.find(lesson => lesson.id === currentLesson) || lessonData[0]} 
+              onComplete={handleLessonComplete} 
+            />
           ) : showOxoGame ? (
             <OxoGame 
               onGameComplete={handleOxoComplete} 
@@ -300,12 +367,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
               difficulty={snakeDifficulty}
             />
           ) : (
-            currentLevel > 0 && currentLevel <= gameLevels.length && (
+            currentLevel > 0 && currentLevel <= gameData.levels.length && (
               <GameLevel
                 key={currentLevel}
                 level={currentLevel}
-                questions={gameLevels[currentLevel - 1].questions}
-                imageSrc={gameLevels[currentLevel - 1].imageSrc}
+                questions={getCurrentQuestions(currentLevel)}
+                imageSrc={getCurrentImageSrc(currentLevel)}
                 isActive={true}
                 onLevelComplete={handleLevelComplete}
                 savedAnswers={savedAnswers}

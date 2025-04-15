@@ -142,13 +142,13 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
     <div className="flex flex-col items-center justify-center mt-4">
       <h2 className="text-xl mb-4">OXO CHALLENGE</h2>
       
-      <div className="h-20 flex items-center justify-center">
+      <div className="h-20 flex items-center justify-center mb-4">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
             <span>You play as O. Click an empty cell to make your move.</span>
           </div>
         ) : (
-          <div>
+          <div className="text-center">
             <p className="mb-2">Win the game to continue</p>
             {difficulty > 1 && (
               <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
