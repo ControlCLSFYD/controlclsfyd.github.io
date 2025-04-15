@@ -1,0 +1,195 @@
+
+import { useState, useEffect, useCallback } from 'react';
+
+type Player = 'X' | 'O' | null;
+type BoardState = (Player)[];
+type GameStatus = 'playing' | 'won' | 'lost' | 'draw';
+
+interface UseTicTacToeGameOptions {
+  difficulty?: number;
+  cpuMovesFirst?: boolean;
+}
+
+export const useTicTacToeGame = ({ 
+  difficulty = 5,
+  cpuMovesFirst = true
+}: UseTicTacToeGameOptions = {}) => {
+  const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
+  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(!cpuMovesFirst);
+  const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
+  const [showInstructions, setShowInstructions] = useState(true);
+
+  const checkWinner = useCallback((board: BoardState, player: Player): boolean => {
+    const winPatterns = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+      [0, 4, 8], [2, 4, 6]
+    ];
+    
+    return winPatterns.some(pattern =>
+      pattern.every(index => board[index] === player)
+    );
+  }, []);
+
+  const getAvailableMoves = useCallback((board: BoardState): number[] => {
+    return board.reduce((acc, cell, index) => 
+      !cell ? [...acc, index] : acc, [] as number[]);
+  }, []);
+
+  // Minimax algorithm for optimal moves
+  const minimax = useCallback((board: BoardState, depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity): { score: number; move?: number } => {
+    // Terminal states
+    if (checkWinner(board, 'X')) return { score: 10 - depth };
+    if (checkWinner(board, 'O')) return { score: depth - 10 };
+    
+    const availableMoves = getAvailableMoves(board);
+    if (availableMoves.length === 0) return { score: 0 };
+    
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      let bestMove;
+      
+      for (const move of availableMoves) {
+        const newBoard = [...board];
+        newBoard[move] = 'X';
+        
+        const result = minimax(newBoard, depth + 1, false, alpha, beta);
+        
+        if (result.score > bestScore) {
+          bestScore = result.score;
+          bestMove = move;
+        }
+        
+        alpha = Math.max(alpha, bestScore);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      
+      return { score: bestScore, move: bestMove };
+    } else {
+      let bestScore = Infinity;
+      let bestMove;
+      
+      for (const move of availableMoves) {
+        const newBoard = [...board];
+        newBoard[move] = 'O';
+        
+        const result = minimax(newBoard, depth + 1, true, alpha, beta);
+        
+        if (result.score < bestScore) {
+          bestScore = result.score;
+          bestMove = move;
+        }
+        
+        beta = Math.min(beta, bestScore);
+        if (beta <= alpha) break; // Alpha-beta pruning
+      }
+      
+      return { score: bestScore, move: bestMove };
+    }
+  }, [checkWinner, getAvailableMoves]);
+
+  const getComputerMove = useCallback((board: BoardState): number => {
+    // Use smartness level based on difficulty (always use minimax for highest difficulty)
+    const smartnessChance = Math.min(0.4 + (difficulty * 0.12), 0.99);
+    
+    if (Math.random() > smartnessChance) {
+      const emptyCells = getAvailableMoves(board);
+      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    }
+    
+    // Use minimax for optimal move
+    const result = minimax(board, 0, true);
+    if (result.move !== undefined) {
+      return result.move;
+    }
+    
+    // Fallback to random move (shouldn't happen with proper minimax)
+    const emptyCells = getAvailableMoves(board);
+    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+  }, [difficulty, getAvailableMoves, minimax]);
+  
+  const makeCpuMove = useCallback(() => {
+    if (gameStatus !== 'playing' || isPlayerTurn) return;
+    
+    setTimeout(() => {
+      const computerMoveIndex = getComputerMove(board);
+      const newBoard = [...board];
+      newBoard[computerMoveIndex] = 'X';
+      setBoard(newBoard);
+      
+      if (checkWinner(newBoard, 'X')) {
+        setGameStatus('lost');
+      } else if (!newBoard.includes(null)) {
+        setGameStatus('draw');
+      } else {
+        setIsPlayerTurn(true);
+      }
+    }, 500);
+  }, [board, checkWinner, gameStatus, getComputerMove, isPlayerTurn]);
+
+  // Reset the game state
+  const resetGame = useCallback(() => {
+    setBoard(Array(9).fill(null));
+    setGameStatus('playing');
+    setIsPlayerTurn(!cpuMovesFirst);
+    setShowInstructions(true);
+    
+    const timer = setTimeout(() => {
+      setShowInstructions(false);
+      // If CPU moves first, make its move after instructions disappear
+      if (cpuMovesFirst) {
+        setTimeout(() => {
+          const initialMove = getComputerMove(Array(9).fill(null));
+          const newBoard = Array(9).fill(null);
+          newBoard[initialMove] = 'X';
+          setBoard(newBoard);
+          setIsPlayerTurn(true);
+        }, 100);
+      }
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [cpuMovesFirst, getComputerMove]);
+
+  // Handle cell click
+  const handleCellClick = useCallback((index: number) => {
+    if (board[index] || !isPlayerTurn || gameStatus !== 'playing') return;
+    
+    const newBoard = [...board];
+    newBoard[index] = 'O';
+    setBoard(newBoard);
+    
+    if (checkWinner(newBoard, 'O')) {
+      setGameStatus('won');
+      return;
+    }
+    
+    if (!newBoard.includes(null)) {
+      setGameStatus('draw');
+      return;
+    }
+    
+    setIsPlayerTurn(false);
+  }, [board, checkWinner, gameStatus, isPlayerTurn]);
+
+  // Initialize game
+  useEffect(() => {
+    resetGame();
+  }, [resetGame, cpuMovesFirst]);
+
+  // Make CPU move when it's CPU's turn
+  useEffect(() => {
+    if (!isPlayerTurn && gameStatus === 'playing' && !showInstructions) {
+      makeCpuMove();
+    }
+  }, [isPlayerTurn, gameStatus, showInstructions, makeCpuMove]);
+
+  return {
+    board,
+    gameStatus,
+    isPlayerTurn,
+    showInstructions,
+    handleCellClick,
+    resetGame
+  };
+};

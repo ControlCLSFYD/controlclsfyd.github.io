@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Circle } from 'lucide-react';
 import { Button } from './ui/button';
 import GameResult from './GameResult';
+import TicTacToeBoard from './TicTacToeBoard';
+import { useTicTacToeGame } from '../hooks/useTicTacToeGame';
 
 interface OxoGameProps {
   onGameComplete: () => void;
@@ -10,132 +11,53 @@ interface OxoGameProps {
   difficulty?: number;
 }
 
-type Player = 'X' | 'O' | null;
-type BoardState = (Player)[];
-
-const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
-  const [board, setBoard] = useState<BoardState>(Array(9).fill(null));
-  const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(true);
-  const [gameStatus, setGameStatus] = useState<'playing' | 'won' | 'lost' | 'draw'>('playing');
-  const [showInstructions, setShowInstructions] = useState(true);
+const OxoGame: React.FC<OxoGameProps> = ({ 
+  onGameComplete, 
+  onPlayAgain,
+  difficulty = 5 // Set default difficulty to maximum
+}) => {
+  const [drawCount, setDrawCount] = useState<number>(0);
+  const [roundCount, setRoundCount] = useState<number>(1);
+  const [cpuFirst, setCpuFirst] = useState<boolean>(true);
+  
+  const {
+    board,
+    gameStatus,
+    showInstructions,
+    handleCellClick,
+    resetGame
+  } = useTicTacToeGame({
+    difficulty,
+    cpuMovesFirst: cpuFirst
+  });
+  
+  useEffect(() => {
+    // Reset game when round changes
+    resetGame();
+  }, [roundCount, resetGame]);
 
   useEffect(() => {
-    setBoard(Array(9).fill(null));
-    setGameStatus('playing');
-    setIsPlayerTurn(true);
-    
-    const timer = setTimeout(() => {
-      setShowInstructions(false);
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, [difficulty]);
-  
-  const checkWinner = (board: BoardState, player: Player): boolean => {
-    const winPatterns = [
-      [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-      [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-      [0, 4, 8], [2, 4, 6]
-    ];
-    
-    return winPatterns.some(pattern =>
-      pattern.every(index => board[index] === player)
-    );
-  };
-  
-  const getComputerMove = (board: BoardState): number => {
-    const smartnessChance = Math.min(0.4 + (difficulty * 0.12), 0.95);
-    
-    if (Math.random() > smartnessChance) {
-      const emptyCells = board.reduce((acc, cell, index) => 
-        !cell ? [...acc, index] : acc, [] as number[]);
-      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    // Update draw count when game ends in draw
+    if (gameStatus === 'draw') {
+      setDrawCount(prev => prev + 1);
     }
-    
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        const newBoard = [...board];
-        newBoard[i] = 'X';
-        if (checkWinner(newBoard, 'X')) return i;
-      }
-    }
-    
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        const newBoard = [...board];
-        newBoard[i] = 'O';
-        if (checkWinner(newBoard, 'O')) return i;
-      }
-    }
-    
-    if (!board[4]) return 4;
-    
-    const corners = [0, 2, 6, 8];
-    const availableCorners = corners.filter(corner => !board[corner]);
-    if (availableCorners.length > 0) {
-      return availableCorners[Math.floor(Math.random() * availableCorners.length)];
-    }
-    
-    const emptyCells = board.reduce((acc, cell, index) => 
-      !cell ? [...acc, index] : acc, [] as number[]);
-    
-    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-  };
-  
-  const handleCellClick = (index: number) => {
-    if (board[index] || !isPlayerTurn || gameStatus !== 'playing') return;
-    
-    const newBoard = [...board];
-    newBoard[index] = 'O';
-    setBoard(newBoard);
-    
-    if (checkWinner(newBoard, 'O')) {
-      setGameStatus('won');
-      return;
-    }
-    
-    if (!newBoard.includes(null)) {
-      setGameStatus('draw');
-      return;
-    }
-    
-    setIsPlayerTurn(false);
-    setTimeout(() => {
-      const computerMoveIndex = getComputerMove(newBoard);
-      const finalBoard = [...newBoard];
-      finalBoard[computerMoveIndex] = 'X';
-      setBoard(finalBoard);
-      
-      if (checkWinner(finalBoard, 'X')) {
-        setGameStatus('lost');
-      } else if (!finalBoard.includes(null)) {
-        setGameStatus('draw');
-      } else {
-        setIsPlayerTurn(true);
-      }
-    }, 500);
-  };
-  
-  const renderCell = (index: number) => {
-    const cellValue = board[index];
-    
-    return (
-      <div 
-        key={index}
-        className="flex items-center justify-center w-20 h-20 border-2 border-terminal-green cursor-pointer"
-        onClick={() => handleCellClick(index)}
-      >
-        {cellValue === 'O' && <Circle className="text-terminal-green" size={40} />}
-        {cellValue === 'X' && <X className="text-terminal-green" size={40} />}
-      </div>
-    );
-  };
+  }, [gameStatus]);
   
   const handleContinue = () => {
-    onGameComplete();
+    if (drawCount >= 2) {
+      // Player has drawn twice, complete the game
+      onGameComplete();
+    } else {
+      // Start next round with alternating first player
+      setRoundCount(prev => prev + 1);
+      setCpuFirst(prev => !prev);
+    }
   };
   
   const handlePlayAgain = () => {
+    // Reset the current round without changing who goes first
+    resetGame();
+    // If player won or lost, don't change the round count
     onPlayAgain();
   };
   
@@ -146,28 +68,29 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
       <div className="h-20 flex items-center justify-center mb-4">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
-            <span>You play as O. Click an empty cell to make your move.</span>
+            <span>You play as O. {cpuFirst ? 'CPU plays first. Try to force a draw!' : 'You play first. Try to force a draw!'}</span>
           </div>
         ) : (
           <div className="text-center">
-            <p className="mb-2">Win the game to continue</p>
-            {difficulty > 1 && (
-              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-            )}
+            <p className="mb-2">Draw twice to continue</p>
+            <p className="mb-2">Current draws: {drawCount}/2</p>
+            <p className="mb-2">Round {roundCount}: {cpuFirst ? 'CPU plays first' : 'You play first'}</p>
+            <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
           </div>
         )}
       </div>
       
-      <div className="grid grid-cols-3 gap-1 w-64 h-64 bg-black p-2">
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => renderCell(index))}
-      </div>
+      <TicTacToeBoard 
+        board={board} 
+        onCellClick={handleCellClick}
+      />
       
       {gameStatus !== 'playing' && (
         <GameResult
           gameWon={gameStatus === 'won'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={false}
+          alwaysShowContinue={gameStatus === 'draw'}
         />
       )}
     </div>

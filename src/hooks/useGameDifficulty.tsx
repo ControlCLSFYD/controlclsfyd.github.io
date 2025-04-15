@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 export const useGameDifficulty = () => {
   const [courtDifficulty, setCourtDifficulty] = useState(1);
-  const [noughtsAndCrossesDifficulty, setNoughtsAndCrossesDifficulty] = useState(1);
+  const [noughtsAndCrossesDifficulty, setNoughtsAndCrossesDifficulty] = useState(5); // Set to maximum difficulty
   const [spacePeaceDifficulty, setSpacePeaceDifficulty] = useState(1);
   const [uatDifficulty, setUatDifficulty] = useState(1);
   const [snekDifficulty, setSnekDifficulty] = useState(1);
