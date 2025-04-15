@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { getRandomPsalm } from '../utils/psalms';
