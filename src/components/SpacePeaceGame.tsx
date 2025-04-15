@@ -148,7 +148,7 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
         
         {showTearDrop && (
           <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 animate-fall">
-            <style jsx>
+            <style>
               {`
                 @keyframes fall {
                   0% { transform: translateY(0); }

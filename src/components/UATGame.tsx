@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -126,8 +127,7 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
           
           // If W is pressed 33 times, trigger win
           if (newCount >= 33) {
-            setGameWon(true);
-            setShowWinMessage(true);
+            triggerSecretWin();
           }
           
           return newCount;
@@ -141,6 +141,43 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const triggerSecretWin = () => {
+    // Create winning grid state
+    const winningGrid = createWinningGrid();
+    setGrid(winningGrid);
+    
+    // Set score to winning score
+    setScore(POINTS_TO_WIN);
+    
+    // Set game state
+    setWinAchieved(true);
+    setShowWinMessage(true);
+    setGameWon(true);
+  };
+
+  const createWinningGrid = () => {
+    // Create a tetris grid with some filled rows at the bottom to simulate a won game
+    const winGrid = Array(GRID_HEIGHT).fill(null).map(() => Array(GRID_WIDTH).fill(0));
+    
+    // Fill some bottom rows with blocks
+    for (let y = GRID_HEIGHT - 1; y > GRID_HEIGHT - 5; y--) {
+      for (let x = 0; x < GRID_WIDTH; x++) {
+        // Add some randomness to make it look more natural
+        const colorIndex = Math.floor(Math.random() * COLORS.length) + 1;
+        winGrid[y][x] = colorIndex;
+      }
+      
+      // Leave a few random gaps
+      const gaps = Math.floor(Math.random() * 3);
+      for (let g = 0; g < gaps; g++) {
+        const gapPosition = Math.floor(Math.random() * GRID_WIDTH);
+        winGrid[y][gapPosition] = 0;
+      }
+    }
+    
+    return winGrid;
+  };
 
   const generateTetromino = () => {
     const index = Math.floor(Math.random() * SHAPES.length);
@@ -158,8 +195,11 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
     setGameOver(false);
     setShowWinMessage(false);
     setGameStarted(true);
+    setGameWon(false);
+    setWinAchieved(false);
     setCurrentTetromino(generateTetromino());
     setNextTetromino(generateTetromino());
+    setSecretKeyCount(0);
     lastDropTime.current = 0;
   };
 
@@ -280,16 +320,14 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
       if (newScore >= POINTS_TO_WIN && !winAchieved) {
         setWinAchieved(true);
         setShowWinMessage(true);
-        setTimeout(() => {
-          setShowWinMessage(false);
-        }, 5000);
+        setGameWon(true);
       }
     }
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameOver || gameWon) {
+      if (gameOver) {
         startGame();
         return;
       }
