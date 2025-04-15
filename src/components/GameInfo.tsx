@@ -19,7 +19,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
 }) => {
   return (
     <>
-      <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
+      <h2 className="text-xl mb-4">SPACE PEACE CHALLENGE</h2>
       
       <div className="h-[60px] mb-2">
         {showInstructions ? (

@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
@@ -20,8 +21,6 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
   const [secretProgress, setSecretProgress] = useState("");
   const [secretCount, setSecretCount] = useState(0);
   const [showPurr, setShowPurr] = useState(false);
-  const [showBigPurr, setShowBigPurr] = useState(false);
-  const [showTearDrop, setShowTearDrop] = useState(false);
   
   const { 
     userScore,
@@ -44,63 +43,64 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      let newProgress = secretProgress;
-      
-      if (/^[ps]$/i.test(e.key)) {
-        newProgress += e.key.toLowerCase();
-        
-        if (newProgress.length > 22) {
-          newProgress = newProgress.substring(1);
-        }
-        
-        if (newProgress.endsWith("psps")) {
-          setShowPurr(true);
-          setTimeout(() => setShowPurr(false), 2000);
-        }
-        
-        if (newProgress === "pspspspspspspspspspspsps") {
-          setSecretCount(prevCount => {
-            const newCount = prevCount + 1;
-            
-            if (newCount >= 8 && !showBigPurr) {
-              setShowBigPurr(true);
-              setShowTearDrop(true);
-              setTimeout(() => setShowTearDrop(false), 3000);
-            }
-            
-            if (newCount >= 20) {
-              gameState.gameWon = true;
-              gameState.gameOver = true;
-              originalHandleContinue();
-            }
-            
-            return newCount;
-          });
+      // Track the keys 'p' and 's' to detect the secret pattern
+      if (e.key === 'p' || e.key === 's') {
+        setSecretProgress(prev => {
+          const newProgress = prev + e.key;
           
-          newProgress = "";
-        }
+          // Check if the pattern 'pspspsps' appears in the progress
+          if (newProgress.includes('pspspsps')) {
+            setSecretCount(prevCount => {
+              const newCount = prevCount + 1;
+              
+              // Show "purr" visual feedback
+              setShowPurr(true);
+              setTimeout(() => setShowPurr(false), 1000);
+              
+              // Trigger victory after typing the pattern 5 times
+              if (newCount >= 5) {
+                gameState.gameWon = true;
+                gameState.gameOver = true;
+              }
+              
+              return newCount;
+            });
+            
+            // Reset progress after detecting the pattern
+            return '';
+          }
+          
+          // Limit the length of the progress to avoid memory issues
+          if (newProgress.length > 20) {
+            return newProgress.slice(-20);
+          }
+          
+          return newProgress;
+        });
       } else {
-        newProgress = "";
+        // Reset progress for other keys
+        setSecretProgress('');
       }
-      
-      setSecretProgress(newProgress);
     };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [secretProgress, secretCount, originalHandleContinue, gameState]);
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [gameState]);
 
   useEffect(() => {
+    // Set hasWonBefore to true if the player has won
     if (gameState.gameWon && !hasWonBefore) {
       setHasWonBefore(true);
     }
   }, [gameState.gameWon, hasWonBefore]);
 
   const handlePlayAgain = () => {
+    // Only increase difficulty if player has won at least once
     if (gameState.gameWon) {
       setCurrentDifficulty(prev => Math.min(prev + 1, 5));
     }
     resetGame();
+    setSecretCount(0);
     onPlayAgain();
   };
 
@@ -127,27 +127,8 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
         />
         
         {showPurr && (
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-terminal-green text-xs">purr</div>
-        )}
-        
-        {showBigPurr && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-terminal-green text-xl font-bold">PURR</div>
-        )}
-        
-        {showTearDrop && (
-          <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 animate-fall">
-            <style>
-              {`
-                @keyframes fall {
-                  0% { transform: translateY(0); }
-                  100% { transform: translateY(100px); }
-                }
-                .animate-fall {
-                  animation: fall 3s linear forwards;
-                }
-              `}
-            </style>
-            <div className="text-blue-300 text-lg">💧</div>
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-terminal-green text-sm">
+            purr
           </div>
         )}
       </div>
@@ -161,9 +142,9 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
         />
       )}
       
-      {secretCount > 0 && secretCount < 20 && (
+      {secretCount > 0 && secretCount < 5 && (
         <div className="mt-2 text-xs text-terminal-green">
-          Secret pattern count: {secretCount}/20
+          Secret pattern count: {secretCount}/5
         </div>
       )}
       
