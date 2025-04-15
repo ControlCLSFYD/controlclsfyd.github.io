@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Circle } from 'lucide-react';
 import { Button } from './ui/button';
@@ -167,6 +166,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
           gameWon={gameStatus === 'won'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
+          alwaysShowContinue={false}
         />
       )}
     </div>

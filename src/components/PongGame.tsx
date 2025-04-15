@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
@@ -296,6 +297,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
           gameWon={gameState.gameWon}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
+          alwaysShowContinue={false}
         />
       )}
       
