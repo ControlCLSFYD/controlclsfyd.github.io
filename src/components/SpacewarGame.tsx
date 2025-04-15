@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
@@ -6,15 +7,12 @@ import GameControls from './GameControls';
 import GameInfo from './GameInfo';
 import useSpacewarGame from '../hooks/useSpacewarGame';
 
-interface SpacewarGameProps extends BaseGameProps {
-  forceWin?: boolean;
-}
+interface SpacewarGameProps extends BaseGameProps {}
 
 const SpacewarGame: React.FC<SpacewarGameProps> = ({ 
   onGameComplete, 
   onPlayAgain, 
-  difficulty = 1,
-  forceWin = false
+  difficulty = 1 
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isMobile = useIsMobile();
@@ -33,8 +31,7 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
     handleRightButton,
     handleButtonUp,
     handleContinue,
-    resetGame,
-    forceGameWin
+    resetGame
   } = useSpacewarGame({ 
     canvasRef, 
     difficulty: currentDifficulty, 
@@ -47,13 +44,6 @@ const SpacewarGame: React.FC<SpacewarGameProps> = ({
       setHasWonBefore(true);
     }
   }, [gameState.gameWon, hasWonBefore]);
-
-  // Add effect to handle forceWin prop
-  useEffect(() => {
-    if (forceWin && !gameState.gameWon && !gameState.gameOver) {
-      forceGameWin();
-    }
-  }, [forceWin, gameState.gameWon, gameState.gameOver, forceGameWin]);
 
   const handlePlayAgain = () => {
     // Only increase difficulty if player has won at least once

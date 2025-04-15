@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useGameProgress } from './useGameProgress';
 import { useRevolvingQuestions } from './useRevolvingQuestions';
 import { useGameDifficulty } from './useGameDifficulty';
@@ -16,61 +16,61 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
   
-  const [showCourtGame, setShowCourtGame] = useState(false);
-  const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
-  const [showSpacePeaceGame, setShowSpacePeaceGame] = useState(false);
-  const [showUATGame, setShowUATGame] = useState(false);
-  const [showSnekGame, setShowSnekGame] = useState(false);
+  const [showPongGame, setShowPongGame] = useState(false);
+  const [showOxoGame, setShowOxoGame] = useState(false);
+  const [showSpacewarGame, setShowSpacewarGame] = useState(false);
+  const [showTetrisGame, setShowTetrisGame] = useState(false);
+  const [showSnakeGame, setShowSnakeGame] = useState(false);
   
   const { revolvingQuestions } = useRevolvingQuestions();
   
   const {
     completedLevels,
-    courtCompleted, setCourtCompleted,
-    noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted,
-    spacePeaceCompleted, setSpacePeaceCompleted,
-    uatCompleted, setUATCompleted,
-    snekCompleted, setSnekCompleted,
+    pongCompleted, setPongCompleted,
+    oxoCompleted, setOxoCompleted,
+    spacewarCompleted, setSpacewarCompleted,
+    tetrisCompleted, setTetrisCompleted,
+    snakeCompleted, setSnakeCompleted,
     currentLevel, setCurrentLevel
   } = useGameProgress({ savedAnswers, revolvingQuestions });
   
   const {
-    courtDifficulty, increaseCourtDifficulty,
-    noughtsAndCrossesDifficulty, increaseNoughtsAndCrossesDifficulty,
-    spacePeaceDifficulty, increaseSpacePeaceDifficulty,
-    uatDifficulty, increaseUATDifficulty,
-    snekDifficulty, increaseSnekDifficulty
+    pongDifficulty, increasePongDifficulty,
+    oxoDifficulty, increaseOxoDifficulty,
+    spacewarDifficulty, increaseSpacewarDifficulty,
+    tetrisDifficulty, increaseTetrisDifficulty,
+    snakeDifficulty, increaseSnakeDifficulty
   } = useGameDifficulty();
 
   const handleAccessGranted = () => {
     onResetGame();
     setGameStarted(true);
-    setShowNoughtsAndCrossesGame(true);
+    setShowOxoGame(true);
   };
 
-  const handleNoughtsAndCrossesComplete = () => {
-    setNoughtsAndCrossesCompleted(true);
-    setShowNoughtsAndCrossesGame(false);
+  const handleOxoComplete = () => {
+    setOxoCompleted(true);
+    setShowOxoGame(false);
     setCurrentLevel(1);
   };
 
-  const handleNoughtsAndCrossesPlayAgain = () => {
-    increaseNoughtsAndCrossesDifficulty();
-    setShowNoughtsAndCrossesGame(true);
+  const handleOxoPlayAgain = () => {
+    increaseOxoDifficulty();
+    setShowOxoGame(true);
   };
 
   const handleLevelComplete = () => {
-    if (currentLevel === 1 && !courtCompleted) {
-      setShowCourtGame(true);
+    if (currentLevel === 1 && !pongCompleted) {
+      setShowPongGame(true);
     } 
-    else if (currentLevel === 2 && !spacePeaceCompleted) {
-      setShowSpacePeaceGame(true);
+    else if (currentLevel === 2 && !spacewarCompleted) {
+      setShowSpacewarGame(true);
     }
-    else if (currentLevel === 3 && !uatCompleted) {
-      setShowUATGame(true);
+    else if (currentLevel === 3 && !tetrisCompleted) {
+      setShowTetrisGame(true);
     }
-    else if (currentLevel === 4 && !snekCompleted) {
-      setShowSnekGame(true);
+    else if (currentLevel === 4 && !snakeCompleted) {
+      setShowSnakeGame(true);
     }
     else if (currentLevel < gameData.levels.length) {
       const nextLevel = currentLevel + 1;
@@ -80,57 +80,57 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     }
   };
 
-  const handleCourtComplete = () => {
-    setCourtCompleted(true);
-    setShowCourtGame(false);
+  const handlePongComplete = () => {
+    setPongCompleted(true);
+    setShowPongGame(false);
     setCurrentLevel(2);
   };
 
-  const handleCourtPlayAgain = (playerWon: boolean) => {
+  const handlePongPlayAgain = (playerWon: boolean) => {
     if (playerWon) {
-      increaseCourtDifficulty();
+      increasePongDifficulty();
     }
-    setShowCourtGame(true);
+    setShowPongGame(true);
   };
 
-  const handleSpacePeaceComplete = () => {
-    setSpacePeaceCompleted(true);
-    setShowSpacePeaceGame(false);
+  const handleSpacewarComplete = () => {
+    setSpacewarCompleted(true);
+    setShowSpacewarGame(false);
     setCurrentLevel(3);
   };
 
-  const handleSpacePeacePlayAgain = () => {
-    increaseSpacePeaceDifficulty();
-    setShowSpacePeaceGame(true);
+  const handleSpacewarPlayAgain = () => {
+    increaseSpacewarDifficulty();
+    setShowSpacewarGame(true);
   };
 
-  const handleUATComplete = () => {
-    setUATCompleted(true);
-    setShowUATGame(false);
+  const handleTetrisComplete = () => {
+    setTetrisCompleted(true);
+    setShowTetrisGame(false);
     setCurrentLevel(4);
   };
 
-  const handleUATPlayAgain = () => {
-    increaseUATDifficulty();
-    setShowUATGame(true);
+  const handleTetrisPlayAgain = () => {
+    increaseTetrisDifficulty();
+    setShowTetrisGame(true);
   };
 
-  const handleSnekComplete = () => {
-    setSnekCompleted(true);
-    setShowSnekGame(false);
+  const handleSnakeComplete = () => {
+    setSnakeCompleted(true);
+    setShowSnakeGame(false);
     setCurrentLevel(5);
   };
 
-  const handleSnekPlayAgain = () => {
-    increaseSnekDifficulty();
-    setShowSnekGame(true);
+  const handleSnakePlayAgain = () => {
+    increaseSnakeDifficulty();
+    setShowSnakeGame(true);
   };
 
   const handleEndMessageComplete = () => {
     setShowEndScreenPsalm(false);
   };
 
-  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showSpacePeaceGame || showUATGame || showSnekGame;
+  const isGameActive = showPongGame || showOxoGame || showSpacewarGame || showTetrisGame || showSnakeGame;
 
   const getCurrentLevelQuestions = () => {
     return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
@@ -143,29 +143,29 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   return {
     gameStarted,
     gameCompleted,
-    showNoughtsAndCrossesGame,
-    showCourtGame,
-    showSpacePeaceGame,
-    showUATGame,
-    showSnekGame,
+    showOxoGame,
+    showPongGame,
+    showSpacewarGame,
+    showTetrisGame,
+    showSnakeGame,
     currentLevel,
     isGameActive,
-    noughtsAndCrossesDifficulty,
-    courtDifficulty,
-    spacePeaceDifficulty,
-    uatDifficulty,
-    snekDifficulty,
+    oxoDifficulty,
+    pongDifficulty,
+    spacewarDifficulty,
+    tetrisDifficulty,
+    snakeDifficulty,
     handleAccessGranted,
-    handleNoughtsAndCrossesComplete,
-    handleNoughtsAndCrossesPlayAgain,
-    handleCourtComplete,
-    handleCourtPlayAgain,
-    handleSpacePeaceComplete,
-    handleSpacePeacePlayAgain,
-    handleUATComplete,
-    handleUATPlayAgain,
-    handleSnekComplete,
-    handleSnekPlayAgain,
+    handleOxoComplete,
+    handleOxoPlayAgain,
+    handlePongComplete,
+    handlePongPlayAgain,
+    handleSpacewarComplete,
+    handleSpacewarPlayAgain,
+    handleTetrisComplete,
+    handleTetrisPlayAgain,
+    handleSnakeComplete,
+    handleSnakePlayAgain,
     handleLevelComplete,
     handleEndMessageComplete,
     getCurrentLevelQuestions,

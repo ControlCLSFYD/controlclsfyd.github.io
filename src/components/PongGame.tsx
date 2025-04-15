@@ -1,242 +1,287 @@
-import React, { useEffect, useState, useRef } from 'react';
+
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useIsMobile } from '../hooks/use-mobile';
-import { BaseGameProps } from '../interfaces/GameInterfaces';
+import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
 import GameResult from './GameResult';
-import GameControls from './GameControls';
-import GameInfo from './GameInfo';
 
-interface PongGameProps extends BaseGameProps {
-  forceWin?: boolean;
-}
+interface PongGameProps extends BaseGameProps {}
 
-const PongGame: React.FC<PongGameProps> = ({ 
-  onGameComplete, 
-  onPlayAgain, 
-  difficulty = 1,
-  forceWin = false 
-}) => {
+const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, difficulty = 1 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isMobile = useIsMobile();
-  const [playerScore, setPlayerScore] = useState(0);
+  const [userScore, setUserScore] = useState(0);
   const [computerScore, setComputerScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [gameWon, setGameWon] = useState(false);
+  const [gameState, setGameState] = useState<GameState>({
+    gameStarted: true,
+    gameOver: false,
+    gameWon: false,
+    score: 0
+  });
   const [showInstructions, setShowInstructions] = useState(true);
-  const [hasWonBefore, setHasWonBefore] = useState(false);
-  const [currentDifficulty, setCurrentDifficulty] = useState(difficulty);
-  
-  // Canvas dimensions
-  const canvasWidth = 600;
-  const canvasHeight = 400;
-  
-  // Paddle dimensions
-  const paddleWidth = 10;
-  const paddleHeight = 80;
-  const paddleSpeed = 5;
-  
-  // Ball dimensions
-  const ballSize = 10;
-  const initialBallSpeed = 3;
-  const maxBallSpeed = 10;
-  
-  // Winning score
-  const WINNING_SCORE = 5;
+  const [playerWon, setPlayerWon] = useState(false);
 
-  // Player paddle position
-  const [playerPaddleY, setPlayerPaddleY] = useState((canvasHeight - paddleHeight) / 2);
-  
-  // Computer paddle position
-  const [computerPaddleY, setComputerPaddleY] = useState((canvasHeight - paddleHeight) / 2);
-  
-  // Ball position and speed
-  const [ballX, setBallX] = useState(canvasWidth / 2);
-  const [ballY, setBallY] = useState(canvasHeight / 2);
-  const [ballSpeedX, setBallSpeedX] = useState(initialBallSpeed);
-  const [ballSpeedY, setBallSpeedY] = useState(1);
-  
-  const animationFrameRef = useRef<number>();
-  
-  // Function to reset the ball to the center
-  const resetBall = () => {
-    setBallX(canvasWidth / 2);
-    setBallY(canvasHeight / 2);
-    setBallSpeedX(initialBallSpeed * (Math.random() > 0.5 ? 1 : -1));
-    setBallSpeedY((Math.random() * 2 - 1) * 2);
-  };
-  
-  // Function to update the game state
-  const updateGame = () => {
-    if (!canvasRef.current || gameOver) return;
-    
-    const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    
-    // Draw background
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    
-    // Draw player paddle
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, playerPaddleY, paddleWidth, paddleHeight);
-    
-    // Draw computer paddle
-    ctx.fillRect(canvasWidth - paddleWidth, computerPaddleY, paddleWidth, paddleHeight);
-    
-    // Draw ball
-    ctx.beginPath();
-    ctx.arc(ballX, ballY, ballSize / 2, 0, Math.PI * 2);
-    ctx.fillStyle = 'white';
-    ctx.fill();
-    ctx.closePath();
-    
-    // Move ball
-    setBallX(prevBallX => prevBallX + ballSpeedX);
-    setBallY(prevBallY => prevBallY + ballSpeedY);
-    
-    // Bounce off top and bottom walls
-    if (ballY - ballSize / 2 < 0 || ballY + ballSize / 2 > canvasHeight) {
-      setBallSpeedY(-ballSpeedY);
-    }
-    
-    // Bounce off player paddle
-    if (ballX - ballSize / 2 < paddleWidth && ballY > playerPaddleY && ballY < playerPaddleY + paddleHeight) {
-      setBallSpeedX(Math.abs(ballSpeedX) * 1.1); // Increase speed
-      setBallSpeedY((ballY - (playerPaddleY + paddleHeight / 2)) / (paddleHeight / 2) * 3);
-    }
-    
-    // Bounce off computer paddle
-    if (ballX + ballSize / 2 > canvasWidth - paddleWidth && ballY > computerPaddleY && ballY < computerPaddleY + paddleHeight) {
-      setBallSpeedX(-Math.abs(ballSpeedX) * 1.1); // Increase speed
-      setBallSpeedY((ballY - (computerPaddleY + paddleHeight / 2)) / (paddleHeight / 2) * 3);
-    }
-    
-    // Computer paddle AI
-    const computerSpeed = paddleSpeed * currentDifficulty;
-    if (computerPaddleY + paddleHeight / 2 < ballY) {
-      setComputerPaddleY(prevComputerPaddleY => Math.min(prevComputerPaddleY + computerSpeed, canvasHeight - paddleHeight));
-    } else if (computerPaddleY + paddleHeight / 2 > ballY) {
-      setComputerPaddleY(prevComputerPaddleY => Math.max(prevComputerPaddleY - computerSpeed, 0));
-    }
-    
-    // Check if ball went out of bounds
-    if (ballX < 0) {
-      setComputerScore(prevScore => prevScore + 1);
-      resetBall();
-    } else if (ballX > canvasWidth) {
-      setPlayerScore(prevScore => prevScore + 1);
-      resetBall();
-    }
-    
-    // Check for game over
-    if (playerScore >= WINNING_SCORE) {
-      setGameOver(true);
-      setGameWon(true);
-      setHasWonBefore(true);
-    } else if (computerScore >= WINNING_SCORE) {
-      setGameOver(true);
-      setGameWon(false);
-    }
-    
-    animationFrameRef.current = requestAnimationFrame(updateGame);
-  };
-  
-  // Function to handle player paddle movement
-  const movePaddle = (direction: 'up' | 'down') => {
-    if (gameOver) return;
-    
-    if (direction === 'up') {
-      setPlayerPaddleY(prevPaddleY => Math.max(prevPaddleY - paddleSpeed, 0));
-    } else {
-      setPlayerPaddleY(prevPaddleY => Math.min(prevPaddleY + paddleSpeed, canvasHeight - paddleHeight));
-    }
-  };
-  
-  // Function to start the game
-  const startGame = () => {
-    resetBall();
-    setPlayerScore(0);
-    setComputerScore(0);
-    setGameOver(false);
-    setGameWon(false);
-    setShowInstructions(false);
-    
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    animationFrameRef.current = requestAnimationFrame(updateGame);
-  };
-  
-  // Function to handle game completion
-  const handleContinue = () => {
+  const isMobile = useIsMobile();
+  const canvasWidth = isMobile ? 320 : 600;
+  const canvasHeight = isMobile ? 240 : 400;
+
+  const paddleHeight = Math.max(6, Math.floor(canvasHeight * 0.02));
+  const paddleWidth = Math.max(40, Math.floor(canvasWidth * 0.1));
+  const ballRadius = Math.max(3, Math.floor(canvasWidth * 0.007));
+
+  const winningScore = 3;
+
+  const handleContinue = useCallback(() => {
     onGameComplete();
-  };
-  
-  // Function to handle playing again
-  const handlePlayAgain = () => {
-    if (gameWon) {
-      setCurrentDifficulty(prev => Math.min(prev + 1, 5));
-    }
-    startGame();
-    onPlayAgain(gameWon);
-  };
+  }, [onGameComplete]);
 
-  // Add effect for the forceWin prop
+  const handlePlayAgain = useCallback(() => {
+    resetGame();
+    onPlayAgain(playerWon);
+  }, [onPlayAgain, playerWon]);
+
+  const resetGame = useCallback(() => {
+    setUserScore(0);
+    setComputerScore(0);
+    setPlayerWon(false);
+    setGameState({
+      gameStarted: true,
+      gameOver: false,
+      gameWon: false,
+      score: 0
+    });
+  }, []);
+
+  const handleLeftButton = useCallback(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+  }, []);
+
+  const handleRightButton = useCallback(() => {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+  }, []);
+
+  const handleButtonUp = useCallback(() => {
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
+    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
+  }, []);
+
   useEffect(() => {
-    if (forceWin && !gameWon) {
-      // Force player to win
-      setPlayerScore(WINNING_SCORE);
-      setGameOver(true);
-      setGameWon(true);
+    if (isMobile) {
+      const viewport = document.querySelector('meta[name=viewport]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=no');
+      }
     }
-  }, [forceWin]);
-  
-  // Keyboard event listeners
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowUp') {
-        movePaddle('up');
-      } else if (e.key === 'ArrowDown') {
-        movePaddle('down');
+
+    const instructionsTimer = setTimeout(() => {
+      setShowInstructions(false);
+    }, 3000);
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let userPaddleX = (canvasWidth - paddleWidth) / 2;
+    let computerPaddleX = (canvasWidth - paddleWidth) / 2;
+    
+    let ballX = canvasWidth / 2;
+    let ballY = canvasHeight / 8;
+    
+    const baseHorizontalSpeed = isMobile ? 
+      (2 + (difficulty * 0.3)) * 1.2 : 
+      (2.5 + (difficulty * 0.3)) * 1.2; 
+    const baseVerticalSpeed = isMobile ? 
+      (3.5 + (difficulty * 0.4)) * 1.2 : 
+      (4 + (difficulty * 0.4)) * 1.2;
+    
+    let ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1);
+    let ballDY = baseVerticalSpeed;
+    
+    let rightPressed = false;
+    let leftPressed = false;
+    
+    const keyDownHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Right' || e.key === 'ArrowRight') {
+        rightPressed = true;
+      } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+        leftPressed = true;
       }
     };
     
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameOver]);
-  
-  // Touch event listeners for mobile
-  const handleTouchStart = (e: TouchEvent) => {
-    const touchY = e.touches[0].clientY;
-    if (touchY < canvasHeight / 2) {
-      movePaddle('up');
-    } else {
-      movePaddle('down');
-    }
-  };
-  
-  // Start game when component mounts
-  useEffect(() => {
-    startGame();
+    const keyUpHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Right' || e.key === 'ArrowRight') {
+        rightPressed = false;
+      } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+        leftPressed = false;
+      }
+    };
+
+    document.addEventListener('keydown', keyDownHandler);
+    document.addEventListener('keyup', keyUpHandler);
+
+    let animationFrameId: number;
+    let gameActive = !gameState.gameOver;
+    let lastFrameTime = performance.now();
+    const targetFPS = 60;
+    const frameDelay = 1000 / targetFPS;
+
+    const draw = (timestamp: number) => {
+      if (!ctx || !gameActive) return;
+      
+      const elapsed = timestamp - lastFrameTime;
+      if (elapsed < frameDelay) {
+        animationFrameId = window.requestAnimationFrame(draw);
+        return;
+      }
+      lastFrameTime = timestamp - (elapsed % frameDelay);
+      
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#9b87f5';
+      ctx.fill();
+      ctx.closePath();
+      
+      ctx.beginPath();
+      ctx.rect(userPaddleX, canvasHeight - paddleHeight, paddleWidth, paddleHeight);
+      ctx.fillStyle = '#D6BCFA';
+      ctx.fill();
+      ctx.closePath();
+      
+      ctx.beginPath();
+      ctx.rect(computerPaddleX, 0, paddleWidth, paddleHeight);
+      ctx.fillStyle = '#7E69AB';
+      ctx.fill();
+      ctx.closePath();
+      
+      const computerSpeed = (1.2 + (difficulty * 0.2)) * 1.2;
+      const computerTargetX = ballX - paddleWidth / 2;
+      
+      if (ballDY < 0) {
+        const precisionThreshold = Math.max(10 - (difficulty * 1.5), 2);
+        if (computerPaddleX < computerTargetX - precisionThreshold) {
+          computerPaddleX += computerSpeed;
+        } else if (computerPaddleX > computerTargetX + precisionThreshold) {
+          computerPaddleX -= computerSpeed;
+        }
+      }
+      
+      const userPaddleSpeed = 7 * 1.2;
+      if (rightPressed && userPaddleX < canvasWidth - paddleWidth) {
+        userPaddleX += userPaddleSpeed;
+      } else if (leftPressed && userPaddleX > 0) {
+        userPaddleX -= userPaddleSpeed;
+      }
+      
+      if (
+        ballY + ballDY > canvasHeight - paddleHeight - ballRadius &&
+        ballX > userPaddleX &&
+        ballX < userPaddleX + paddleWidth
+      ) {
+        ballDY = -ballDY;
+        const hitPosition = (ballX - userPaddleX) / paddleWidth;
+        ballDX = baseHorizontalSpeed * 2.5 * (hitPosition - 0.5);
+      }
+      
+      if (
+        ballY + ballDY < paddleHeight + ballRadius &&
+        ballX > computerPaddleX &&
+        ballX < computerPaddleX + paddleWidth
+      ) {
+        ballDY = -ballDY;
+        const hitPosition = (ballX - computerPaddleX) / paddleWidth;
+        ballDX = baseHorizontalSpeed * 2.5 * (hitPosition - 0.5);
+      }
+      
+      if (ballX + ballDX > canvasWidth - ballRadius || ballX + ballDX < ballRadius) {
+        ballDX = -ballDX;
+      }
+      
+      if (ballY + ballDY < 0) {
+        setUserScore(prevScore => {
+          const newScore = prevScore + 1;
+          if (newScore >= winningScore) {
+            setPlayerWon(true);
+            gameActive = false;
+            setGameState({
+              gameStarted: false,
+              gameOver: true,
+              gameWon: true,
+              score: newScore
+            });
+          }
+          return newScore;
+        });
+        resetBall();
+      } else if (ballY + ballDY > canvasHeight) {
+        setComputerScore(prevScore => {
+          const newScore = prevScore + 1;
+          if (newScore >= winningScore) {
+            setPlayerWon(false);
+            gameActive = false;
+            setGameState({
+              gameStarted: false,
+              gameOver: true,
+              gameWon: false,
+              score: 0
+            });
+          }
+          return newScore;
+        });
+        resetBall();
+      }
+      
+      ballX += ballDX;
+      ballY += ballDY;
+      
+      animationFrameId = window.requestAnimationFrame(draw);
+    };
+    
+    const resetBall = () => {
+      ballX = canvasWidth / 2;
+      ballY = canvasHeight / 8;
+      ballDX = baseHorizontalSpeed * (Math.random() > 0.5 ? 1 : -1);
+      ballDY = baseVerticalSpeed;
+    };
+    
+    animationFrameId = window.requestAnimationFrame(draw);
     
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      window.cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('keydown', keyDownHandler);
+      document.removeEventListener('keyup', keyUpHandler);
+      clearTimeout(instructionsTimer);
     };
-  }, [currentDifficulty]);
-
+  }, [gameState.gameOver, onGameComplete, winningScore, isMobile, canvasWidth, canvasHeight, difficulty, paddleHeight, paddleWidth, ballRadius]);
+  
   return (
     <div className="flex flex-col items-center justify-center mt-4">
-      <GameInfo 
-        showInstructions={showInstructions}
-        winningScore={WINNING_SCORE}
-        userScore={playerScore}
-        computerScore={computerScore}
-        difficulty={currentDifficulty}
-      />
+      <h2 className="text-xl mb-4">PONG CHALLENGE</h2>
+      
+      <div className="h-20">
+        {showInstructions ? (
+          <div className="flex items-center justify-center p-2 border border-terminal-green">
+            <span>Use</span>
+            <ArrowLeft className="mx-1" size={20} />
+            <ArrowRight className="mx-1" size={20} />
+            <span>keys to move your paddle</span>
+          </div>
+        ) : (
+          <div>
+            <p className="mb-2">Score {winningScore} points to continue</p>
+            {difficulty > 1 && (
+              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
+            )}
+          </div>
+        )}
+      </div>
+      
+      <div className="mt-4 flex justify-between w-full max-w-[600px] px-4 mb-2">
+        <div className="text-lg">YOU: {userScore}</div>
+        <div className="text-lg">CPU: {computerScore}</div>
+      </div>
       
       <div className="border border-terminal-green">
         <canvas 
@@ -244,25 +289,37 @@ const PongGame: React.FC<PongGameProps> = ({
           width={canvasWidth}
           height={canvasHeight}
           className="bg-black"
-          onTouchStart={isMobile ? handleTouchStart : undefined}
         />
       </div>
-      
-      {gameOver && (
+
+      {gameState.gameOver && (
         <GameResult 
-          gameWon={gameWon}
+          gameWon={gameState.gameWon}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={hasWonBefore}
+          alwaysShowContinue={false}
         />
       )}
       
       {isMobile && (
-        <GameControls
-          handleLeftButton={() => movePaddle('up')}
-          handleRightButton={() => movePaddle('down')}
-          handleButtonUp={() => {}}
-        />
+        <div className="mt-4 flex justify-center w-full">
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onTouchStart={handleLeftButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowLeft size={32} color="#D6BCFA" />
+            </button>
+            <button
+              onTouchStart={handleRightButton}
+              onTouchEnd={handleButtonUp}
+              className="p-6 bg-gray-800 rounded-lg flex items-center justify-center border border-terminal-green"
+            >
+              <ArrowRight size={32} color="#D6BCFA" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,102 +1,102 @@
 
 import React from 'react';
-import CourtGame from '../CourtGame';
-import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
-import SpacePeaceGame from '../SpacePeaceGame';
-import SnekGame from '../SnekGame';
-import UATGame from '../UATGame';
+import PongGame from '../PongGame';
+import OxoGame from '../OxoGame';
+import SpacewarGame from '../SpacewarGame';
+import SnakeGame from '../SnakeGame';
+import TetrisGame from '../TetrisGame';
 
 interface GameHandlerProps {
-  showNoughtsAndCrossesGame: boolean;
-  showCourtGame: boolean;
-  showSpacePeaceGame: boolean;
-  showUATGame: boolean;
-  showSnekGame: boolean;
-  handleNoughtsAndCrossesComplete: () => void;
-  handleNoughtsAndCrossesPlayAgain: () => void;
-  handleCourtComplete: () => void;
-  handleCourtPlayAgain: (playerWon: boolean) => void;
-  handleSpacePeaceComplete: () => void;
-  handleSpacePeacePlayAgain: () => void;
-  handleUATComplete: () => void;
-  handleUATPlayAgain: () => void;
-  handleSnekComplete: () => void;
-  handleSnekPlayAgain: () => void;
-  noughtsAndCrossesDifficulty: number;
-  courtDifficulty: number;
-  spacePeaceDifficulty: number;
-  uatDifficulty: number;
-  snekDifficulty: number;
+  showOxoGame: boolean;
+  showPongGame: boolean;
+  showSpacewarGame: boolean;
+  showTetrisGame: boolean;
+  showSnakeGame: boolean;
+  handleOxoComplete: () => void;
+  handleOxoPlayAgain: () => void;
+  handlePongComplete: () => void;
+  handlePongPlayAgain: (playerWon: boolean) => void;
+  handleSpacewarComplete: () => void;
+  handleSpacewarPlayAgain: () => void;
+  handleTetrisComplete: () => void;
+  handleTetrisPlayAgain: () => void;
+  handleSnakeComplete: () => void;
+  handleSnakePlayAgain: () => void;
+  oxoDifficulty: number;
+  pongDifficulty: number;
+  spacewarDifficulty: number;
+  tetrisDifficulty: number;
+  snakeDifficulty: number;
 }
 
 const GameHandler: React.FC<GameHandlerProps> = ({
-  showNoughtsAndCrossesGame,
-  showCourtGame,
-  showSpacePeaceGame,
-  showUATGame, 
-  showSnekGame,
-  handleNoughtsAndCrossesComplete,
-  handleNoughtsAndCrossesPlayAgain,
-  handleCourtComplete,
-  handleCourtPlayAgain,
-  handleSpacePeaceComplete,
-  handleSpacePeacePlayAgain,
-  handleUATComplete,
-  handleUATPlayAgain,
-  handleSnekComplete,
-  handleSnekPlayAgain,
-  noughtsAndCrossesDifficulty,
-  courtDifficulty,
-  spacePeaceDifficulty,
-  uatDifficulty,
-  snekDifficulty
+  showOxoGame,
+  showPongGame,
+  showSpacewarGame,
+  showTetrisGame, 
+  showSnakeGame,
+  handleOxoComplete,
+  handleOxoPlayAgain,
+  handlePongComplete,
+  handlePongPlayAgain,
+  handleSpacewarComplete,
+  handleSpacewarPlayAgain,
+  handleTetrisComplete,
+  handleTetrisPlayAgain,
+  handleSnakeComplete,
+  handleSnakePlayAgain,
+  oxoDifficulty,
+  pongDifficulty,
+  spacewarDifficulty,
+  tetrisDifficulty,
+  snakeDifficulty
 }) => {
-  if (showNoughtsAndCrossesGame) {
+  if (showOxoGame) {
     return (
-      <NoughtsAndCrossesGame 
-        onGameComplete={handleNoughtsAndCrossesComplete} 
-        onPlayAgain={handleNoughtsAndCrossesPlayAgain} 
-        difficulty={noughtsAndCrossesDifficulty}
+      <OxoGame 
+        onGameComplete={handleOxoComplete} 
+        onPlayAgain={handleOxoPlayAgain} 
+        difficulty={oxoDifficulty}
       />
     );
   }
   
-  if (showCourtGame) {
+  if (showPongGame) {
     return (
-      <CourtGame 
-        onGameComplete={handleCourtComplete} 
-        onPlayAgain={handleCourtPlayAgain}
-        difficulty={courtDifficulty}
+      <PongGame 
+        onGameComplete={handlePongComplete} 
+        onPlayAgain={handlePongPlayAgain}
+        difficulty={pongDifficulty}
       />
     );
   }
   
-  if (showSpacePeaceGame) {
+  if (showSpacewarGame) {
     return (
-      <SpacePeaceGame 
-        onGameComplete={handleSpacePeaceComplete} 
-        onPlayAgain={handleSpacePeacePlayAgain}
-        difficulty={spacePeaceDifficulty}
+      <SpacewarGame 
+        onGameComplete={handleSpacewarComplete} 
+        onPlayAgain={handleSpacewarPlayAgain}
+        difficulty={spacewarDifficulty}
       />
     );
   }
   
-  if (showUATGame) {
+  if (showTetrisGame) {
     return (
-      <UATGame 
-        onGameComplete={handleUATComplete} 
-        onPlayAgain={handleUATPlayAgain}
-        difficulty={uatDifficulty}
+      <TetrisGame 
+        onGameComplete={handleTetrisComplete} 
+        onPlayAgain={handleTetrisPlayAgain}
+        difficulty={tetrisDifficulty}
       />
     );
   }
   
-  if (showSnekGame) {
+  if (showSnakeGame) {
     return (
-      <SnekGame 
-        onGameComplete={handleSnekComplete} 
-        onPlayAgain={handleSnekPlayAgain}
-        difficulty={snekDifficulty}
+      <SnakeGame 
+        onGameComplete={handleSnakeComplete} 
+        onPlayAgain={handleSnakePlayAgain}
+        difficulty={snakeDifficulty}
       />
     );
   }

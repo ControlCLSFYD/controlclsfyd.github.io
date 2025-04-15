@@ -9,11 +9,11 @@ interface UseGameProgressProps {
 
 export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGameProgressProps) => {
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
-  const [courtCompleted, setCourtCompleted] = useState(false);
-  const [noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted] = useState(false);
-  const [spacePeaceCompleted, setSpacePeaceCompleted] = useState(false);
-  const [uatCompleted, setUATCompleted] = useState(false);
-  const [snekCompleted, setSnekCompleted] = useState(false);
+  const [pongCompleted, setPongCompleted] = useState(false);
+  const [oxoCompleted, setOxoCompleted] = useState(false);
+  const [spacewarCompleted, setSpacewarCompleted] = useState(false);
+  const [tetrisCompleted, setTetrisCompleted] = useState(false);
+  const [snakeCompleted, setSnakeCompleted] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(0);
 
   useEffect(() => {
@@ -37,35 +37,35 @@ export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGamePro
       
       setCompletedLevels(newCompletedLevels);
       
-      if (newCompletedLevels.includes(1) && currentLevel >= 2 && !courtCompleted) {
-        setCourtCompleted(true);
+      if (newCompletedLevels.includes(1) && currentLevel >= 2 && !pongCompleted) {
+        setPongCompleted(true);
       }
       
-      if (newCompletedLevels.includes(2) && currentLevel >= 3 && !spacePeaceCompleted) {
-        setSpacePeaceCompleted(true);
+      if (newCompletedLevels.includes(2) && currentLevel >= 3 && !spacewarCompleted) {
+        setSpacewarCompleted(true);
       }
       
-      if (newCompletedLevels.includes(3) && currentLevel >= 4 && !uatCompleted) {
-        setUATCompleted(true);
+      if (newCompletedLevels.includes(3) && currentLevel >= 4 && !tetrisCompleted) {
+        setTetrisCompleted(true);
       }
       
-      if (newCompletedLevels.includes(4) && currentLevel >= 5 && !snekCompleted) {
-        setSnekCompleted(true);
+      if (newCompletedLevels.includes(4) && currentLevel >= 5 && !snakeCompleted) {
+        setSnakeCompleted(true);
       }
       
-      if (currentLevel >= 1 && !noughtsAndCrossesCompleted) {
-        setNoughtsAndCrossesCompleted(true);
+      if (currentLevel >= 1 && !oxoCompleted) {
+        setOxoCompleted(true);
       }
     }
-  }, [savedAnswers, currentLevel, courtCompleted, spacePeaceCompleted, uatCompleted, snekCompleted, noughtsAndCrossesCompleted, revolvingQuestions]);
+  }, [savedAnswers, currentLevel, pongCompleted, spacewarCompleted, tetrisCompleted, snakeCompleted, oxoCompleted, revolvingQuestions]);
 
   return {
     completedLevels,
-    courtCompleted, setCourtCompleted,
-    noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted,
-    spacePeaceCompleted, setSpacePeaceCompleted,
-    uatCompleted, setUATCompleted,
-    snekCompleted, setSnekCompleted,
+    pongCompleted, setPongCompleted,
+    oxoCompleted, setOxoCompleted,
+    spacewarCompleted, setSpacewarCompleted,
+    tetrisCompleted, setTetrisCompleted,
+    snakeCompleted, setSnakeCompleted,
     currentLevel, setCurrentLevel
   };
 };
