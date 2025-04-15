@@ -37,6 +37,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
   const [imageKey, setImageKey] = useState<number>(Date.now());
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Find the matching lesson for this level
   const currentLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
@@ -75,6 +77,14 @@ const GameLevel: React.FC<GameLevelProps> = ({
     }
   }, [isActive]);
 
+  useEffect(() => {
+    // Reset image states when the image source changes or level changes
+    if (imageSrc) {
+      setImageLoaded(false);
+      setImageError(false);
+    }
+  }, [imageSrc, level]);
+
   const handleCorrectAnswer = (questionId: string, answer: string) => {
     if (!answeredQuestions.includes(questionId)) {
       const newAnswered = [...answeredQuestions, questionId];
@@ -97,9 +107,23 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const handleReloadImage = () => {
     // Update the imageKey to force React to reload the image
     setImageKey(Date.now());
+    setImageLoaded(false);
+    setImageError(false);
     
     // Log the reload attempt to confirm functionality
     console.log("Image reload requested at:", new Date().toISOString());
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+    console.log("Image successfully loaded:", imageSrc);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(false);
+    console.log("Image failed to load:", imageSrc);
   };
 
   return (
@@ -119,12 +143,18 @@ const GameLevel: React.FC<GameLevelProps> = ({
       </div>
       
       {imageSrc && (
-        <div className="mb-4 border border-terminal-green p-1 relative">
+        <div className="mb-4 border border-terminal-green p-1 relative min-h-[96px] bg-black">
+          {imageError && (
+            <div className="absolute inset-0 flex items-center justify-center text-terminal-green">
+              Image failed to load. Try reloading.
+            </div>
+          )}
           <img 
             src={`${imageSrc}?key=${imageKey}`} 
             alt={`Level ${level} Reference`} 
-            className="w-full max-h-96 object-contain"
-            onError={() => console.log("Image failed to load")}
+            className={`w-full max-h-96 object-contain ${imageLoaded ? 'block' : 'hidden'}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
           />
         </div>
       )}
