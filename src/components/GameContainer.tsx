@@ -1,13 +1,11 @@
 
 import React from 'react';
 import GameLevel from './GameLevel';
-import LessonScreen from './LessonScreen';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
 import PyramidStamp from './PyramidStamp';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
-import { lessonData } from '../data/gameData';
 
 interface GameContainerProps {
   savedAnswers: Record<string, string>;
@@ -25,8 +23,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const {
     gameStarted,
     gameCompleted,
-    showLesson,
-    currentLesson,
     showOxoGame,
     showPongGame,
     showSpacewarGame,
@@ -51,7 +47,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleSnakeComplete,
     handleSnakePlayAgain,
     handleLevelComplete,
-    handleLessonComplete,
     handleEndMessageComplete,
     getCurrentLevelQuestions,
     getCurrentLevelImage
@@ -65,13 +60,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <div>
           {gameCompleted ? (
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
-          ) : showLesson ? (
-            <LessonScreen 
-              lesson={currentLesson ? 
-                lessonData.find(lesson => lesson.id === currentLesson) || lessonData[0] : 
-                lessonData[0]} 
-              onComplete={handleLessonComplete} 
-            />
           ) : isGameActive ? (
             <GameHandler 
               showOxoGame={showOxoGame}

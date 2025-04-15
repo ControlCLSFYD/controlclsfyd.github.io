@@ -4,7 +4,7 @@ import { useGameProgress } from './useGameProgress';
 import { useRevolvingQuestions } from './useRevolvingQuestions';
 import { useGameDifficulty } from './useGameDifficulty';
 import { getCurrentImageSrc, getCurrentQuestions } from '../utils/gameHelpers';
-import { gameData, lessonData } from '../data/gameData';
+import { gameData } from '../data/gameData';
 
 interface UseGameStateProps {
   savedAnswers: Record<string, string>;
@@ -15,8 +15,6 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const [gameStarted, setGameStarted] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
-  const [showLesson, setShowLesson] = useState(false);
-  const [currentLesson, setCurrentLesson] = useState<number>(0);
   
   const [showPongGame, setShowPongGame] = useState(false);
   const [showOxoGame, setShowOxoGame] = useState(false);
@@ -53,13 +51,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleOxoComplete = () => {
     setOxoCompleted(true);
     setShowOxoGame(false);
-    
-    if (gameData.levels[0]?.hasLesson) {
-      setCurrentLesson(1);
-      setShowLesson(true);
-    } else {
-      setCurrentLevel(1);
-    }
+    setCurrentLevel(1);
   };
 
   const handleOxoPlayAgain = () => {
@@ -82,13 +74,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     }
     else if (currentLevel < gameData.levels.length) {
       const nextLevel = currentLevel + 1;
-      
-      if (nextLevel <= gameData.levels.length && gameData.levels[nextLevel - 1]?.hasLesson) {
-        setCurrentLesson(nextLevel);
-        setShowLesson(true);
-      } else {
-        setCurrentLevel(nextLevel);
-      }
+      setCurrentLevel(nextLevel);
     } else {
       setGameCompleted(true);
     }
@@ -97,13 +83,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handlePongComplete = () => {
     setPongCompleted(true);
     setShowPongGame(false);
-    
-    if (gameData.levels[1]?.hasLesson) {
-      setCurrentLesson(2);
-      setShowLesson(true);
-    } else {
-      setCurrentLevel(2);
-    }
+    setCurrentLevel(2);
   };
 
   const handlePongPlayAgain = (playerWon: boolean) => {
@@ -116,10 +96,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleSpacewarComplete = () => {
     setSpacewarCompleted(true);
     setShowSpacewarGame(false);
-    
-    // Show lesson 3 before proceeding to level 3
-    setCurrentLesson(3);
-    setShowLesson(true);
+    setCurrentLevel(3);
   };
 
   const handleSpacewarPlayAgain = () => {
@@ -149,11 +126,6 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowSnakeGame(true);
   };
 
-  const handleLessonComplete = () => {
-    setShowLesson(false);
-    setCurrentLevel(currentLesson);
-  };
-
   const handleEndMessageComplete = () => {
     setShowEndScreenPsalm(false);
   };
@@ -171,8 +143,6 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   return {
     gameStarted,
     gameCompleted,
-    showLesson,
-    currentLesson,
     showOxoGame,
     showPongGame,
     showSpacewarGame,
@@ -197,7 +167,6 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleSnakeComplete,
     handleSnakePlayAgain,
     handleLevelComplete,
-    handleLessonComplete,
     handleEndMessageComplete,
     getCurrentLevelQuestions,
     getCurrentLevelImage

@@ -4,7 +4,10 @@ import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
 import { Button } from './ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Image } from 'lucide-react';
+import LessonModal from './LessonModal';
+import { LessonContent } from './LessonScreen';
+import { lessonData } from '../data/gameData';
 
 export interface Question {
   id: string;
@@ -35,6 +38,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
   const [imageKey, setImageKey] = useState<number>(Date.now());
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Find the appropriate lesson for this level
+  const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -90,11 +98,26 @@ const GameLevel: React.FC<GameLevelProps> = ({
   };
   
   const handleReloadImage = () => {
+    // Reset image states
+    setImageLoaded(false);
+    setImageError(false);
+    
     // Update the imageKey to force React to reload the image
     setImageKey(Date.now());
     
     // Log the reload attempt to confirm functionality
     console.log("Image reload requested at:", new Date().toISOString());
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoaded(false);
+    setImageError(true);
+    console.log("Image failed to load");
   };
 
   return (
@@ -115,11 +138,32 @@ const GameLevel: React.FC<GameLevelProps> = ({
       
       {imageSrc && (
         <div className="mb-4 border border-terminal-green p-1 relative">
+          {!imageLoaded && !imageError && (
+            <div className="w-full h-64 flex items-center justify-center text-terminal-green">
+              Loading image...
+            </div>
+          )}
+          
+          {imageError && (
+            <div className="w-full h-64 flex flex-col items-center justify-center text-terminal-green">
+              <div className="mb-2">Failed to load image</div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleReloadImage}
+                className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
+          
           <img 
             src={`${imageSrc}?key=${imageKey}`} 
             alt={`Level ${level} Reference`} 
-            className="w-full max-h-96 object-contain"
-            onError={() => console.log("Image failed to load")}
+            className={`w-full max-h-96 object-contain ${!imageLoaded ? 'hidden' : ''}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
           />
         </div>
       )}
@@ -149,8 +193,12 @@ const GameLevel: React.FC<GameLevelProps> = ({
         })}
       </div>
       
-      {imageSrc && (
-        <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex flex-col items-center">
+        {/* Investi Gator Help Button */}
+        <LessonModal lesson={levelLesson} />
+        
+        {/* Reload Image Button */}
+        {imageSrc && (
           <Button 
             variant="outline" 
             size="sm"
@@ -160,8 +208,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
             <RefreshCw size={16} />
             Reload Image
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
