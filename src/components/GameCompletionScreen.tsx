@@ -34,10 +34,11 @@ const GameCompletionScreen: React.FC<GameCompletionScreenProps> = ({ onComplete 
         </div>
       )}
 
-      {/* Centered Pyramid Stamp */}
-      <PyramidStamp centered={true} />
+      {/* Pyramid Stamp at the bottom */}
+      <PyramidStamp centered={false} />
     </div>
   );
 };
 
 export default GameCompletionScreen;
+
