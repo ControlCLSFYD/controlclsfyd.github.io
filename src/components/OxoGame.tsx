@@ -139,7 +139,7 @@ const OxoGame: React.FC<OxoGameProps> = ({ onGameComplete, onPlayAgain, difficul
   };
   
   return (
-    <div className="flex flex-col items-center justify-center mt-4">
+    <div className="flex flex-col items-center justify-center min-h-[500px] w-full p-4">
       <h2 className="text-xl mb-4">OXO CHALLENGE</h2>
       
       <div className="h-20 flex items-center justify-center mb-4">
