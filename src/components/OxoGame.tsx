@@ -22,6 +22,7 @@ const OxoGame: React.FC<OxoGameProps> = ({
     showInstructions,
     cpuWins,
     playerFirstMove,
+    gameObjective,
     handleCellClick,
     handleContinue,
     handlePlayAgain
@@ -34,7 +35,7 @@ const OxoGame: React.FC<OxoGameProps> = ({
       <div className="h-20 flex items-center justify-center mb-4">
         {showInstructions ? (
           <div className="flex items-center p-2 border border-terminal-green">
-            <span>You play as O. {playerFirstMove ? 'You move first' : 'CPU moves first'}. Try to win if you can!</span>
+            <span>You play as O. {gameObjective}</span>
           </div>
         ) : (
           <div className="text-center">

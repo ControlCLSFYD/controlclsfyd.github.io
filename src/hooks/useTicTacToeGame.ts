@@ -113,6 +113,11 @@ export const useTicTacToeGame = (
     resetGame();
   };
 
+  // Get the current game objective based on who moves first
+  const getGameObjective = (): string => {
+    return playerFirstMove ? "You move first. Try to win if you can!" : "CPU moves first. Try to force a draw!";
+  };
+
   return {
     board,
     isPlayerTurn,
@@ -120,6 +125,7 @@ export const useTicTacToeGame = (
     showInstructions,
     cpuWins,
     playerFirstMove,
+    gameObjective: getGameObjective(),
     handleCellClick,
     handleContinue,
     handlePlayAgain
