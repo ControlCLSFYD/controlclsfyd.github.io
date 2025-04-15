@@ -105,9 +105,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                   onClick={() => setShowInvestiGator(true)}
                 >
                   <img 
-                    src="/lovable-uploads/1d0650ae-ea9e-404e-97a4-f27a0e6b2ee4.png" 
+                    src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
                     alt="Investi Gator" 
                     className="w-6 h-6 object-contain bg-black"
+                    style={{ objectPosition: "0 -5px", objectFit: "cover" }}
                   />
                   Investi Gator's Help
                 </Button>
@@ -115,7 +116,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/1d0650ae-ea9e-404e-97a4-f27a0e6b2ee4.png" 
+                    src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain bg-black"
                   />

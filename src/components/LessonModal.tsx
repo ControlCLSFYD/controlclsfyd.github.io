@@ -34,9 +34,10 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
           className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black mb-2"
         >
           <img 
-            src="/lovable-uploads/1d0650ae-ea9e-404e-97a4-f27a0e6b2ee4.png" 
+            src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
             alt="Investi Gator" 
             className="w-6 h-6 object-contain bg-black"
+            style={{ objectPosition: "0 -5px", objectFit: "cover" }}
           />
           Investi Gator's Help
         </Button>

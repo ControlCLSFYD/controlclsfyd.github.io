@@ -47,7 +47,7 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 text-center mb-4 md:mb-0">
             <img 
-              src="/lovable-uploads/1d0650ae-ea9e-404e-97a4-f27a0e6b2ee4.png" 
+              src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
               alt="Investi Gator" 
               className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain bg-black"
             />
