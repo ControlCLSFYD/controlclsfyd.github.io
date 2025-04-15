@@ -17,6 +17,7 @@ export const getCurrentQuestions = (level: number, levelData: Level[], revolving
   const levelInfo = levelData[level - 1];
   if (!levelInfo) return [];
   
+  // Make sure we're using the correct question set based on the revolvingQuestions state
   const questionIndex = revolvingQuestions[level] || 0;
   return levelInfo.questions[questionIndex] || [];
 };
