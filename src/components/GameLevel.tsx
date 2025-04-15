@@ -4,11 +4,10 @@ import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
 import { Button } from './ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Image } from 'lucide-react';
 import LessonModal from './LessonModal';
 import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
-import { Avatar, AvatarImage } from './ui/avatar';
 
 export interface Question {
   id: string;

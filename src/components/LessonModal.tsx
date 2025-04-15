@@ -6,9 +6,9 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Button } from './ui/button';
+import { HelpCircle } from 'lucide-react';
 import InvestiGator from './InvestiGator';
 import { LessonContent } from './LessonScreen';
-import { Avatar, AvatarImage } from './ui/avatar';
 
 interface LessonModalProps {
   lesson: LessonContent;
@@ -33,10 +33,8 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
           size="sm"
           className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black mb-2"
         >
-          <Avatar className="h-5 w-5">
-            <AvatarImage src="/lovable-uploads/887e238f-4083-4b07-9649-55da06b8c4c7.png" alt="Investi Gator" />
-          </Avatar>
-          Investi Gator's Help
+          <HelpCircle size={16} />
+          Investi Gator Help
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[95vw] max-w-[800px] h-auto max-h-[90vh] overflow-y-auto bg-black text-terminal-green border border-terminal-green p-2 md:p-4">
