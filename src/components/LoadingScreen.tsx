@@ -147,7 +147,6 @@ The game is still under heavy development. Please excuse any time-outs or failur
             speed={10} // Increased typing speed for the warning
             className="mb-4 block whitespace-pre-line"
             onComplete={() => setTimeout(() => {
-              // Show continue button after warning is fully displayed
               const continueButton = document.getElementById('continue-button');
               if (continueButton) continueButton.style.opacity = '1';
             }, 500)}

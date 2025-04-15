@@ -54,6 +54,14 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
               className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain"
             />
             <div className="text-terminal-green font-bold mt-2">INVESTI GATOR</div>
+            
+            {/* Bio information */}
+            <div className="text-terminal-green text-sm mt-3 text-left mx-auto max-w-[180px]">
+              <div><span className="font-bold">First Name:</span> Investi</div>
+              <div><span className="font-bold">Surname:</span> Gator</div>
+              <div><span className="font-bold">Profession:</span> Investigator</div>
+              <div><span className="font-bold">Creature:</span> Alligator</div>
+            </div>
           </div>
           
           <div className="w-full md:w-2/3 bg-black border border-terminal-green p-3 md:p-4 rounded-lg relative min-h-[200px]">
@@ -115,4 +123,3 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
 };
 
 export default InvestiGator;
-
