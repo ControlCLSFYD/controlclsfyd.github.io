@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { LessonContent } from './LessonScreen';
 import TypewriterText from './TypewriterText';
@@ -46,15 +47,15 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 text-center mb-4 md:mb-0">
             <img 
-              src="/lovable-uploads/b721b90f-fd57-4feb-aecd-e7a1f7f2ab94.png" 
+              src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
               alt="Investi Gator" 
               className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain bg-black"
             />
             <div className="text-terminal-green font-bold mt-2">
-              INVESTI GATOR
+              Investi Gator,
             </div>
             <div className="text-terminal-green font-bold">
-              the Investigative Alligator
+              The Investigative Alligator
             </div>
             
             {/* Bio information */}

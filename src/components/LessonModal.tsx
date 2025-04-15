@@ -10,6 +10,11 @@ import { Image } from 'lucide-react';
 import InvestiGator from './InvestiGator';
 import { LessonContent } from './LessonScreen';
 
+interface LessonModalProps {
+  lesson: LessonContent;
+  onClose?: () => void;
+}
+
 const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
   const [isOpen, setIsOpen] = React.useState(false);
   
@@ -29,7 +34,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
           className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black mb-2"
         >
           <img 
-            src="/lovable-uploads/b721b90f-fd57-4feb-aecd-e7a1f7f2ab94.png" 
+            src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
             alt="Investi Gator" 
             className="w-6 h-6 object-contain bg-black"
           />

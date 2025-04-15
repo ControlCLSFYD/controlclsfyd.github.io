@@ -103,22 +103,26 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                   className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
                   onClick={() => setShowInvestiGator(true)}
                 >
-                  <HelpCircle size={16} />
-                  Investi Gator Help
+                  <img 
+                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
+                    alt="Investi Gator" 
+                    className="w-6 h-6 object-contain bg-black"
+                  />
+                  Investi Gator's Help
                 </Button>
               </DialogTrigger>
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/b721b90f-fd57-4feb-aecd-e7a1f7f2ab94.png" 
+                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain bg-black"
                   />
                   <div className="text-terminal-green font-bold mb-2">
-                    INVESTI GATOR
+                    Investi Gator,
                   </div>
                   <div className="text-terminal-green font-bold mb-2">
-                    the Investigative Alligator
+                    The Investigative Alligator
                   </div>
                   <div className="bg-black border border-terminal-green p-3 rounded-lg">
                     <TypewriterText
