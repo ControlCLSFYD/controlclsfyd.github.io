@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { getRandomPsalm } from '../utils/psalms';
+import { Button } from './ui/button';
 
 interface LoadingScreenProps {
   onAccessGranted: () => void;
@@ -11,6 +12,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   const [loadingStep, setLoadingStep] = useState(1);
   const [accessCode, setAccessCode] = useState("");
   const [randomPsalm, setRandomPsalm] = useState("");
+  const [accessCodeCorrect, setAccessCodeCorrect] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
   
   useEffect(() => {
     const dotTimeout = setTimeout(() => {
@@ -36,8 +39,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   const handleAccessCodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (accessCode === "111") {
-      onAccessGranted();
+      setAccessCodeCorrect(true);
+      setShowWarning(true);
     }
+  };
+
+  const handleContinue = () => {
+    onAccessGranted();
   };
   
   return (
@@ -61,7 +69,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
         </div>
       )}
 
-      {loadingStep === 4 && (
+      {loadingStep === 4 && !accessCodeCorrect && (
         <div>
           <TypewriterText text="Enter your access code." className="mb-4 block" />
           <form onSubmit={handleAccessCodeSubmit} className="mt-4">
@@ -85,6 +93,36 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               "{randomPsalm}"
             </div>
           )}
+        </div>
+      )}
+
+      {showWarning && (
+        <div>
+          <TypewriterText 
+            text="NOTE: 
+
+This game will include many unpleasant images and events. 
+
+It is not suitable for children or the faint-hearted. 
+
+The game is still under heavy development. Please excuse any time-outs or failures in the loading of images." 
+            speed={10} // Increased typing speed for the warning
+            className="mb-4 block whitespace-pre-line"
+            onComplete={() => setTimeout(() => {
+              // Show continue button after warning is fully displayed
+              const continueButton = document.getElementById('continue-button');
+              if (continueButton) continueButton.style.opacity = '1';
+            }, 500)}
+          />
+          <div className="mt-6">
+            <Button 
+              id="continue-button"
+              onClick={handleContinue}
+              className="border border-terminal-green text-terminal-green px-4 py-2 bg-black hover:bg-terminal-green hover:text-black transition-opacity opacity-0"
+            >
+              CONTINUE TO GAME
+            </Button>
+          </div>
         </div>
       )}
     </div>

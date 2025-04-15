@@ -92,6 +92,9 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const handleReloadImage = () => {
     // Update the imageKey to force React to reload the image
     setImageKey(Date.now());
+    
+    // Log the reload attempt to confirm functionality
+    console.log("Image reload requested at:", new Date().toISOString());
   };
 
   return (

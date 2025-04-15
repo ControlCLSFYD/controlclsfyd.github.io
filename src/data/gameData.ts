@@ -102,7 +102,7 @@ export const gameLevels: Level[] = [
       [
         {
           id: "A",
-          text: "What city is the following complex located?",
+          text: "In which city is the following complex located?",
           answer: "Bratislava"
         },
         {
