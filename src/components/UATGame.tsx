@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -527,12 +526,6 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
           >
             Next Question
           </Button>
-        )}
-        
-        {secretKeyCount > 0 && (
-          <div className="text-xs text-terminal-green ml-4">
-            W count: {secretKeyCount}/33
-          </div>
         )}
       </div>
       

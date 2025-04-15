@@ -60,7 +60,7 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
   // Win condition - reduced to 3 apples
   const WIN_SCORE = 3;
 
-  // Secret phrase handling
+  // Secret phrase handling - active at all times, regardless of game state
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const expectedChar = secretPhrase[secretPhraseProgress];
@@ -72,6 +72,7 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
           // Secret phrase completed
           setGameWon(true);
           setHasWonBefore(true);
+          setGameOver(false);
         }
       } else {
         // Reset progress if wrong key is pressed
@@ -416,8 +417,8 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
         <span className="text-terminal-green text-2xl font-mono">SNEK</span>
         <span className="text-terminal-green text-xl font-mono">Score: {score}/{WIN_SCORE}</span>
         
-        {secretPhraseProgress > 0 && (
-          <div className="text-xs text-terminal-green">
+        {secretPhraseProgress > 0 && secretPhraseProgress < secretPhrase.length && (
+          <div className="text-xs text-terminal-green opacity-50">
             Secret progress: {(secretPhraseProgress / secretPhrase.length * 100).toFixed(0)}%
           </div>
         )}
@@ -483,3 +484,4 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
 };
 
 export default SnekGame;
+

@@ -74,8 +74,8 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
               setTimeout(() => setShowTearDrop(false), 3000);
             }
             
-            // After 12 repetitions, trigger victory
-            if (newCount >= 12) {
+            // After 20 repetitions, trigger victory (changed from 12)
+            if (newCount >= 20) {
               gameState.gameWon = true;
               gameState.gameOver = true;
               originalHandleContinue();
@@ -148,15 +148,17 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
         
         {showTearDrop && (
           <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 animate-fall">
-            <style jsx>{`
-              @keyframes fall {
-                0% { transform: translateY(0); }
-                100% { transform: translateY(100px); }
-              }
-              .animate-fall {
-                animation: fall 3s linear forwards;
-              }
-            `}</style>
+            <style jsx>
+              {`
+                @keyframes fall {
+                  0% { transform: translateY(0); }
+                  100% { transform: translateY(100px); }
+                }
+                .animate-fall {
+                  animation: fall 3s linear forwards;
+                }
+              `}
+            </style>
             <div className="text-blue-300 text-lg">💧</div>
           </div>
         )}
@@ -171,9 +173,9 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
         />
       )}
       
-      {secretCount > 0 && (
+      {secretCount > 0 && secretCount < 20 && (
         <div className="mt-2 text-xs text-terminal-green">
-          Secret pattern count: {secretCount}/12
+          Secret pattern count: {secretCount}/20
         </div>
       )}
       
