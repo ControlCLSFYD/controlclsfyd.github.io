@@ -66,8 +66,8 @@ export const gameLevels: Level[] = [
     hasLesson: true,
     imageSrc: [
       "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png", // Image for WGA question (aircraft)
-      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png",  // SWAPPED - Now for Kenneth Arnold question (man holding drawing)
-      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png"  // SWAPPED - Now for Benito Mussolini question (hanging scene)
+      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png",  // SWAPPED - Now for Kenneth Arnold question (hanging scene)
+      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png"  // SWAPPED - Now for Benito Mussolini question (man holding drawing)
     ],
     questions: [
       [
@@ -139,7 +139,7 @@ export const gameLevels: Level[] = [
         {
           id: "A",
           text: "What colour was the rope?",
-          answer: "BLACK"
+          answer: "ORANGE"
         }
       ],
       [
