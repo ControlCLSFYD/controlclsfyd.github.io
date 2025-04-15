@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import { Button } from './ui/button';
 
@@ -19,12 +19,14 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   const [titleComplete, setTitleComplete] = useState(false);
   const [typingComplete, setTypingComplete] = useState(false);
   const [isDebugMode] = useState(false); // Debug mode toggle for quick testing
+  const paragraphsRef = useRef<HTMLDivElement>(null);
 
   // Reset typing state when lesson changes
   useEffect(() => {
     setCurrentParagraphIndex(0);
     setTitleComplete(false);
     setTypingComplete(false);
+    console.log("Lesson Screen reset for lesson:", lesson.id);
   }, [lesson.id]);
 
   // For debug mode - instantly complete the lesson
@@ -37,7 +39,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
   }, [isDebugMode, lesson.content.length]);
 
   const handleTitleComplete = () => {
-    console.log("Title completed");
+    console.log("Title completed for lesson:", lesson.id);
     setTitleComplete(true);
   };
 
@@ -46,11 +48,16 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
     
     // Make sure we're not at the end of the content array
     if (currentParagraphIndex < lesson.content.length - 1) {
-      // Set a small timeout before advancing to next paragraph
+      // Set a timeout before advancing to next paragraph
       setTimeout(() => {
         console.log("Advancing to next paragraph:", currentParagraphIndex + 1);
         setCurrentParagraphIndex(prevIndex => prevIndex + 1);
-      }, 300);
+        
+        // Scroll to the bottom if needed
+        if (paragraphsRef.current) {
+          paragraphsRef.current.scrollTop = paragraphsRef.current.scrollHeight;
+        }
+      }, 500); // Increased for reliability
     } else {
       console.log("All paragraphs completed, setting typingComplete to true");
       setTypingComplete(true);
@@ -59,7 +66,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
 
   return (
     <div className="flex flex-col items-start p-4 max-w-3xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-6 w-full">
         <h2 className="text-xl text-terminal-green mb-4">
           <TypewriterText
             text={`LESSON ${lesson.id}: ${lesson.title.toUpperCase()}`}
@@ -68,7 +75,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ lesson, onComplete }) => {
           />
         </h2>
         
-        <div className="space-y-4 text-left">
+        <div 
+          className="space-y-4 text-left overflow-y-auto max-h-[60vh]"
+          ref={paragraphsRef}
+        >
           {titleComplete && (
             <>
               {lesson.content.map((paragraph, index) => (

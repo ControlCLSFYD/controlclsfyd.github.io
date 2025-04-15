@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 interface TypewriterTextProps {
   text: string;
@@ -17,12 +17,15 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const completedRef = useRef(false);
 
+  // Reset when text changes
   useEffect(() => {
-    // Reset when text changes
     setDisplayedText('');
     setCurrentIndex(0);
     setIsComplete(false);
+    completedRef.current = false;
+    console.log("TypewriterText reset for:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
   }, [text]);
 
   useEffect(() => {
@@ -33,16 +36,17 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
       }, speed);
 
       return () => clearTimeout(timer);
-    } else if (!isComplete && text.length > 0) { 
-      console.log("TypewriterText reached end of text:", text.substring(0, 20) + "...");
+    } else if (!isComplete && text.length > 0 && !completedRef.current) { 
+      console.log("TypewriterText reached end of text:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
       setIsComplete(true);
+      completedRef.current = true; // Prevent multiple onComplete calls
       
       if (onComplete) {
         // Increased delay to ensure UI updates before callback
         const timeoutId = setTimeout(() => {
-          console.log("TypewriterText calling onComplete for:", text.substring(0, 20) + "...");
+          console.log("TypewriterText calling onComplete for:", text.substring(0, 20) + (text.length > 20 ? "..." : ""));
           onComplete();
-        }, 200);
+        }, 500); // Increased delay to ensure reliability
         
         return () => clearTimeout(timeoutId);
       }
