@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import TypewriterText from './TypewriterText';
 import { getRandomPsalm } from '../utils/psalms';
@@ -105,10 +104,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                   onClick={() => setShowInvestiGator(true)}
                 >
                   <img 
-                    src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
+                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
                     alt="Investi Gator" 
                     className="w-6 h-6 object-contain bg-black"
-                    style={{ objectPosition: "0 -5px", objectFit: "cover" }}
                   />
                   Investi Gator's Help
                 </Button>
@@ -116,10 +114,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/b625df80-4967-4c6e-a6db-fd7c0af3f443.png" 
+                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain bg-black"
                   />
+                  <div className="text-terminal-green font-bold mb-2">
+                    Investi Gator,
+                  </div>
+                  <div className="text-terminal-green font-bold mb-2">
+                    The Investigative Alligator
+                  </div>
                   <div className="bg-black border border-terminal-green p-3 rounded-lg">
                     <TypewriterText
                       text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
