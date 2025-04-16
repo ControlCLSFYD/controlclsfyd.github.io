@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
@@ -22,6 +23,19 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
   const [showPurr, setShowPurr] = useState(false);
   const [showBigPurr, setShowBigPurr] = useState(false);
   const [showTearDrop, setShowTearDrop] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(true);
+  
+  // Monitor page visibility to maintain game state when tab is not active
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   
   const { 
     userScore,
@@ -39,7 +53,8 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
   } = useSpacewarGame({ 
     canvasRef, 
     difficulty: currentDifficulty, 
-    onGameComplete 
+    onGameComplete,
+    isPageVisible
   });
 
   useEffect(() => {

@@ -10,30 +10,63 @@ interface CountdownTimerProps {
 const CountdownTimer: React.FC<CountdownTimerProps> = ({ initialTime, onTimeUp, isActive }) => {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(false);
+  const [endTime, setEndTime] = useState<number | null>(null);
 
+  // Reset timer when initialTime changes
   useEffect(() => {
     setTimeLeft(initialTime);
+    setEndTime(null);
   }, [initialTime]);
 
+  // Update running state when isActive changes
   useEffect(() => {
     setIsRunning(isActive);
-  }, [isActive]);
-
-  useEffect(() => {
-    let timerId: NodeJS.Timeout | null = null;
-
-    if (isRunning && timeLeft > 0) {
-      timerId = setTimeout(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && onTimeUp) {
-      onTimeUp();
+    
+    // When timer becomes active, set the end timestamp
+    if (isActive && !endTime) {
+      const now = Date.now();
+      setEndTime(now + timeLeft * 1000);
+    } else if (!isActive) {
+      // When timer becomes inactive, save the remaining time
+      if (endTime) {
+        const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+        setTimeLeft(remaining);
+        setEndTime(null);
+      }
     }
+  }, [isActive, endTime, timeLeft]);
 
-    return () => {
-      if (timerId) clearTimeout(timerId);
+  // Use requestAnimationFrame for accurate timing across tab switches
+  useEffect(() => {
+    if (!isRunning || !endTime) return;
+
+    let frameId: number;
+    let lastUpdateTime = Date.now();
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const newTimeLeft = Math.max(0, Math.ceil((endTime - now) / 1000));
+      
+      if (newTimeLeft !== timeLeft) {
+        setTimeLeft(newTimeLeft);
+      }
+      
+      if (newTimeLeft <= 0) {
+        if (onTimeUp) {
+          onTimeUp();
+        }
+        return;
+      }
+      
+      frameId = requestAnimationFrame(updateTimer);
     };
-  }, [timeLeft, isRunning, onTimeUp]);
+
+    frameId = requestAnimationFrame(updateTimer);
+    
+    return () => {
+      cancelAnimationFrame(frameId);
+    };
+  }, [isRunning, endTime, timeLeft, onTimeUp]);
 
   // Format time as mm:ss
   const formatTime = (seconds: number) => {

@@ -1,310 +1,223 @@
 
-import { useState, useEffect, RefObject, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { initializeGame, updateGameState } from '../utils/spacewarGameUtils';
+import { drawGame } from '../utils/spacewarRenderer';
 import { GameState } from '../interfaces/GameInterfaces';
-import { useIsMobile } from './use-mobile';
-import { 
-  checkCollision, 
-  generateStars, 
-  generateAsteroids,
-  updateAsteroids
-} from '../utils/spacewarGameUtils';
-import {
-  drawPlayerShip,
-  drawEnemyShip,
-  drawBullets,
-  drawAsteroids,
-  drawStars
-} from '../utils/spacewarRenderer';
 
 interface UseSpacewarGameProps {
-  canvasRef: RefObject<HTMLCanvasElement>;
-  difficulty: number;
-  onGameComplete: () => void;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  difficulty?: number;
+  onGameComplete?: () => void;
+  isPageVisible?: boolean;
 }
 
-const useSpacewarGame = ({ canvasRef, difficulty, onGameComplete }: UseSpacewarGameProps) => {
-  const [userScore, setUserScore] = useState(0);
-  const [computerScore, setComputerScore] = useState(0);
+const useSpacewarGame = ({ 
+  canvasRef, 
+  difficulty = 1, 
+  onGameComplete,
+  isPageVisible = true
+}: UseSpacewarGameProps) => {
+  // Game state
   const [gameState, setGameState] = useState<GameState>({
-    gameStarted: true,
+    gameStarted: false,
     gameOver: false,
     gameWon: false,
     score: 0
   });
+  
+  // Game settings
   const [showInstructions, setShowInstructions] = useState(true);
-  const isMobile = useIsMobile();
-
-  const WINNING_SCORE = 20;
-
-  const canvasWidth = isMobile ? 320 : 600;
-  const canvasHeight = isMobile ? 240 : 400;
-
-  // Use useCallback to prevent recreation of these handlers on each render
+  const [userScore, setUserScore] = useState(0);
+  const [computerScore, setComputerScore] = useState(0);
+  const WINNING_SCORE = 5;
+  
+  // Canvas dimensions
+  const canvasWidth = 600;
+  const canvasHeight = 400;
+  
+  // Game loop and controls
+  const gameLoop = useRef<number | null>(null);
+  const lastFrameTimeRef = useRef<number>(0);
+  const keysPressed = useRef<{[key: string]: boolean}>({
+    ArrowLeft: false,
+    ArrowRight: false
+  });
+  const gameStateRef = useRef<any>(null);
+  
+  // Initialize game state
+  useEffect(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      if (ctx) {
+        gameStateRef.current = initializeGame(canvas.width, canvas.height, difficulty);
+        drawGame(ctx, gameStateRef.current);
+      }
+    }
+  }, [canvasRef, difficulty]);
+  
+  // Game loop
+  useEffect(() => {
+    if (!gameState.gameStarted || gameState.gameOver) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const runGameLoop = (timestamp: number) => {
+      if (!gameStateRef.current) return;
+      
+      // Calculate delta time for smooth animation regardless of frame rate
+      const deltaTime = lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / 1000 : 0.016;
+      lastFrameTimeRef.current = timestamp;
+      
+      // Only update game state if the page is visible or we want background updates
+      const shouldUpdate = isPageVisible || true; // Always update for accurate timer
+      
+      if (shouldUpdate) {
+        // Apply keyboard inputs
+        gameStateRef.current.player.movingLeft = keysPressed.current.ArrowLeft;
+        gameStateRef.current.player.movingRight = keysPressed.current.ArrowRight;
+        
+        // Update game state
+        updateGameState(gameStateRef.current, deltaTime, difficulty);
+        
+        // Update scores
+        if (gameStateRef.current.scoreChanged) {
+          setUserScore(gameStateRef.current.userScore);
+          setComputerScore(gameStateRef.current.computerScore);
+          gameStateRef.current.scoreChanged = false;
+          
+          // Check for game over
+          if (gameStateRef.current.userScore >= WINNING_SCORE || 
+              gameStateRef.current.computerScore >= WINNING_SCORE) {
+            setGameState({
+              ...gameState,
+              gameOver: true,
+              gameWon: gameStateRef.current.userScore >= WINNING_SCORE
+            });
+            return;
+          }
+        }
+      }
+      
+      // Always draw if visible
+      if (isPageVisible) {
+        drawGame(ctx, gameStateRef.current);
+      }
+      
+      // Continue loop
+      gameLoop.current = requestAnimationFrame(runGameLoop);
+    };
+    
+    gameLoop.current = requestAnimationFrame(runGameLoop);
+    
+    // Cleanup function
+    return () => {
+      if (gameLoop.current) {
+        cancelAnimationFrame(gameLoop.current);
+      }
+    };
+  }, [gameState.gameStarted, gameState.gameOver, difficulty, canvasRef, isPageVisible]);
+  
+  // Keyboard event listeners
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        keysPressed.current[e.key] = true;
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        // Start game or continue after game over
+        if (showInstructions) {
+          setShowInstructions(false);
+          setGameState({ ...gameState, gameStarted: true });
+        } else if (gameState.gameOver) {
+          handleContinue();
+        }
+      }
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        keysPressed.current[e.key] = false;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [showInstructions, gameState]);
+  
+  // Touch controls for mobile
   const handleLeftButton = useCallback(() => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    keysPressed.current.ArrowLeft = true;
+    keysPressed.current.ArrowRight = false;
   }, []);
-
+  
   const handleRightButton = useCallback(() => {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    keysPressed.current.ArrowRight = true;
+    keysPressed.current.ArrowLeft = false;
   }, []);
-
+  
   const handleButtonUp = useCallback(() => {
-    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowLeft' }));
-    document.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowRight' }));
+    keysPressed.current.ArrowLeft = false;
+    keysPressed.current.ArrowRight = false;
   }, []);
-
+  
+  // Continue after game over
   const handleContinue = useCallback(() => {
-    onGameComplete();
-  }, [onGameComplete]);
-
-  const resetGame = useCallback(() => {
-    setUserScore(0);
-    setComputerScore(0);
+    if (gameState.gameWon && onGameComplete) {
+      onGameComplete();
+    }
+    
+    // Reset game state
     setGameState({
-      gameStarted: true,
+      gameStarted: false,
       gameOver: false,
       gameWon: false,
       score: 0
     });
-  }, []);
-
-  useEffect(() => {
-    if (isMobile) {
-      const viewport = document.querySelector('meta[name=viewport]');
-      if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
-      }
+    
+    setShowInstructions(true);
+    setUserScore(0);
+    setComputerScore(0);
+    
+    // Reset game
+    if (gameStateRef.current) {
+      gameStateRef.current.userScore = 0;
+      gameStateRef.current.computerScore = 0;
     }
-
-    const instructionsTimer = setTimeout(() => {
-      setShowInstructions(false);
-    }, 3000);
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const shipSize = isMobile ? 10 : 15;
-    const bulletSize = Math.max(1.5, Math.floor(canvasWidth * 0.003));
-    const enemySize = isMobile ? 10 : 15;
-    const asteroidSize = isMobile ? 7 : 10;
-    const starCount = isMobile ? 50 : 70; // Reduce star count on mobile
-
-    const stars = generateStars(starCount, canvasWidth, canvasHeight);
-
-    let playerX = canvasWidth / 2;
-    let playerY = canvasHeight - shipSize * 2;
-    const playerSpeed = 5;
-    let playerBullets: { x: number; y: number; active: boolean }[] = [];
-
-    let enemyX = canvasWidth / 2;
-    let enemyY = shipSize * 2;
-    const enemySpeed = 3.0 + (difficulty * 0.5);
-    let enemyBullets: { x: number; y: number; active: boolean }[] = [];
-    let enemyMoveDirection = 1;
-
-    // Limit the number of asteroids on mobile for better performance
-    const asteroidCount = isMobile ? 3 : 5;
-    const asteroids = generateAsteroids(asteroidCount, canvasWidth, canvasHeight);
-
-    let rightPressed = false;
-    let leftPressed = false;
-    let lastAutoFireTime = Date.now();
-    const autoFireInterval = 420 - (difficulty * 20);
-    const enemyFireInterval = 380 - (difficulty * 50);
-
-    const keyDownHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Right' || e.key === 'ArrowRight') {
-        rightPressed = true;
-      } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
-        leftPressed = true;
-      }
-    };
-
-    const keyUpHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Right' || e.key === 'ArrowRight') {
-        rightPressed = false;
-      } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
-        leftPressed = false;
-      }
-    };
-
-    document.addEventListener('keydown', keyDownHandler);
-    document.addEventListener('keyup', keyUpHandler);
-
-    let lastEnemyFireTime = Date.now();
-    let lastFrameTime = performance.now();
-    const targetFPS = 60;
-    const frameDelay = 1000 / targetFPS;
-
-    const updateEnemyAI = () => {
-      if (Math.random() < (0.5 + difficulty * 0.05)) {
-        if (playerX < enemyX - 10) {
-          enemyMoveDirection = -1;
-        } else if (playerX > enemyX + 10) {
-          enemyMoveDirection = 1;
-        }
-      }
+  }, [gameState.gameWon, onGameComplete]);
+  
+  // Reset game
+  const resetGame = useCallback(() => {
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      gameStateRef.current = initializeGame(canvas.width, canvas.height, difficulty);
       
-      if (Math.random() < (0.02 - difficulty * 0.003)) {
-        enemyMoveDirection *= -1;
-      }
-      
-      const currentTime = Date.now();
-      if (currentTime - lastEnemyFireTime > enemyFireInterval) {
-        if (Math.abs(enemyX - playerX) < (shipSize * (4 - difficulty * 0.5)) || Math.random() > (0.5 - difficulty * 0.08)) { 
-          enemyBullets.push({
-            x: enemyX,
-            y: enemyY + shipSize / 2,
-            active: true
-          });
-        }
-        lastEnemyFireTime = currentTime;
-      }
-    };
-
-    let gameActive = !gameState.gameOver;
-    let animationFrameId: number;
-
-    const draw = (timestamp: number) => {
-      if (!ctx || !gameActive) return;
-      
-      // Throttle the frame rate for consistent performance
-      const elapsed = timestamp - lastFrameTime;
-      if (elapsed < frameDelay) {
-        animationFrameId = window.requestAnimationFrame(draw);
-        return;
-      }
-      lastFrameTime = timestamp - (elapsed % frameDelay);
-      
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      
-      drawStars(ctx, stars);
-      
-      if (rightPressed && playerX < canvasWidth - shipSize) {
-        playerX += playerSpeed;
-      } else if (leftPressed && playerX > shipSize) {
-        playerX -= playerSpeed;
-      }
-      
-      updateEnemyAI();
-      
-      enemyX += enemySpeed * enemyMoveDirection;
-      if (enemyX > canvasWidth - shipSize || enemyX < shipSize) {
-        enemyMoveDirection *= -1;
-      }
-      
-      const currentTime = Date.now();
-      if (currentTime - lastAutoFireTime > autoFireInterval) {
-        if (playerBullets.length < (3 + difficulty)) {
-          playerBullets.push({
-            x: playerX,
-            y: playerY - shipSize / 2,
-            active: true
-          });
-        }
-        lastAutoFireTime = currentTime;
-      }
-      
-      // Update bullets and check for collisions
-      playerBullets.forEach(bullet => {
-        if (bullet.active) {
-          bullet.y -= 8;
-          if (bullet.y < 0) {
-            bullet.active = false;
-          }
-          
-          if (checkCollision(bullet.x, bullet.y, bulletSize, enemyX, enemyY, shipSize)) {
-            setUserScore(prevScore => {
-              const newScore = prevScore + 1;
-              if (newScore >= WINNING_SCORE) {
-                gameActive = false;
-                setGameState({
-                  gameStarted: false,
-                  gameOver: true,
-                  gameWon: true,
-                  score: newScore
-                });
-              }
-              return newScore;
-            });
-            bullet.active = false;
-          }
-          
-          // Batch check asteroid collisions for better performance
-          for (let i = 0; i < asteroids.length; i++) {
-            const asteroid = asteroids[i];
-            if (checkCollision(bullet.x, bullet.y, bulletSize, asteroid.x, asteroid.y, asteroidSize)) {
-              bullet.active = false;
-              asteroid.x = Math.random() * canvasWidth;
-              asteroid.y = Math.random() * (canvasHeight / 2) + 100;
-              break;
-            }
-          }
-        }
+      setGameState({
+        gameStarted: false,
+        gameOver: false,
+        gameWon: false,
+        score: 0
       });
       
-      // Process enemy bullets
-      enemyBullets.forEach(bullet => {
-        if (bullet.active) {
-          bullet.y += 6;
-          if (bullet.y > canvasHeight) {
-            bullet.active = false;
-          }
-          
-          if (checkCollision(bullet.x, bullet.y, bulletSize, playerX, playerY, shipSize)) {
-            setComputerScore(prevScore => {
-              const newScore = prevScore + 1;
-              if (newScore >= WINNING_SCORE) {
-                gameActive = false;
-                setGameState({
-                  gameStarted: false, 
-                  gameOver: true,
-                  gameWon: false,
-                  score: newScore
-                });
-              }
-              return newScore;
-            });
-            bullet.active = false;
-          }
-        }
-      });
-      
-      // Filter active bullets for rendering efficiency
-      playerBullets = playerBullets.filter(bullet => bullet.active);
-      enemyBullets = enemyBullets.filter(bullet => bullet.active);
-      
-      // Update asteroid positions
-      updateAsteroids(asteroids, canvasWidth, canvasHeight, asteroidSize);
-
-      // Draw game elements
-      drawPlayerShip(ctx, playerX, playerY, shipSize);
-      drawEnemyShip(ctx, enemyX, enemyY, shipSize);
-      drawAsteroids(ctx, asteroids, asteroidSize);
-      drawBullets(ctx, playerBullets, enemyBullets, bulletSize);
-      
-      if (gameActive) {
-        animationFrameId = window.requestAnimationFrame(draw);
-      }
-    };
-
-    animationFrameId = window.requestAnimationFrame(draw);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId);
-      document.removeEventListener('keydown', keyDownHandler);
-      document.removeEventListener('keyup', keyUpHandler);
-      clearTimeout(instructionsTimer);
-    };
-  }, [gameState.gameOver, difficulty, isMobile, canvasWidth, canvasHeight, WINNING_SCORE, onGameComplete]);
-
+      setShowInstructions(true);
+      setUserScore(0);
+      setComputerScore(0);
+    }
+  }, [difficulty]);
+  
   return {
+    gameState,
     userScore,
     computerScore,
-    gameState,
     showInstructions,
     canvasWidth,
     canvasHeight,
