@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
@@ -45,14 +44,22 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [imageError, setImageError] = useState(false);
   const [timeExpired, setTimeExpired] = useState(false);
 
-  // Find the appropriate lesson for this level
+  const getTimerDuration = (level: number): number => {
+    switch (level) {
+      case 1: return 7 * 60; // 7 minutes
+      case 2: return Math.floor(5.5 * 60); // 5:30 minutes
+      case 3: return 4 * 60; // 4 minutes
+      case 4: return 3 * 60; // 3 minutes
+      case 5: return Math.floor(1.5 * 60); // 1:30 minutes
+      default: return 7 * 60; // Default to 7 minutes
+    }
+  };
+
+  const timerDuration = getTimerDuration(level);
+
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
 
-  // Set timer duration based on level - 1 minute for Level 5, 7 minutes for others
-  const timerDuration = level === 5 ? 60 : 7 * 60; // 1 minute or 7 minutes in seconds
-
   useEffect(() => {
-    // Check if we have any previously answered questions
     const answered = questions
       .filter(q => {
         const answerKey = `${level}-${q.id}`;
@@ -63,7 +70,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
     
     setAnsweredQuestions(answered);
     
-    // If all questions are already answered, notify completion
     if (answered.length === questions.length) {
       setLevelComplete(true);
       setTimeout(() => {
@@ -73,9 +79,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   }, [level, questions, savedAnswers, onLevelComplete]);
 
   useEffect(() => {
-    // Ensure the component is focused when it becomes active
     if (isActive && containerRef.current) {
-      // Using setTimeout to ensure focus happens after render
       setTimeout(() => {
         const firstInput = containerRef.current?.querySelector('input');
         if (firstInput) {
@@ -90,13 +94,10 @@ const GameLevel: React.FC<GameLevelProps> = ({
       const newAnswered = [...answeredQuestions, questionId];
       setAnsweredQuestions(newAnswered);
       
-      // Save the answer
       onAnswerUpdate(level, questionId, answer);
       
-      // Check if all questions are answered
       if (newAnswered.length === questions.length) {
         setLevelComplete(true);
-        // Delay level completion by 1 second
         setTimeout(() => {
           onLevelComplete();
         }, 1000);
@@ -105,14 +106,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
   };
   
   const handleReloadImage = () => {
-    // Reset image states
     setImageLoaded(false);
     setImageError(false);
     
-    // Update the imageKey to force React to reload the image
     setImageKey(Date.now());
     
-    // Log the reload attempt to confirm functionality
     console.log("Image reload requested at:", new Date().toISOString());
   };
 
@@ -137,7 +135,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
 
   return (
     <div className="p-4" ref={containerRef}>
-      {/* Fixed height header container to prevent layout shifts */}
       <div className="flex justify-between items-center h-[40px] mb-4">
         <TypewriterText 
           text={`LEVEL ${level}`} 
@@ -145,7 +142,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
         />
         {isActive && (
           <CountdownTimer 
-            initialTime={timerDuration} // Dynamic timer based on level
+            initialTime={timerDuration} 
             isActive={isActive}
             onTimeUp={handleTimeUp}
           />
@@ -191,7 +188,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
           
           return (
             <div key={question.id} className="mb-4">
-              {/* Reduced height container for question text */}
               <div className="min-h-[40px] mb-1">
                 <TypewriterText 
                   text={question.text} 
@@ -210,10 +206,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
       </div>
       
       <div className="mt-4 flex flex-col items-center">
-        {/* Investi Gator Help Button */}
         <LessonModal lesson={levelLesson} />
         
-        {/* Reload Image Button */}
         {imageSrc && (
           <Button 
             variant="outline" 
