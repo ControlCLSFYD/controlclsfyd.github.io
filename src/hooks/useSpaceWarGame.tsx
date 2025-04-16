@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useState, RefObject } from 'react';
 
 interface SpaceWarGameProps {
@@ -87,10 +88,10 @@ export const useSpaceWarGame = ({
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   const [lastTime, setLastTime] = useState(0);
   const [keys, setKeys] = useState({
-    ArrowUp: false,
-    ArrowLeft: false,
-    ArrowRight: false,
-    ArrowDown: false,
+    w: false,
+    a: false,
+    s: false,
+    d: false,
   });
 
   // Initialize the game
@@ -168,18 +169,18 @@ export const useSpaceWarGame = ({
     // Add event listeners
     window.addEventListener('resize', updateCanvasSize);
     
-    // Keyboard controls
+    // Keyboard controls for WASD
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'].includes(e.key)) {
+      if (['w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
         e.preventDefault();
-        setKeys(prev => ({ ...prev, [e.key]: true }));
+        setKeys(prev => ({ ...prev, [e.key.toLowerCase()]: true }));
       }
     };
     
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (['ArrowUp', 'ArrowLeft', 'ArrowRight', 'ArrowDown'].includes(e.key)) {
+      if (['w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
         e.preventDefault();
-        setKeys(prev => ({ ...prev, [e.key]: false }));
+        setKeys(prev => ({ ...prev, [e.key.toLowerCase()]: false }));
       }
     };
     
@@ -200,11 +201,12 @@ export const useSpaceWarGame = ({
 
   // Handle mobile controls
   const handleMobileControl = useCallback((direction: 'up' | 'left' | 'right' | 'down', pressed: boolean) => {
+    // Map mobile controls to WASD
     const keyMap = {
-      up: 'ArrowUp',
-      left: 'ArrowLeft',
-      right: 'ArrowRight',
-      down: 'ArrowDown'
+      up: 'w',
+      left: 'a',
+      right: 'd',
+      down: 's'
     };
     
     setKeys(prev => ({
@@ -292,9 +294,9 @@ export const useSpaceWarGame = ({
   const updateGameState = useCallback((deltaTime: number) => {
     if (!isRunning || isGameOver) return;
     
-    // Handle player input
-    const playerRotation = keys.ArrowLeft ? -0.1 : keys.ArrowRight ? 0.1 : 0;
-    const playerThrust = keys.ArrowUp ? 0.1 : 0;
+    // Handle player input for WASD controls
+    const playerRotation = keys.a ? -0.1 : keys.d ? 0.1 : 0;
+    const playerThrust = keys.w ? 0.1 : 0;
     
     // Auto-fire for player
     let updatedPlayer = { ...player, rotation: playerRotation, thrust: playerThrust };
@@ -322,6 +324,7 @@ export const useSpaceWarGame = ({
         setIsGameOver(true);
         setPlayerWon(true);
         onWin();
+        return;
       }
     }
     
@@ -331,6 +334,7 @@ export const useSpaceWarGame = ({
         setIsGameOver(true);
         setPlayerWon(false);
         onLose();
+        return;
       }
     }
     
