@@ -4,7 +4,7 @@ import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
 import GameResult from './GameResult';
 import { useSpaceWarGame } from '../hooks/useSpaceWarGame';
 import MobileControls from './game/MobileControls';
-import { useMobile } from '../hooks/use-mobile';
+import { useIsMobile } from '../hooks/use-mobile'; // Changed from useMobile to useIsMobile
 
 const SpaceWarGame: React.FC<BaseGameProps> = ({ 
   onGameComplete, 
@@ -13,7 +13,7 @@ const SpaceWarGame: React.FC<BaseGameProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile(); // Changed from useMobile to useIsMobile
   
   const [gameState, setGameState] = useState<GameState>({
     gameStarted: false,
