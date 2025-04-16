@@ -20,6 +20,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   
   const [showCourtGame, setShowCourtGame] = useState(false);
   const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
+  const [showSpacewarGame, setShowSpacewarGame] = useState(false);
   const [showUATGame, setShowUATGame] = useState(false);
   const [showSnekGame, setShowSnekGame] = useState(false);
   
@@ -30,6 +31,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     courtCompleted, setCourtCompleted,
     noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted,
     duckHuntCompleted, setDuckHuntCompleted,
+    spacewarCompleted, setSpacewarCompleted,
     uatCompleted, setUATCompleted,
     snekCompleted, setSnekCompleted,
     currentLevel, setCurrentLevel
@@ -39,6 +41,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     courtDifficulty, increaseCourtDifficulty,
     noughtsAndCrossesDifficulty, increaseNoughtsAndCrossesDifficulty,
     duckHuntDifficulty, increaseDuckHuntDifficulty,
+    spacewarDifficulty, increaseSpacewarDifficulty,
     uatDifficulty, increaseUatDifficulty,
     snekDifficulty, increaseSnekDifficulty
   } = useGameDifficulty();
@@ -73,9 +76,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     if (currentLevel === 1 && !courtCompleted) {
       setShowCourtGame(true);
     } 
-    else if (currentLevel === 2) {
-      // Go directly to level 3 without showing Duck Hunt game
-      setCurrentLevel(3);
+    else if (currentLevel === 2 && !spacewarCompleted) {
+      setShowSpacewarGame(true);
     }
     else if (currentLevel === 3 && !uatCompleted) {
       setShowUATGame(true);
@@ -102,6 +104,19 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
       increaseCourtDifficulty();
     }
     setShowCourtGame(true);
+  };
+
+  const handleSpacewarComplete = () => {
+    setSpacewarCompleted(true);
+    setShowSpacewarGame(false);
+    setCurrentLevel(3);
+  };
+
+  const handleSpacewarPlayAgain = (playerWon: boolean) => {
+    if (playerWon) {
+      increaseSpacewarDifficulty();
+    }
+    setShowSpacewarGame(true);
   };
 
   const handleUATComplete = () => {
@@ -137,7 +152,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowNoughtsAndCrossesGame(true);
   };
 
-  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame;
+  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showSpacewarGame || showUATGame || showSnekGame;
 
   const getCurrentLevelQuestions = () => {
     return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
@@ -152,6 +167,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
+    showSpacewarGame,
     showUATGame,
     showSnekGame,
     currentLevel,
@@ -160,6 +176,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
+    spacewarDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -167,6 +184,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
+    handleSpacewarComplete,
+    handleSpacewarPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,

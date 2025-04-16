@@ -5,6 +5,7 @@ export const useGameDifficulty = () => {
   const [noughtsAndCrossesDifficulty, setNoughtsAndCrossesDifficulty] = useState(1);
   const [courtDifficulty, setCourtDifficulty] = useState(1);
   const [duckHuntDifficulty, setDuckHuntDifficulty] = useState(1);
+  const [spacewarDifficulty, setSpacewarDifficulty] = useState(1);
   const [uatDifficulty, setUatDifficulty] = useState(1);
   const [snekDifficulty, setSnekDifficulty] = useState(1);
   
@@ -20,6 +21,10 @@ export const useGameDifficulty = () => {
     setDuckHuntDifficulty(prev => Math.min(prev + 1, 5));
   };
   
+  const increaseSpacewarDifficulty = () => {
+    setSpacewarDifficulty(prev => Math.min(prev + 1, 5));
+  };
+  
   const increaseUatDifficulty = () => {
     setUatDifficulty(prev => Math.min(prev + 1, 5));
   };
@@ -32,11 +37,13 @@ export const useGameDifficulty = () => {
     noughtsAndCrossesDifficulty,
     courtDifficulty,
     duckHuntDifficulty,
+    spacewarDifficulty,
     uatDifficulty,
     snekDifficulty,
     increaseNoughtsAndCrossesDifficulty,
     increaseCourtDifficulty,
     increaseDuckHuntDifficulty,
+    increaseSpacewarDifficulty,
     increaseUatDifficulty,
     increaseSnekDifficulty
   };
