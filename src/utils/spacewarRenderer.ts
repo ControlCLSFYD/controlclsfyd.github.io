@@ -84,3 +84,50 @@ export const drawStars = (
     ctx.closePath();
   });
 };
+
+// Main draw function that uses all the individual draw functions
+export const drawGame = (
+  ctx: CanvasRenderingContext2D,
+  gameState: any
+) => {
+  // Clear the canvas
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  
+  // Draw stars
+  if (gameState.stars) {
+    drawStars(ctx, gameState.stars);
+  }
+  
+  // Draw asteroids
+  if (gameState.asteroids) {
+    drawAsteroids(ctx, gameState.asteroids, gameState.asteroidSize || 10);
+  }
+  
+  // Draw player
+  if (gameState.player) {
+    drawPlayerShip(ctx, gameState.player.x, gameState.player.y, gameState.shipSize || 10);
+  }
+  
+  // Draw enemy
+  if (gameState.enemy) {
+    drawEnemyShip(ctx, gameState.enemy.x, gameState.enemy.y, gameState.shipSize || 10);
+  }
+  
+  // Draw bullets
+  if (gameState.playerBullets && gameState.enemyBullets) {
+    drawBullets(
+      ctx, 
+      gameState.playerBullets, 
+      gameState.enemyBullets, 
+      gameState.bulletSize || 2
+    );
+  }
+  
+  // Draw score
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '16px monospace';
+  if (gameState.userScore !== undefined && gameState.computerScore !== undefined) {
+    ctx.fillText(`PLAYER: ${gameState.userScore}  CPU: ${gameState.computerScore}`, 10, 20);
+  }
+};
