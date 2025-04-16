@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
@@ -44,8 +43,19 @@ const GameLevel: React.FC<GameLevelProps> = ({
   // Find the appropriate lesson for this level
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
 
-  // Set timer duration based on level - 1 minute for Level 5, 7 minutes for others
-  const timerDuration = level === 5 ? 60 : 7 * 60; // 1 minute or 7 minutes in seconds
+  // Set timer duration based on level
+  const getTimerDuration = (level: number): number => {
+    switch(level) {
+      case 1: return 7 * 60;      // 7 minutes in seconds
+      case 2: return 5.5 * 60;    // 5:30 minutes in seconds
+      case 3: return 4 * 60;      // 4 minutes in seconds
+      case 4: return 3 * 60;      // 3 minutes in seconds
+      case 5: return 1.5 * 60;    // 1:30 minutes in seconds
+      default: return 7 * 60;     // Default to 7 minutes
+    }
+  };
+  
+  const timerDuration = getTimerDuration(level);
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -133,7 +143,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
         />
         {isActive && (
           <CountdownTimer 
-            initialTime={timerDuration} // Dynamic timer based on level
+            initialTime={timerDuration}
             isActive={isActive}
           />
         )}
