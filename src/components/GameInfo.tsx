@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
 
 interface GameInfoProps {
   showInstructions: boolean;
@@ -25,13 +25,17 @@ const GameInfo: React.FC<GameInfoProps> = ({
         {showInstructions ? (
           <div className="flex flex-col items-center p-2 border border-terminal-green">
             <div className="flex items-center">
-              <span>Use</span>
+              <ArrowUp className="mx-1" size={20} />
+              <span>for thrust,</span>
               <ArrowLeft className="mx-1" size={20} />
               <ArrowRight className="mx-1" size={20} />
-              <span>keys to move. SPACE for rapid fire, B for special weapon!</span>
+              <span>to turn.</span>
+            </div>
+            <div className="text-xs mt-1">
+              <span className="text-yellow-400">SPACE for rapid fire, B for special weapon!</span>
             </div>
             <div className="text-xs mt-1 text-yellow-400">
-              Both ships autofire. First to reach {winningScore} points wins!
+              First to reach {winningScore} points wins!
             </div>
           </div>
         ) : (
