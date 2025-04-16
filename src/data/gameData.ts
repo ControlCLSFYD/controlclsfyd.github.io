@@ -22,5 +22,8 @@ export const gameData: GameData = {
   lessons: lessonData
 };
 
+// Re-export lessonData so it can be imported directly from gameData
+export { lessonData };
+
 // Re-export types from the interface file for backward compatibility
 export type { Level, GameData } from '../interfaces/GameDataInterfaces';
