@@ -1,7 +1,10 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import GameLevel from './GameLevel';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
+import LevelCompletionScreen from './LevelCompletionScreen';
+import GameOver from './GameOver';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
 
@@ -16,7 +19,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
   onAnswerUpdate,
   onResetGame
 }) => {
-  const gameState = useGameState({ savedAnswers, onResetGame });
+  const [gameOver, setGameOver] = useState(false);
+  const [showLevelCompletion, setShowLevelCompletion] = useState(false);
+  
+  const gameState = useGameState({ 
+    savedAnswers, 
+    onResetGame
+  });
   
   const {
     gameStarted,
@@ -50,6 +59,30 @@ const GameContainer: React.FC<GameContainerProps> = ({
     getCurrentLevelImage
   } = gameState;
 
+  const handleGameOver = () => {
+    setGameOver(true);
+  };
+
+  const handleRestartGame = () => {
+    setGameOver(false);
+    onResetGame();
+    // Reset the game state
+    handleAccessGranted();
+  };
+
+  const handleLevelCompleted = () => {
+    setShowLevelCompletion(true);
+  };
+
+  const handleContinueToNextLevel = () => {
+    setShowLevelCompletion(false);
+    handleLevelComplete();
+  };
+
+  if (gameOver) {
+    return <GameOver reason="timeout" onRestart={handleRestartGame} />;
+  }
+
   return (
     <div className="terminal p-4 vhs-screen">
       {!gameStarted ? (
@@ -58,6 +91,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <div>
           {gameCompleted ? (
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
+          ) : showLevelCompletion ? (
+            <LevelCompletionScreen 
+              level={currentLevel}
+              onContinue={handleContinueToNextLevel} 
+            />
           ) : isGameActive ? (
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
@@ -89,7 +127,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 questions={getCurrentLevelQuestions()}
                 imageSrc={getCurrentLevelImage()}
                 isActive={true}
-                onLevelComplete={handleLevelComplete}
+                onLevelComplete={handleLevelCompleted}
+                onGameOver={handleGameOver}
                 savedAnswers={savedAnswers}
                 onAnswerUpdate={onAnswerUpdate}
               />

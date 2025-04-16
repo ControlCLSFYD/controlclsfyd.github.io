@@ -8,7 +8,7 @@ import {
   DialogContent,
   DialogTrigger,
 } from "./ui/dialog";
-import { HelpCircle } from 'lucide-react';
+import { INVESTI_HEAD_ICON, INVESTI_ACCESS_SCREEN } from '../utils/investigatorImages';
 
 interface LoadingScreenProps {
   onAccessGranted: () => void;
@@ -105,7 +105,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                   onClick={() => setShowInvestiGator(true)}
                 >
                   <img 
-                    src="/lovable-uploads/f4308e48-123d-4416-9df6-ac0dc4b0342c.png" 
+                    src={INVESTI_HEAD_ICON}
                     alt="Investi Gator" 
                     className="w-6 h-6 object-contain bg-black"
                   />
@@ -115,7 +115,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
+                    src={INVESTI_ACCESS_SCREEN}
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain bg-black"
                   />

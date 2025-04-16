@@ -6,6 +6,7 @@ import GameQuestions from './game/GameQuestions';
 import GameControls from './game/GameControls';
 import { lessonData } from '../data/gameData';
 import { getTimerDuration } from '../utils/levelTimers';
+import GameOver from './GameOver';
 
 export interface Question {
   id: string;
@@ -19,6 +20,7 @@ interface GameLevelProps {
   imageSrc?: string;
   isActive: boolean;
   onLevelComplete: () => void;
+  onGameOver: () => void;
   savedAnswers: Record<string, string>;
   onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
 }
@@ -29,12 +31,14 @@ const GameLevel: React.FC<GameLevelProps> = ({
   imageSrc,
   isActive,
   onLevelComplete,
+  onGameOver,
   savedAnswers,
   onAnswerUpdate
 }) => {
   const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
+  const [timeExpired, setTimeExpired] = useState(false);
   
   // Find the appropriate lesson for this level
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
@@ -95,11 +99,14 @@ const GameLevel: React.FC<GameLevelProps> = ({
     }
   };
   
-  // Handle image reload through reference to the GameImage component
-  const handleReloadImage = () => {
-    // This is now handled in the GameImage component
-    console.log("Reload image requested from GameLevel");
+  const handleTimerExpired = () => {
+    setTimeExpired(true);
+    onGameOver();
   };
+
+  if (timeExpired) {
+    return <GameOver reason="timeout" onRestart={onGameOver} />;
+  }
 
   return (
     <div className="p-4" ref={containerRef}>
@@ -107,7 +114,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
       <GameHeader 
         level={level} 
         isActive={isActive} 
-        timerDuration={timerDuration} 
+        timerDuration={timerDuration}
+        onTimeUp={handleTimerExpired}
       />
       
       {/* Game image if provided */}
@@ -124,7 +132,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
       {/* Game controls for help and image reload */}
       <GameControls 
         imageSrc={imageSrc}
-        handleReloadImage={imageSrc ? handleReloadImage : undefined}
         levelLesson={levelLesson}
       />
     </div>
