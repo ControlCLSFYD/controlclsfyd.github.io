@@ -54,7 +54,6 @@ const GameImage: React.FC<GameImageProps> = ({ imageSrc }) => {
             onClick={handleReloadImage}
             className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
           >
-            <RefreshCw size={16} className="mr-2" />
             Try Again
           </Button>
         </div>
@@ -67,20 +66,6 @@ const GameImage: React.FC<GameImageProps> = ({ imageSrc }) => {
         onLoad={handleImageLoad}
         onError={handleImageError}
       />
-      
-      {imageLoaded && (
-        <div className="absolute bottom-2 right-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleReloadImage}
-            className="border border-terminal-green text-terminal-green bg-black bg-opacity-70 hover:bg-terminal-green hover:text-black"
-          >
-            <RefreshCw size={14} className="mr-1" />
-            Reload
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
