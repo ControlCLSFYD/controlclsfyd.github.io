@@ -41,7 +41,6 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ initialTime, onTimeUp, 
     if (!isRunning || !endTime) return;
 
     let frameId: number;
-    let lastUpdateTime = Date.now();
 
     const updateTimer = () => {
       const now = Date.now();
@@ -76,7 +75,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({ initialTime, onTimeUp, 
   };
 
   return (
-    <div className="text-terminal-green">
+    <div className={`text-terminal-green ${timeLeft <= 30 ? 'animate-pulse text-red-500' : ''}`}>
       {formatTime(timeLeft)}
     </div>
   );

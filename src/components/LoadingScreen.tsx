@@ -115,7 +115,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
               <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
                 <div className="flex flex-col items-center">
                   <img 
-                    src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
+                    src="/lovable-uploads/1c3efc59-880b-420b-91a1-5e38b4e4abb1.png" 
                     alt="Investi Gator" 
                     className="w-24 h-auto mb-4 object-contain bg-black"
                   />

@@ -15,10 +15,11 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const [gameStarted, setGameStarted] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
   const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
+  const [showLevelCompleteScreen, setShowLevelCompleteScreen] = useState(false);
+  const [completedLevel, setCompletedLevel] = useState(0);
   
   const [showCourtGame, setShowCourtGame] = useState(false);
   const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
-  const [showDuckHuntGame, setShowDuckHuntGame] = useState(false);
   const [showUATGame, setShowUATGame] = useState(false);
   const [showSnekGame, setShowSnekGame] = useState(false);
   
@@ -60,6 +61,15 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   };
 
   const handleLevelComplete = () => {
+    // Show level completion screen first
+    setCompletedLevel(currentLevel);
+    setShowLevelCompleteScreen(true);
+  };
+  
+  const handleLevelContinue = () => {
+    setShowLevelCompleteScreen(false);
+    
+    // Now handle the actual level progression
     if (currentLevel === 1 && !courtCompleted) {
       setShowCourtGame(true);
     } 
@@ -94,17 +104,6 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowCourtGame(true);
   };
 
-  const handleDuckHuntComplete = () => {
-    setDuckHuntCompleted(true);
-    setShowDuckHuntGame(false);
-    setCurrentLevel(3);
-  };
-
-  const handleDuckHuntPlayAgain = () => {
-    increaseDuckHuntDifficulty();
-    setShowDuckHuntGame(true);
-  };
-
   const handleUATComplete = () => {
     setUATCompleted(true);
     setShowUATGame(false);
@@ -130,6 +129,13 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleEndMessageComplete = () => {
     setShowEndScreenPsalm(false);
   };
+  
+  const handleRestartGame = () => {
+    // Reset the game state
+    onResetGame();
+    setGameStarted(true);
+    setShowNoughtsAndCrossesGame(true);
+  };
 
   const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame;
 
@@ -146,14 +152,14 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showDuckHuntGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
+    showLevelCompleteScreen,
+    completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    duckHuntDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -161,14 +167,14 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleDuckHuntComplete,
-    handleDuckHuntPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
     handleSnekPlayAgain,
     handleLevelComplete,
+    handleLevelContinue,
     handleEndMessageComplete,
+    handleRestartGame,
     getCurrentLevelQuestions,
     getCurrentLevelImage
   };

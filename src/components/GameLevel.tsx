@@ -8,6 +8,7 @@ import { RefreshCw, Image } from 'lucide-react';
 import LessonModal from './LessonModal';
 import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
+import GameOverScreen from './GameOverScreen';
 
 export interface Question {
   id: string;
@@ -21,6 +22,7 @@ interface GameLevelProps {
   imageSrc?: string;
   isActive: boolean;
   onLevelComplete: () => void;
+  onRestart: () => void;
   savedAnswers: Record<string, string>;
   onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
 }
@@ -31,6 +33,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   imageSrc,
   isActive,
   onLevelComplete,
+  onRestart,
   savedAnswers,
   onAnswerUpdate
 }) => {
@@ -40,6 +43,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [imageKey, setImageKey] = useState<number>(Date.now());
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [timeExpired, setTimeExpired] = useState(false);
 
   // Find the appropriate lesson for this level
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
@@ -122,6 +126,14 @@ const GameLevel: React.FC<GameLevelProps> = ({
     setImageError(true);
     console.log("Image failed to load");
   };
+  
+  const handleTimeUp = () => {
+    setTimeExpired(true);
+  };
+
+  if (timeExpired) {
+    return <GameOverScreen onRestart={onRestart} />;
+  }
 
   return (
     <div className="p-4" ref={containerRef}>
@@ -135,6 +147,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
           <CountdownTimer 
             initialTime={timerDuration} // Dynamic timer based on level
             isActive={isActive}
+            onTimeUp={handleTimeUp}
           />
         )}
       </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import GameLevel from './GameLevel';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
+import LevelCompletionScreen from './LevelCompletionScreen';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
 
@@ -28,6 +29,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     showSnekGame,
     currentLevel,
     isGameActive,
+    showLevelCompleteScreen,
+    completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
     uatDifficulty,
@@ -42,7 +45,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleSnekComplete,
     handleSnekPlayAgain,
     handleLevelComplete,
+    handleLevelContinue,
     handleEndMessageComplete,
+    handleRestartGame,
     getCurrentLevelQuestions,
     getCurrentLevelImage
   } = gameState;
@@ -55,6 +60,11 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <div>
           {gameCompleted ? (
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
+          ) : showLevelCompleteScreen ? (
+            <LevelCompletionScreen 
+              level={completedLevel}
+              onContinue={handleLevelContinue} 
+            />
           ) : isGameActive ? (
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
@@ -87,6 +97,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 imageSrc={getCurrentLevelImage()}
                 isActive={true}
                 onLevelComplete={handleLevelComplete}
+                onRestart={handleRestartGame}
                 savedAnswers={savedAnswers}
                 onAnswerUpdate={onAnswerUpdate}
               />

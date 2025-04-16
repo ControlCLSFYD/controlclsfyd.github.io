@@ -41,13 +41,27 @@ const InvestiGator: React.FC<InvestiGatorProps> = ({ lesson, onClose }) => {
     }
   };
 
+  // Get the appropriate Investi image based on level
+  const getInvestiImage = () => {
+    // Level 5 gets special "go go go" image
+    if (lesson.id === 5) {
+      return "/lovable-uploads/e114164a-4a17-44e4-86db-ff4729bd82dc.png";
+    }
+    // Levels 1-4 get the "cool" image 
+    else if (lesson.id >= 1 && lesson.id <= 4) {
+      return "/lovable-uploads/2ba5264d-23f7-4ad1-b6f0-0fec48f0835e.png";
+    }
+    // Default image (shouldn't be reached)
+    return "/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png";
+  };
+
   return (
     <div className="flex flex-col items-start p-2 md:p-4 max-w-3xl mx-auto">
       <div className="mb-6 w-full">
         <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
           <div className="w-full md:w-1/3 text-center mb-4 md:mb-0">
             <img 
-              src="/lovable-uploads/6b60af4c-2f10-44a6-a3ee-b75a67df103f.png" 
+              src={getInvestiImage()}
               alt="Investi Gator" 
               className="w-32 h-auto mx-auto md:w-full max-w-[200px] object-contain bg-black"
             />
