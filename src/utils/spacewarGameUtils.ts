@@ -117,10 +117,15 @@ export const updateGameState = (gameState: any, deltaTime: number, difficulty: n
   
   // Keep player in bounds
   const playerBoundary = gameState.shipSize;
-  if (gameState.player.x < playerBoundary) gameState.player.x = playerBoundary;
-  if (gameState.player.x > gameState.player.x = gameState.player.x) gameState.player.x = playerBoundary;
-  if (gameState.player.x > gameState.canvasWidth - playerBoundary) {
-    gameState.player.x = gameState.canvasWidth - playerBoundary;
+  
+  // Ensure player doesn't go below the left boundary
+  if (gameState.player.x < playerBoundary) {
+    gameState.player.x = playerBoundary;
+  }
+  
+  // Ensure player doesn't go beyond the right boundary
+  if (gameState.player.x > (gameState.canvasWidth || 600) - playerBoundary) {
+    gameState.player.x = (gameState.canvasWidth || 600) - playerBoundary;
   }
   
   // Basic enemy AI - follow player with some randomization
