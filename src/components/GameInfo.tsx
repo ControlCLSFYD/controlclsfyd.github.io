@@ -23,11 +23,16 @@ const GameInfo: React.FC<GameInfoProps> = ({
       
       <div className="h-[60px] mb-2">
         {showInstructions ? (
-          <div className="flex items-center p-2 border border-terminal-green">
-            <span>Use</span>
-            <ArrowLeft className="mx-1" size={20} />
-            <ArrowRight className="mx-1" size={20} />
-            <span>keys to move. SPACE for special weapon!</span>
+          <div className="flex flex-col items-center p-2 border border-terminal-green">
+            <div className="flex items-center">
+              <span>Use</span>
+              <ArrowLeft className="mx-1" size={20} />
+              <ArrowRight className="mx-1" size={20} />
+              <span>keys to move. SPACE for special weapon!</span>
+            </div>
+            <div className="text-xs mt-1 text-yellow-400">
+              Both ships autofire. First to reach {winningScore} points wins!
+            </div>
           </div>
         ) : (
           <>

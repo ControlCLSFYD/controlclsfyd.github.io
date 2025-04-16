@@ -208,6 +208,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     let animationFrameId: number;
     let lastTime = 0;
     let cpuSpecialWeaponTimer = 0;
+    let cpuDecisionTimer = 0;
+    let cpuTargetPosition = { x: 0, y: 0 };
     
     const gameLoop = (timestamp: number) => {
       if (!canvasRef.current) return;
@@ -266,31 +268,16 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       };
       const playerDistanceToSun = Math.sqrt(playerToSun.x * playerToSun.x + playerToSun.y * playerToSun.y);
       
+      // Apply gravity but no collision penalty
       if (playerDistanceToSun > SUN_RADIUS) {
         const gravityFactor = GRAVITY_STRENGTH / (playerDistanceToSun * 0.1);
         updatedPlayer.velocity.x += (playerToSun.x / playerDistanceToSun) * gravityFactor;
         updatedPlayer.velocity.y += (playerToSun.y / playerDistanceToSun) * gravityFactor;
       } else {
-        // Collision with sun - reset player and reward CPU 5 points
-        updatedPlayer.x = Math.random() * CANVAS_WIDTH;
-        updatedPlayer.y = Math.random() * CANVAS_HEIGHT;
-        updatedPlayer.velocity = { x: 0, y: 0 };
-        
-        setCpu(prev => {
-          const newScore = prev.score + 5;
-          
-          // Check for CPU win
-          if (newScore >= WINNING_SCORE) {
-            setGameState(prevState => ({ ...prevState, gameOver: true, gameWon: false }));
-            
-            // Auto-restart after a delay when CPU wins
-            setTimeout(() => {
-              handlePlayAgain();
-            }, 2000);
-          }
-          
-          return { ...prev, score: newScore };
-        });
+        // Pass through sun without penalty - just teleport to the other side
+        const angle = Math.atan2(playerToSun.y, playerToSun.x);
+        updatedPlayer.x = CANVAS_WIDTH / 2 - Math.cos(angle) * (SUN_RADIUS + 5);
+        updatedPlayer.y = CANVAS_HEIGHT / 2 - Math.sin(angle) * (SUN_RADIUS + 5);
       }
       
       // Update player position
@@ -305,7 +292,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setPlayer(updatedPlayer);
       
-      // Update CPU ship with AI
+      // Update CPU ship with smarter AI
       const updatedCpu = { ...cpu };
       
       // Recharge CPU special weapon
@@ -319,9 +306,23 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         setLastCpuFire(now);
       }
 
-      // CPU special weapon firing logic
+      // CPU special weapon firing logic - more strategic now
       cpuSpecialWeaponTimer++;
-      if (cpuSpecialWeaponTimer > 600 && updatedCpu.specialWeaponCharge >= 100) { // Fire special every ~10 seconds
+      
+      // Fire special weapon when:
+      // 1. It's charged
+      // 2. AND either: a) player is close and in front, OR b) every ~8 seconds
+      const distanceToPlayer = Math.sqrt(
+        Math.pow(player.x - cpu.x, 2) + Math.pow(player.y - cpu.y, 2)
+      );
+      
+      const angleToPlayer = Math.atan2(player.y - cpu.y, player.x - cpu.x);
+      const angleToPlayerDiff = Math.abs(normalizeAngle(angleToPlayer - updatedCpu.rotation));
+      
+      const playerInFrontAndClose = distanceToPlayer < 200 && angleToPlayerDiff < 0.5;
+      
+      if (updatedCpu.specialWeaponCharge >= 100 && 
+          (playerInFrontAndClose || cpuSpecialWeaponTimer > 480)) {
         cpuSpecialWeaponTimer = 0;
         fireSpecialWeapon('cpu', cpu);
         updatedCpu.specialWeaponCharge = 0;
@@ -331,64 +332,97 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         }, 500);
       }
       
-      // CPU AI logic
-      // 1. Try to avoid the sun
+      // Smarter CPU AI logic
+      cpuDecisionTimer++;
+      
+      // Update target position every 2 seconds
+      if (cpuDecisionTimer >= 120) {
+        cpuDecisionTimer = 0;
+        
+        // Predict player's future position based on velocity
+        const predictionFactor = 1.5 + difficulty * 0.5; // Higher difficulty = better prediction
+        const predictedPlayerX = player.x + player.velocity.x * predictionFactor;
+        const predictedPlayerY = player.y + player.velocity.y * predictionFactor;
+        
+        // Choose between strategies based on difficulty and game state
+        // 1. Chase player (60-80% chance based on difficulty)
+        // 2. Navigate to strategic position (20-40% chance)
+        const chasePlayerChance = 0.6 + (difficulty * 0.05);
+        
+        if (Math.random() < chasePlayerChance) {
+          // Chase player strategy
+          cpuTargetPosition = { x: predictedPlayerX, y: predictedPlayerY };
+        } else {
+          // Strategic position - find a position with good firing angle
+          // Calculate a position at a moderate distance from player
+          const strategicDistance = 200 + Math.random() * 100;
+          const randomAngle = Math.random() * Math.PI * 2;
+          
+          cpuTargetPosition = {
+            x: predictedPlayerX + Math.cos(randomAngle) * strategicDistance,
+            y: predictedPlayerY + Math.sin(randomAngle) * strategicDistance
+          };
+        }
+      }
+      
+      // Avoid sun at high priority
       const cpuToSun = {
         x: CANVAS_WIDTH / 2 - cpu.x,
         y: CANVAS_HEIGHT / 2 - cpu.y
       };
       const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
       
-      // Determine target based on difficulty
-      const targetPlayer = Math.random() < (0.6 + DIFFICULTY_MODIFIER);
-      
-      if (cpuDistanceToSun < 200) {
-        // Avoid sun by rotating away from it
+      if (cpuDistanceToSun < 120) {
+        // Sun avoidance has priority - move away from sun
         const angleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
         const oppositeAngle = angleToSun + Math.PI;
-        const angleToTurn = normalizeAngle(oppositeAngle - updatedCpu.rotation);
         
-        if (angleToTurn > 0.1) updatedCpu.rotateRight = true;
-        else if (angleToTurn < -0.1) updatedCpu.rotateLeft = true;
-        else {
-          updatedCpu.rotateRight = false;
-          updatedCpu.rotateLeft = false;
-        }
+        const sunAvoidanceX = CANVAS_WIDTH / 2 + Math.cos(oppositeAngle) * 200;
+        const sunAvoidanceY = CANVAS_HEIGHT / 2 + Math.sin(oppositeAngle) * 200;
         
-        // Apply thrust to move away
-        updatedCpu.thrust = true;
-      } else if (targetPlayer) {
-        // Target player by rotating towards them
-        const angleToPlayer = Math.atan2(player.y - cpu.y, player.x - cpu.x);
-        const angleToTurn = normalizeAngle(angleToPlayer - updatedCpu.rotation);
-        
-        if (angleToTurn > 0.1) updatedCpu.rotateRight = true;
-        else if (angleToTurn < -0.1) updatedCpu.rotateLeft = true;
-        else {
-          updatedCpu.rotateRight = false;
-          updatedCpu.rotateLeft = false;
-          // Only thrust when properly aligned
-          updatedCpu.thrust = Math.abs(angleToTurn) < 0.3;
-        }
-      } else {
-        // Random movement
-        if (Math.random() < 0.02) updatedCpu.rotateLeft = !updatedCpu.rotateLeft;
-        if (Math.random() < 0.02) updatedCpu.rotateRight = !updatedCpu.rotateRight;
-        if (Math.random() < 0.05) updatedCpu.thrust = !updatedCpu.thrust;
+        cpuTargetPosition = { x: sunAvoidanceX, y: sunAvoidanceY };
+      }
+      
+      // Calculate thrust and rotation to reach target
+      const angleToTarget = Math.atan2(
+        cpuTargetPosition.y - cpu.y,
+        cpuTargetPosition.x - cpu.x
+      );
+      
+      const angleToTurn = normalizeAngle(angleToTarget - updatedCpu.rotation);
+      
+      // Smart rotation control
+      const turnAngleThreshold = 0.1;
+      updatedCpu.rotateLeft = angleToTurn < -turnAngleThreshold;
+      updatedCpu.rotateRight = angleToTurn > turnAngleThreshold;
+      
+      // Smart thrust control - thrust when pointed approximately at target
+      const thrustAngleThreshold = 0.3;
+      updatedCpu.thrust = Math.abs(angleToTurn) < thrustAngleThreshold;
+      
+      // Occasionally adjust speed to match optimal engagement distance
+      const distanceToTarget = Math.sqrt(
+        Math.pow(cpuTargetPosition.x - cpu.x, 2) + 
+        Math.pow(cpuTargetPosition.y - cpu.y, 2)
+      );
+      
+      // If very close to target, stop thrusting to maintain distance
+      if (distanceToTarget < 50 && updatedCpu.thrust) {
+        updatedCpu.thrust = false;
       }
       
       // Apply rotation
       if (updatedCpu.rotateLeft) {
-        updatedCpu.rotation -= ROTATION_SPEED * 0.8;
+        updatedCpu.rotation -= ROTATION_SPEED * (0.8 + difficulty * 0.05);
       }
       if (updatedCpu.rotateRight) {
-        updatedCpu.rotation += ROTATION_SPEED * 0.8;
+        updatedCpu.rotation += ROTATION_SPEED * (0.8 + difficulty * 0.05);
       }
       
       // Apply thrust
       if (updatedCpu.thrust) {
-        updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * THRUST_POWER * 0.9;
-        updatedCpu.velocity.y += Math.sin(updatedCpu.rotation) * THRUST_POWER * 0.9;
+        updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * THRUST_POWER * (0.9 + difficulty * 0.05);
+        updatedCpu.velocity.y += Math.sin(updatedCpu.rotation) * THRUST_POWER * (0.9 + difficulty * 0.05);
       }
       
       // Apply sun gravity to CPU
@@ -397,21 +431,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.velocity.x += (cpuToSun.x / cpuDistanceToSun) * gravityFactor;
         updatedCpu.velocity.y += (cpuToSun.y / cpuDistanceToSun) * gravityFactor;
       } else {
-        // Collision with sun - reset CPU and reward Player 5 points
-        updatedCpu.x = Math.random() * CANVAS_WIDTH;
-        updatedCpu.y = Math.random() * CANVAS_HEIGHT;
-        updatedCpu.velocity = { x: 0, y: 0 };
-        
-        setPlayer(prev => {
-          const newScore = prev.score + 5;
-          
-          // Check for player win
-          if (newScore >= WINNING_SCORE) {
-            setGameState(prevState => ({ ...prevState, gameOver: true, gameWon: true }));
-          }
-          
-          return { ...prev, score: newScore };
-        });
+        // Pass through sun without penalty - just teleport to the other side
+        const angle = Math.atan2(cpuToSun.y, cpuToSun.x);
+        updatedCpu.x = CANVAS_WIDTH / 2 - Math.cos(angle) * (SUN_RADIUS + 5);
+        updatedCpu.y = CANVAS_HEIGHT / 2 - Math.sin(angle) * (SUN_RADIUS + 5);
       }
       
       // Update CPU position
@@ -454,7 +477,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           newTorpedo.velocity.x += (torpedoToSun.x / torpedoDistanceToSun) * gravityFactor;
           newTorpedo.velocity.y += (torpedoToSun.y / torpedoDistanceToSun) * gravityFactor;
         } else {
-          // Collision with sun
+          // Torpedoes are destroyed by the sun
           newTorpedo.alive = false;
           return newTorpedo;
         }
