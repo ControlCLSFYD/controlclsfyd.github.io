@@ -72,10 +72,8 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({
           </div>
         ) : (
           <div className="text-center">
-            <p className="mb-2">Draw twice to continue</p>
-            <p className="mb-2">Current draws: {drawCount}/2</p>
+            <p className="mb-2">Draw twice to continue: {drawCount}/2</p>
             <p className="mb-2">Round {roundCount}: {cpuFirst ? 'CPU plays first' : 'You play first'}</p>
-            <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
           </div>
         )}
       </div>
@@ -88,9 +86,10 @@ const NoughtsAndCrossesGame: React.FC<NoughtsAndCrossesGameProps> = ({
       {gameStatus !== 'playing' && (
         <GameResult
           gameWon={gameStatus === 'won'}
+          gameDrawn={gameStatus === 'draw'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
-          alwaysShowContinue={gameStatus === 'draw'}
+          alwaysShowContinue={gameStatus === 'draw' && drawCount >= 1}
         />
       )}
     </div>

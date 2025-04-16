@@ -1,22 +1,4 @@
 
-export interface BaseGameProps {
-  onGameComplete: () => void;
-  onPlayAgain: (playerWon?: boolean) => void;
-  difficulty?: number;
-}
-
-export interface GameState {
-  gameStarted: boolean;
-  gameOver: boolean;
-  gameWon: boolean;
-  score: number;
-}
-
-export interface GameControlHandlers {
-  handleContinue: () => void;
-  handlePlayAgain: () => void;
-}
-
 export interface GameResultProps {
   gameWon: boolean;
   onContinue: () => void;
