@@ -1,5 +1,5 @@
 
-import { Ship, Beam } from '../interfaces/SpacewarInterfaces';
+import { Ship } from '../interfaces/SpacewarInterfaces';
 
 // Draw a ship on the canvas
 export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
@@ -16,14 +16,6 @@ export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
   ctx.closePath();
   ctx.fill();
   
-  // Draw beam emitter at the front of the ship if beam is active
-  if (ship.beamActive) {
-    ctx.fillStyle = '#00aaff';
-    ctx.beginPath();
-    ctx.arc(ship.size, 0, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
   // Draw thrust if active
   if (ship.thrust) {
     ctx.fillStyle = '#ff9900';
@@ -36,86 +28,6 @@ export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
   }
   
   ctx.restore();
-};
-
-// Draw a beam on the canvas
-export const drawBeam = (ctx: CanvasRenderingContext2D, beam: Beam) => {
-  if (!beam.active) return;
-  
-  const beamColor = beam.owner === 'player' ? '#00aaff' : '#ff00aa';
-  
-  // Draw intermittent beam with alpha based on intensity
-  ctx.save();
-  ctx.strokeStyle = beamColor;
-  ctx.globalAlpha = beam.intensity * 0.7;
-  ctx.lineWidth = 1;
-  
-  // Draw dashed beam line
-  ctx.beginPath();
-  ctx.setLineDash([5, 3]);
-  ctx.moveTo(beam.startX, beam.startY);
-  ctx.lineTo(beam.endX, beam.endY);
-  ctx.stroke();
-  
-  // Draw beam tip (small glow)
-  const glowSize = 3 + beam.intensity * 2;
-  ctx.globalAlpha = beam.intensity * 0.5;
-  ctx.beginPath();
-  ctx.arc(beam.endX, beam.endY, glowSize, 0, Math.PI * 2);
-  ctx.fillStyle = beamColor;
-  ctx.fill();
-  
-  ctx.restore();
-  
-  // Draw projectile if active
-  if (beam.projectileActive) {
-    ctx.fillStyle = beam.owner === 'player' ? '#00ffff' : '#ff66ff';
-    ctx.beginPath();
-    ctx.arc(beam.projectileX, beam.projectileY, 2, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw projectile trail
-    ctx.save();
-    ctx.globalAlpha = 0.3;
-    ctx.strokeStyle = beam.owner === 'player' ? '#00ffff' : '#ff66ff';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    
-    const trailLength = 10;
-    const trailEndX = beam.projectileX - Math.cos(beam.rotation) * trailLength;
-    const trailEndY = beam.projectileY - Math.sin(beam.rotation) * trailLength;
-    
-    ctx.moveTo(beam.projectileX, beam.projectileY);
-    ctx.lineTo(trailEndX, trailEndY);
-    ctx.stroke();
-    ctx.restore();
-  }
-};
-
-// Draw a charge indicator on the canvas
-export const drawChargeIndicator = (
-  ctx: CanvasRenderingContext2D, 
-  charge: number, 
-  x: number, 
-  y: number, 
-  color: string, 
-  label: string
-) => {
-  ctx.fillStyle = '#333';
-  ctx.fillRect(x, y, 100, 10);
-  
-  ctx.fillStyle = color;
-  ctx.fillRect(x, y, charge, 10);
-  
-  if (charge >= 100) {
-    ctx.fillStyle = '#fff';
-    ctx.font = '10px monospace';
-    ctx.fillText('READY', x + 35, y + 8);
-  } else {
-    ctx.fillStyle = '#999';
-    ctx.font = '8px monospace';
-    ctx.fillText(label, x + 5, y + 8);
-  }
 };
 
 // Draw the game scores

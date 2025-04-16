@@ -1,5 +1,5 @@
 
-import { Ship, Beam } from '../interfaces/SpacewarInterfaces';
+import { Ship } from '../interfaces/SpacewarInterfaces';
 
 // Normalize angle to range -PI to PI
 export const normalizeAngle = (angle: number) => {
@@ -8,17 +8,19 @@ export const normalizeAngle = (angle: number) => {
   return angle;
 };
 
-// Check if beam projectile hit a ship
-export const checkBeamHit = (
-  beam: Beam, 
-  ship: Ship
+// Check if ship hit the sun
+export const checkSunCollision = (
+  shipX: number,
+  shipY: number,
+  centerX: number,
+  centerY: number,
+  sunRadius: number,
+  shipSize: number
 ): boolean => {
-  if (!beam.projectileActive) return false;
-  
-  const dx = beam.projectileX - ship.x;
-  const dy = beam.projectileY - ship.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  return distance < ship.size;
+  const distanceToSun = Math.sqrt(
+    Math.pow(shipX - centerX, 2) + Math.pow(shipY - centerY, 2)
+  );
+  return distanceToSun <= (sunRadius + shipSize);
 };
 
 // Apply sun gravity to an object

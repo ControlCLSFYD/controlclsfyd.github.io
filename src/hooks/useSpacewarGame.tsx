@@ -1,12 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Ship, Beam, GameConstants } from '../interfaces/SpacewarInterfaces';
-import { createBeam, fireBeamProjectile } from '../utils/spacewarWeapons';
-import { 
-  checkBeamHit, applySunGravity, 
-  handleSunCollision, handleBorderCollision, applyFriction 
-} from '../utils/spacewarUtils';
-import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
+import { Ship, GameConstants } from '../interfaces/SpacewarInterfaces';
 import { useWindowSize } from './useWindowSize';
 
 // Initial game constants
@@ -17,18 +11,13 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   GRAVITY_STRENGTH: 0.15,
   ROTATION_SPEED: 0.1,
   THRUST_POWER: 0.2,
-  BEAM_LENGTH: 100,
-  BEAM_COOLDOWN: 30,
-  BEAM_DURATION: 45,
-  BEAM_PROJECTILE_SPEED: 12,
-  BEAM_PROJECTILE_LIFESPAN: 90,
   WINNING_SCORE: 20,
   DIFFICULTY_MODIFIER: 0,
   FRICTION: 0.99,
   BOUNCE_DAMPENING: 0.7
 });
 
-// Initial ship state - with smaller size (1/3 of original)
+// Initial ship state
 const createInitialPlayerShip = (): Ship => ({
   x: 200,
   y: 300,
@@ -39,10 +28,7 @@ const createInitialPlayerShip = (): Ship => ({
   rotateRight: false,
   score: 0,
   size: 5,
-  color: '#00ff00',
-  beamActive: false,
-  beamCooldown: 0,
-  beamLength: 100
+  color: '#00ff00'
 });
 
 const createInitialCpuShip = (): Ship => ({
@@ -55,10 +41,7 @@ const createInitialCpuShip = (): Ship => ({
   rotateRight: false,
   score: 0,
   size: 5,
-  color: '#ff0000',
-  beamActive: false,
-  beamCooldown: 0,
-  beamLength: 100
+  color: '#ff0000'
 });
 
 export const useSpacewarGame = (
@@ -86,8 +69,6 @@ export const useSpacewarGame = (
   // Game entities
   const [player, setPlayer] = useState<Ship>(createInitialPlayerShip());
   const [cpu, setCpu] = useState<Ship>(createInitialCpuShip());
-  const [playerBeam, setPlayerBeam] = useState<Beam | null>(null);
-  const [cpuBeam, setCpuBeam] = useState<Beam | null>(null);
   
   // Reset game
   const resetGame = () => {
@@ -96,37 +77,6 @@ export const useSpacewarGame = (
     setGameWon(false);
     setPlayer(createInitialPlayerShip());
     setCpu(createInitialCpuShip());
-    setPlayerBeam(null);
-    setCpuBeam(null);
-  };
-  
-  // Fire handler for player's beam
-  const handleFirePlayerBeam = () => {
-    if (player.beamCooldown <= 0) {
-      const newBeam = createBeam('player', {
-        ...player,
-        beamLength: constants.BEAM_LENGTH
-      });
-      setPlayerBeam(newBeam);
-      
-      setPlayer(prev => ({ 
-        ...prev, 
-        beamActive: true,
-        beamCooldown: constants.BEAM_COOLDOWN
-      }));
-      
-      // After a short delay, fire the projectile
-      setTimeout(() => {
-        if (playerBeam) {
-          const beamWithProjectile = fireBeamProjectile(
-            playerBeam,
-            constants.BEAM_PROJECTILE_SPEED,
-            constants.BEAM_PROJECTILE_LIFESPAN
-          );
-          setPlayerBeam(beamWithProjectile);
-        }
-      }, 200);
-    }
   };
   
   // Update player controls
@@ -143,12 +93,7 @@ export const useSpacewarGame = (
     setPlayer,
     cpu,
     setCpu,
-    playerBeam,
-    setPlayerBeam,
-    cpuBeam,
-    setCpuBeam,
     resetGame,
-    handleFirePlayerBeam,
     updatePlayerControls,
     setGameOver,
     setGameWon

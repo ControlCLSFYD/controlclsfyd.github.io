@@ -1,4 +1,3 @@
-
 import { Ship, Beam } from '../interfaces/SpacewarInterfaces';
 
 // Create a beam from the ship
