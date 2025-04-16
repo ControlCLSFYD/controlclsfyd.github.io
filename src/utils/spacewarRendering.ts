@@ -1,5 +1,5 @@
 
-import { Ship } from '../interfaces/SpacewarInterfaces';
+import { Ship, Projectile } from '../interfaces/SpacewarInterfaces';
 
 // Draw a ship on the canvas
 export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
@@ -27,6 +27,16 @@ export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
     ctx.fill();
   }
   
+  ctx.restore();
+};
+
+// Draw a projectile on the canvas
+export const drawProjectile = (ctx: CanvasRenderingContext2D, projectile: Projectile) => {
+  ctx.save();
+  ctx.fillStyle = projectile.color;
+  ctx.beginPath();
+  ctx.arc(projectile.x, projectile.y, projectile.size, 0, Math.PI * 2);
+  ctx.fill();
   ctx.restore();
 };
 

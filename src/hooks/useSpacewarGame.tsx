@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Ship, GameConstants } from '../interfaces/SpacewarInterfaces';
+import { Ship, GameConstants, Projectile } from '../interfaces/SpacewarInterfaces';
 import { useWindowSize } from './useWindowSize';
 
 // Initial game constants
@@ -10,11 +10,14 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   SUN_RADIUS: 30,
   GRAVITY_STRENGTH: 0.15,
   ROTATION_SPEED: 0.1,
-  THRUST_POWER: 0.2,
+  THRUST_POWER: 0.1, // Reduced from 0.2 to 0.1
   WINNING_SCORE: 20,
   DIFFICULTY_MODIFIER: 0,
   FRICTION: 0.99,
-  BOUNCE_DAMPENING: 0.7
+  BOUNCE_DAMPENING: 0.7,
+  PROJECTILE_SPEED: 5,
+  PROJECTILE_SIZE: 3,
+  PROJECTILE_INTERVAL: 200 // 0.2 seconds in milliseconds
 });
 
 // Initial ship state
@@ -69,6 +72,7 @@ export const useSpacewarGame = (
   // Game entities
   const [player, setPlayer] = useState<Ship>(createInitialPlayerShip());
   const [cpu, setCpu] = useState<Ship>(createInitialCpuShip());
+  const [projectiles, setProjectiles] = useState<Projectile[]>([]);
   
   // Reset game
   const resetGame = () => {
@@ -77,11 +81,22 @@ export const useSpacewarGame = (
     setGameWon(false);
     setPlayer(createInitialPlayerShip());
     setCpu(createInitialCpuShip());
+    setProjectiles([]);
   };
   
   // Update player controls
   const updatePlayerControls = (control: 'thrust' | 'rotateLeft' | 'rotateRight', active: boolean) => {
     setPlayer(prev => ({ ...prev, [control]: active }));
+  };
+  
+  // Add projectile
+  const addProjectile = (newProjectile: Projectile) => {
+    setProjectiles(prev => [...prev, newProjectile]);
+  };
+  
+  // Update projectiles
+  const updateProjectiles = (updatedProjectiles: Projectile[]) => {
+    setProjectiles(updatedProjectiles);
   };
   
   return {
@@ -93,6 +108,9 @@ export const useSpacewarGame = (
     setPlayer,
     cpu,
     setCpu,
+    projectiles,
+    addProjectile,
+    updateProjectiles,
     resetGame,
     updatePlayerControls,
     setGameOver,

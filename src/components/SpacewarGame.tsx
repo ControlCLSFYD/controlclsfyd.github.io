@@ -1,18 +1,21 @@
-import React, { useEffect, useRef } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { useSpacewarGame } from '../hooks/useSpacewarGame';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
 import { 
-  drawShip, drawScores, drawSun, drawDebugInfo 
+  drawShip, drawScores, drawSun, drawDebugInfo, drawProjectile 
 } from '../utils/spacewarRendering';
 import { 
   applySunGravity, normalizeAngle,
   handleSunCollision, handleBorderCollision, applyFriction,
   checkSunCollision
 } from '../utils/spacewarUtils';
+import { createProjectile, updateProjectile, checkProjectileHit, checkProjectileBorder } from '../utils/spacewarWeapons';
 import GameInfo from './GameInfo';
+import { Projectile } from '../interfaces/SpacewarInterfaces';
 
 const SpacewarGame: React.FC<BaseGameProps> = ({
   onGameComplete,
@@ -23,6 +26,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   const isMobile = useIsMobile();
   const aiStateRef = useRef(createInitialAIState());
   
+  // Projectile timing reference
+  const lastPlayerProjectileRef = useRef<number>(0);
+  const lastCpuProjectileRef = useRef<number>(0);
+  
   const {
     constants,
     gameStarted,
@@ -32,6 +39,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     setPlayer,
     cpu,
     setCpu,
+    projectiles,
+    addProjectile,
+    updateProjectiles,
     resetGame,
     updatePlayerControls,
     setGameOver,
@@ -94,6 +104,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         animationFrameId = requestAnimationFrame(gameLoop);
         return;
       }
+      const deltaTime = timestamp - lastTime;
       lastTime = timestamp;
       
       const ctx = canvasRef.current.getContext('2d');
@@ -105,6 +116,68 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
+      
+      // Fire projectiles based on timing
+      if (timestamp - lastPlayerProjectileRef.current >= constants.PROJECTILE_INTERVAL) {
+        lastPlayerProjectileRef.current = timestamp;
+        const playerProjectile = createProjectile('player', player, constants.PROJECTILE_SPEED, constants.PROJECTILE_SIZE);
+        addProjectile(playerProjectile);
+      }
+      
+      if (timestamp - lastCpuProjectileRef.current >= constants.PROJECTILE_INTERVAL) {
+        lastCpuProjectileRef.current = timestamp;
+        const cpuProjectile = createProjectile('cpu', cpu, constants.PROJECTILE_SPEED, constants.PROJECTILE_SIZE);
+        addProjectile(cpuProjectile);
+      }
+      
+      // Update and process projectiles
+      let updatedProjectiles = [...projectiles];
+      
+      // Process each projectile
+      updatedProjectiles = updatedProjectiles.map(p => updateProjectile(p)).filter(p => {
+        // Check if projectile hits enemy ship
+        if (p.owner === 'player' && checkProjectileHit(p, cpu)) {
+          // Player hit CPU
+          setPlayer(prev => {
+            const newScore = prev.score + 1;
+            // Check for win condition
+            if (newScore >= constants.WINNING_SCORE) {
+              setGameOver(true);
+              setGameWon(true);
+            }
+            return { ...prev, score: newScore };
+          });
+          return false; // Remove this projectile
+        }
+        
+        if (p.owner === 'cpu' && checkProjectileHit(p, player)) {
+          // CPU hit player
+          setCpu(prev => {
+            const newScore = prev.score + 1;
+            // Check for win condition
+            if (newScore >= constants.WINNING_SCORE) {
+              setGameOver(true);
+              setGameWon(false);
+            }
+            return { ...prev, score: newScore };
+          });
+          return false; // Remove this projectile
+        }
+        
+        // Check if projectile hits border
+        if (checkProjectileBorder(p, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT)) {
+          return false; // Remove this projectile
+        }
+        
+        return true; // Keep this projectile
+      });
+      
+      updateProjectiles(updatedProjectiles);
+      
+      // Draw all projectiles
+      updatedProjectiles.forEach(projectile => {
+        drawProjectile(ctx, projectile);
+      });
       
       // Update player ship
       const updatedPlayer = { ...player };
@@ -140,8 +213,22 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedPlayer.velocity.x = playerGravity.x;
       updatedPlayer.velocity.y = playerGravity.y;
       
-      // Handle sun collision
+      // Handle sun collision - Player hits sun, CPU gets a point
       if (playerGravity.hitSun) {
+        // Award a point to the CPU
+        setCpu(prevCpu => {
+          const newScore = prevCpu.score + 1;
+          
+          // Check for win
+          if (newScore >= constants.WINNING_SCORE) {
+            setGameOver(true);
+            setGameWon(false);
+          }
+          
+          return { ...prevCpu, score: newScore };
+        });
+        
+        // Respawn player
         const respawn = handleSunCollision(
           player.x, 
           player.y, 
@@ -226,7 +313,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedCpu.velocity.x = cpuGravity.x;
       updatedCpu.velocity.y = cpuGravity.y;
       
-      // Handle sun collision for CPU and award points to player
+      // Handle sun collision for CPU - Player gets a point
       if (cpuGravity.hitSun) {
         // Award a point to the player
         setPlayer(prevPlayer => {
@@ -294,7 +381,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, gameOver, player, cpu, constants]);
+  }, [gameStarted, gameOver, player, cpu, projectiles, constants]);
   
   const handleContinue = () => {
     onGameComplete();
@@ -364,7 +451,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       )}
       
       <div className="mt-2 text-sm text-terminal-green">
-        {!isMobile ? "Controls: Arrow Keys to move. Score points when CPU flies into the sun!" : "Use on-screen buttons to control your ship"}
+        {!isMobile ? "Controls: Arrow Keys to move. Score points when CPU flies into the sun or your projectiles hit it!" : "Use on-screen buttons to control your ship"}
       </div>
     </div>
   );

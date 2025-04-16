@@ -21,7 +21,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
     <>
       <h2 className="text-xl mb-4">SPACEWAR CHALLENGE</h2>
       
-      <div className="h-[60px] mb-2">
+      <div className="h-[90px] mb-2">
         {showInstructions ? (
           <div className="flex flex-col items-center p-2 border border-terminal-green">
             <div className="flex items-center">
@@ -32,7 +32,10 @@ const GameInfo: React.FC<GameInfoProps> = ({
               <span>to turn.</span>
             </div>
             <div className="text-xs mt-1 text-yellow-400">
-              Get points when the CPU flies into the sun!
+              Both ships auto-fire projectiles. Hit the CPU with your shots to score!
+            </div>
+            <div className="text-xs mt-1 text-yellow-400">
+              Get points when the CPU flies into the sun, but lose points if you hit the sun!
             </div>
             <div className="text-xs mt-1 text-yellow-400">
               First to reach {winningScore} points wins! Ships bounce off the edges!

@@ -23,4 +23,18 @@ export interface GameConstants {
   DIFFICULTY_MODIFIER: number;
   FRICTION: number;
   BOUNCE_DAMPENING: number;
+  PROJECTILE_SPEED: number;
+  PROJECTILE_SIZE: number;
+  PROJECTILE_INTERVAL: number;
+}
+
+export interface Projectile {
+  x: number;
+  y: number;
+  rotation: number;
+  velocity: { x: number; y: number };
+  owner: 'player' | 'cpu';
+  active: boolean;
+  size: number;
+  color: string;
 }
