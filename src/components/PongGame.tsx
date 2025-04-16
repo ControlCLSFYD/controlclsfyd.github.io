@@ -28,7 +28,7 @@ const PongGame: React.FC<PongGameProps> = ({ onGameComplete, onPlayAgain, diffic
   const paddleWidth = Math.max(40, Math.floor(canvasWidth * 0.1));
   const ballRadius = Math.max(3, Math.floor(canvasWidth * 0.007));
 
-  const winningScore = 5; // Changed from 3 to 5 as per requirements
+  const winningScore = 3;
 
   const handleContinue = useCallback(() => {
     onGameComplete();

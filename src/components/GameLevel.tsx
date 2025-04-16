@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import GameHeader from './game/GameHeader';
-import GameImage from './game/GameImage';
-import GameQuestions from './game/GameQuestions';
-import GameControls from './game/GameControls';
+import TypewriterText from './TypewriterText';
+import AnswerInput from './AnswerInput';
+import CountdownTimer from './CountdownTimer';
+import { Button } from './ui/button';
+import { RefreshCw, Image } from 'lucide-react';
+import LessonModal from './LessonModal';
+import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
-import { getTimerDuration } from '../utils/levelTimers';
-import GameOver from './GameOver';
 
 export interface Question {
   id: string;
@@ -20,7 +21,6 @@ interface GameLevelProps {
   imageSrc?: string;
   isActive: boolean;
   onLevelComplete: () => void;
-  onGameOver: () => void;
   savedAnswers: Record<string, string>;
   onAnswerUpdate: (levelId: number, questionId: string, answer: string) => void;
 }
@@ -31,20 +31,21 @@ const GameLevel: React.FC<GameLevelProps> = ({
   imageSrc,
   isActive,
   onLevelComplete,
-  onGameOver,
   savedAnswers,
   onAnswerUpdate
 }) => {
   const [answeredQuestions, setAnsweredQuestions] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [levelComplete, setLevelComplete] = useState(false);
-  const [timeExpired, setTimeExpired] = useState(false);
-  
+  const [imageKey, setImageKey] = useState<number>(Date.now());
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   // Find the appropriate lesson for this level
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
-  
-  // Get the timer duration for this level
-  const timerDuration = getTimerDuration(level);
+
+  // Set timer duration based on level - 1 minute for Level 5, 7 minutes for others
+  const timerDuration = level === 5 ? 60 : 7 * 60; // 1 minute or 7 minutes in seconds
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -99,41 +100,119 @@ const GameLevel: React.FC<GameLevelProps> = ({
     }
   };
   
-  const handleTimerExpired = () => {
-    setTimeExpired(true);
-    onGameOver();
+  const handleReloadImage = () => {
+    // Reset image states
+    setImageLoaded(false);
+    setImageError(false);
+    
+    // Update the imageKey to force React to reload the image
+    setImageKey(Date.now());
+    
+    // Log the reload attempt to confirm functionality
+    console.log("Image reload requested at:", new Date().toISOString());
   };
 
-  if (timeExpired) {
-    return <GameOver reason="timeout" onRestart={onGameOver} />;
-  }
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoaded(false);
+    setImageError(true);
+    console.log("Image failed to load");
+  };
 
   return (
     <div className="p-4" ref={containerRef}>
-      {/* Game header with level title and timer */}
-      <GameHeader 
-        level={level} 
-        isActive={isActive} 
-        timerDuration={timerDuration}
-        onTimeUp={handleTimerExpired}
-      />
+      {/* Fixed height header container to prevent layout shifts */}
+      <div className="flex justify-between items-center h-[40px] mb-4">
+        <TypewriterText 
+          text={`LEVEL ${level}`} 
+          className="text-xl"
+        />
+        {isActive && (
+          <CountdownTimer 
+            initialTime={timerDuration} // Dynamic timer based on level
+            isActive={isActive}
+          />
+        )}
+      </div>
       
-      {/* Game image if provided */}
-      {imageSrc && <GameImage imageSrc={imageSrc} />}
+      {imageSrc && (
+        <div className="mb-4 border border-terminal-green p-1 relative">
+          {!imageLoaded && !imageError && (
+            <div className="w-full h-64 flex items-center justify-center text-terminal-green">
+              Loading image...
+            </div>
+          )}
+          
+          {imageError && (
+            <div className="w-full h-64 flex flex-col items-center justify-center text-terminal-green">
+              <div className="mb-2">Failed to load image</div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleReloadImage}
+                className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+              >
+                Try Again
+              </Button>
+            </div>
+          )}
+          
+          <img 
+            src={`${imageSrc}?key=${imageKey}`} 
+            alt={`Level ${level} Reference`} 
+            className={`w-full max-h-96 object-contain ${!imageLoaded ? 'hidden' : ''}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+          />
+        </div>
+      )}
       
-      {/* Game questions */}
-      <GameQuestions 
-        questions={questions} 
-        level={level} 
-        savedAnswers={savedAnswers}
-        onCorrectAnswer={handleCorrectAnswer} 
-      />
+      <div className="space-y-2">
+        {questions.map((question) => {
+          const answerKey = `${level}-${question.id}`;
+          const savedAnswer = savedAnswers[answerKey] || '';
+          
+          return (
+            <div key={question.id} className="mb-4">
+              {/* Reduced height container for question text */}
+              <div className="min-h-[40px] mb-1">
+                <TypewriterText 
+                  text={question.text} 
+                  className="block"
+                />
+              </div>
+              <AnswerInput 
+                correctAnswer={question.answer} 
+                onCorrectAnswer={() => handleCorrectAnswer(question.id, savedAnswer || question.answer)}
+                questionLabel={`Answer for ${question.id}`}
+                savedAnswer={savedAnswer}
+              />
+            </div>
+          );
+        })}
+      </div>
       
-      {/* Game controls for help and image reload */}
-      <GameControls 
-        imageSrc={imageSrc}
-        levelLesson={levelLesson}
-      />
+      <div className="mt-4 flex flex-col items-center">
+        {/* Investi Gator Help Button */}
+        <LessonModal lesson={levelLesson} />
+        
+        {/* Reload Image Button */}
+        {imageSrc && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleReloadImage}
+            className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+          >
+            <RefreshCw size={16} />
+            Reload Image
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

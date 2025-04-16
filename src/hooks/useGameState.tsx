@@ -1,7 +1,10 @@
-import { useState, useCallback } from 'react';
-import { useToast } from "@/components/ui/use-toast"
-import { Question } from '../components/GameLevel';
-import { lessonData } from '../data/gameData';
+
+import { useState, useEffect } from 'react';
+import { useGameProgress } from './useGameProgress';
+import { useRevolvingQuestions } from './useRevolvingQuestions';
+import { useGameDifficulty } from './useGameDifficulty';
+import { getCurrentImageSrc, getCurrentQuestions } from '../utils/gameHelpers';
+import { gameData } from '../data/gameData';
 
 interface UseGameStateProps {
   savedAnswers: Record<string, string>;
@@ -11,134 +14,130 @@ interface UseGameStateProps {
 export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) => {
   const [gameStarted, setGameStarted] = useState(false);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
+  const [showEndScreenPsalm, setShowEndScreenPsalm] = useState(false);
+  
   const [showCourtGame, setShowCourtGame] = useState(false);
-  const [showPongGame, setShowPongGame] = useState(false);
+  const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
+  const [showSpacePeaceGame, setShowSpacePeaceGame] = useState(false);
   const [showUATGame, setShowUATGame] = useState(false);
   const [showSnekGame, setShowSnekGame] = useState(false);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [isGameActive, setIsGameActive] = useState(false);
-  const [noughtsAndCrossesDifficulty, setNoughtsAndCrossesDifficulty] = useState(1);
-  const [courtDifficulty, setCourtDifficulty] = useState(1);
-  const [pongDifficulty, setPongDifficulty] = useState(1);
-  const [uatDifficulty, setUATDifficulty] = useState(1);
-  const [snekDifficulty, setSnekDifficulty] = useState(1);
-  const { toast } = useToast()
-
-  const handleAccessGranted = useCallback(() => {
-    setGameStarted(true);
-    setCurrentLevel(1);
-    setIsGameActive(true);
-  }, []);
-
-  const handleNoughtsAndCrossesComplete = useCallback(() => {
-    setShowNoughtsAndCrossesGame(false);
-    
-    handleLevelComplete();
-  }, []);
   
-  const handleNoughtsAndCrossesPlayAgain = useCallback(() => {
-    
-  }, []);
-
-  const handleCourtComplete = useCallback(() => {
-    setShowCourtGame(false);
-    handleLevelComplete();
-  }, []);
+  const { revolvingQuestions } = useRevolvingQuestions();
   
-  const handleCourtPlayAgain = useCallback(() => {
-    
-  }, []);
-
-  const handlePongComplete = useCallback(() => {
-    setShowPongGame(false);
-    
-    handleLevelComplete();
-  }, []);
+  const {
+    completedLevels,
+    courtCompleted, setCourtCompleted,
+    noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted,
+    spacePeaceCompleted, setSpacePeaceCompleted,
+    uatCompleted, setUATCompleted,
+    snekCompleted, setSnekCompleted,
+    currentLevel, setCurrentLevel
+  } = useGameProgress({ savedAnswers, revolvingQuestions });
   
-  const handlePongPlayAgain = useCallback(() => {
-    
-  }, []);
+  const {
+    courtDifficulty, increaseCourtDifficulty,
+    noughtsAndCrossesDifficulty, increaseNoughtsAndCrossesDifficulty,
+    spacePeaceDifficulty, increaseSpacePeaceDifficulty,
+    uatDifficulty, increaseUatDifficulty,
+    snekDifficulty, increaseSnekDifficulty
+  } = useGameDifficulty();
 
-  const handleUATComplete = useCallback(() => {
-    setShowUATGame(false);
-    handleLevelComplete();
-  }, []);
-  
-  const handleUATPlayAgain = useCallback(() => {
-    
-  }, []);
-
-  const handleSnekComplete = useCallback(() => {
-    setShowSnekGame(false);
-    handleLevelComplete();
-  }, []);
-  
-  const handleSnekPlayAgain = useCallback(() => {
-    
-  }, []);
-
-  const handleLevelComplete = useCallback(() => {
-    setIsGameActive(false);
-    setCurrentLevel(prevLevel => prevLevel + 1);
-    
-    // Check if the game is completed
-    if (currentLevel >= lessonData.length) {
-      setGameCompleted(true);
-    }
-  }, [currentLevel]);
-
-  const handleEndMessageComplete = useCallback(() => {
-    // Reset the game state
-    setGameCompleted(false);
-    setGameStarted(false);
-    setCurrentLevel(0);
-    setIsGameActive(false);
+  const handleAccessGranted = () => {
     onResetGame();
-    
-    toast({
-      title: "Game Completed!",
-      description: "Thanks for playing!",
-    })
-  }, [onResetGame, toast]);
-
-  const getCurrentLevelQuestions = (): Question[] => {
-    const currentLesson = lessonData.find(lesson => lesson.id === currentLevel);
-    
-    if (!currentLesson || !currentLesson.levels || currentLesson.levels.length === 0) {
-      return [];
-    }
-    
-    // Use the first level's questions as default
-    let questions = currentLesson.levels[0].questions;
-    
-    // Check if there are multiple sets of questions
-    if (currentLesson.levels.length > 1) {
-      // Determine which set of questions to use based on a simple cycling logic
-      const questionSetIndex = (currentLevel - 1) % currentLesson.levels.length;
-      questions = currentLesson.levels[questionSetIndex].questions;
-    }
-    
-    return questions;
+    setGameStarted(true);
+    setShowNoughtsAndCrossesGame(true);
   };
 
-  const getCurrentLevelImage = (): string | undefined => {
-    const currentLesson = lessonData.find(lesson => lesson.id === currentLevel);
-    
-    if (!currentLesson || !currentLesson.levels || currentLesson.levels.length === 0) {
-      return undefined;
+  const handleNoughtsAndCrossesComplete = () => {
+    setNoughtsAndCrossesCompleted(true);
+    setShowNoughtsAndCrossesGame(false);
+    setCurrentLevel(1);
+  };
+
+  const handleNoughtsAndCrossesPlayAgain = () => {
+    increaseNoughtsAndCrossesDifficulty();
+    setShowNoughtsAndCrossesGame(true);
+  };
+
+  const handleLevelComplete = () => {
+    if (currentLevel === 1 && !courtCompleted) {
+      setShowCourtGame(true);
+    } 
+    else if (currentLevel === 2 && !spacePeaceCompleted) {
+      setShowSpacePeaceGame(true);
     }
-    
-    // Use the first level's image as default
-    let imageSrc = currentLesson.levels[0].imageSrc;
-    
-    if (Array.isArray(imageSrc)) {
-      // Determine which image to use based on a simple cycling logic
-      const imageIndex = (currentLevel - 1) % imageSrc.length;
-      return imageSrc[imageIndex];
+    else if (currentLevel === 3 && !uatCompleted) {
+      setShowUATGame(true);
     }
-    
-    return imageSrc;
+    else if (currentLevel === 4 && !snekCompleted) {
+      setShowSnekGame(true);
+    }
+    else if (currentLevel < gameData.levels.length) {
+      const nextLevel = currentLevel + 1;
+      setCurrentLevel(nextLevel);
+    } else {
+      setGameCompleted(true);
+    }
+  };
+
+  const handleCourtComplete = () => {
+    setCourtCompleted(true);
+    setShowCourtGame(false);
+    setCurrentLevel(2);
+  };
+
+  const handleCourtPlayAgain = (playerWon: boolean) => {
+    if (playerWon) {
+      increaseCourtDifficulty();
+    }
+    setShowCourtGame(true);
+  };
+
+  const handleSpacePeaceComplete = () => {
+    setSpacePeaceCompleted(true);
+    setShowSpacePeaceGame(false);
+    setCurrentLevel(3);
+  };
+
+  const handleSpacePeacePlayAgain = () => {
+    increaseSpacePeaceDifficulty();
+    setShowSpacePeaceGame(true);
+  };
+
+  const handleUATComplete = () => {
+    setUATCompleted(true);
+    setShowUATGame(false);
+    setCurrentLevel(4);
+  };
+
+  const handleUATPlayAgain = () => {
+    increaseUatDifficulty();
+    setShowUATGame(true);
+  };
+
+  const handleSnekComplete = () => {
+    setSnekCompleted(true);
+    setShowSnekGame(false);
+    setCurrentLevel(5);
+  };
+
+  const handleSnekPlayAgain = () => {
+    increaseSnekDifficulty();
+    setShowSnekGame(true);
+  };
+
+  const handleEndMessageComplete = () => {
+    setShowEndScreenPsalm(false);
+  };
+
+  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showSpacePeaceGame || showUATGame || showSnekGame;
+
+  const getCurrentLevelQuestions = () => {
+    return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
+  };
+
+  const getCurrentLevelImage = () => {
+    return getCurrentImageSrc(currentLevel, gameData.levels, revolvingQuestions);
   };
 
   return {
@@ -146,14 +145,14 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showPongGame,
+    showSpacePeaceGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    pongDifficulty,
+    spacePeaceDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -161,8 +160,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handlePongComplete,
-    handlePongPlayAgain,
+    handleSpacePeaceComplete,
+    handleSpacePeacePlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,

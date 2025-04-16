@@ -2,29 +2,29 @@
 import React from 'react';
 import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
+import SpacePeaceGame from '../SpacePeaceGame';
 import SnekGame from '../SnekGame';
 import UATGame from '../UATGame';
-import PongGame from '../PongGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
   showCourtGame: boolean;
-  showPongGame: boolean;
+  showSpacePeaceGame: boolean;
   showUATGame: boolean;
   showSnekGame: boolean;
   handleNoughtsAndCrossesComplete: () => void;
   handleNoughtsAndCrossesPlayAgain: () => void;
   handleCourtComplete: () => void;
   handleCourtPlayAgain: (playerWon: boolean) => void;
-  handlePongComplete: () => void;
-  handlePongPlayAgain: () => void;
+  handleSpacePeaceComplete: () => void;
+  handleSpacePeacePlayAgain: () => void;
   handleUATComplete: () => void;
   handleUATPlayAgain: () => void;
   handleSnekComplete: () => void;
   handleSnekPlayAgain: () => void;
   noughtsAndCrossesDifficulty: number;
   courtDifficulty: number;
-  pongDifficulty: number;
+  spacePeaceDifficulty: number;
   uatDifficulty: number;
   snekDifficulty: number;
 }
@@ -32,22 +32,22 @@ interface GameHandlerProps {
 const GameHandler: React.FC<GameHandlerProps> = ({
   showNoughtsAndCrossesGame,
   showCourtGame,
-  showPongGame,
+  showSpacePeaceGame,
   showUATGame, 
   showSnekGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
   handleCourtPlayAgain,
-  handlePongComplete,
-  handlePongPlayAgain,
+  handleSpacePeaceComplete,
+  handleSpacePeacePlayAgain,
   handleUATComplete,
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
-  pongDifficulty,
+  spacePeaceDifficulty,
   uatDifficulty,
   snekDifficulty
 }) => {
@@ -71,12 +71,12 @@ const GameHandler: React.FC<GameHandlerProps> = ({
     );
   }
   
-  if (showPongGame) {
+  if (showSpacePeaceGame) {
     return (
-      <PongGame 
-        onGameComplete={handlePongComplete} 
-        onPlayAgain={handlePongPlayAgain}
-        difficulty={pongDifficulty}
+      <SpacePeaceGame 
+        onGameComplete={handleSpacePeaceComplete} 
+        onPlayAgain={handleSpacePeacePlayAgain}
+        difficulty={spacePeaceDifficulty}
       />
     );
   }

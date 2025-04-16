@@ -1,10 +1,8 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import GameLevel from './GameLevel';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
-import LevelCompletionScreen from './LevelCompletionScreen';
-import GameOver from './GameOver';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
 
@@ -19,27 +17,21 @@ const GameContainer: React.FC<GameContainerProps> = ({
   onAnswerUpdate,
   onResetGame
 }) => {
-  const [gameOver, setGameOver] = useState(false);
-  const [showLevelCompletion, setShowLevelCompletion] = useState(false);
-  
-  const gameState = useGameState({ 
-    savedAnswers, 
-    onResetGame
-  });
+  const gameState = useGameState({ savedAnswers, onResetGame });
   
   const {
     gameStarted,
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showPongGame,
+    showSpacePeaceGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    pongDifficulty,
+    spacePeaceDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -47,8 +39,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handlePongComplete,
-    handlePongPlayAgain,
+    handleSpacePeaceComplete,
+    handleSpacePeacePlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -59,30 +51,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     getCurrentLevelImage
   } = gameState;
 
-  const handleGameOver = () => {
-    setGameOver(true);
-  };
-
-  const handleRestartGame = () => {
-    setGameOver(false);
-    onResetGame();
-    // Reset the game state
-    handleAccessGranted();
-  };
-
-  const handleLevelCompleted = () => {
-    setShowLevelCompletion(true);
-  };
-
-  const handleContinueToNextLevel = () => {
-    setShowLevelCompletion(false);
-    handleLevelComplete();
-  };
-
-  if (gameOver) {
-    return <GameOver reason="timeout" onRestart={handleRestartGame} />;
-  }
-
   return (
     <div className="terminal p-4 vhs-screen">
       {!gameStarted ? (
@@ -91,31 +59,26 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <div>
           {gameCompleted ? (
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
-          ) : showLevelCompletion ? (
-            <LevelCompletionScreen 
-              level={currentLevel}
-              onContinue={handleContinueToNextLevel} 
-            />
           ) : isGameActive ? (
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
-              showPongGame={showPongGame}
+              showSpacePeaceGame={showSpacePeaceGame}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
               handleCourtPlayAgain={handleCourtPlayAgain}
-              handlePongComplete={handlePongComplete}
-              handlePongPlayAgain={handlePongPlayAgain}
+              handleSpacePeaceComplete={handleSpacePeaceComplete}
+              handleSpacePeacePlayAgain={handleSpacePeacePlayAgain}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
               handleSnekPlayAgain={handleSnekPlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
-              pongDifficulty={pongDifficulty}
+              spacePeaceDifficulty={spacePeaceDifficulty}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />
@@ -127,8 +90,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 questions={getCurrentLevelQuestions()}
                 imageSrc={getCurrentLevelImage()}
                 isActive={true}
-                onLevelComplete={handleLevelCompleted}
-                onGameOver={handleGameOver}
+                onLevelComplete={handleLevelComplete}
                 savedAnswers={savedAnswers}
                 onAnswerUpdate={onAnswerUpdate}
               />
