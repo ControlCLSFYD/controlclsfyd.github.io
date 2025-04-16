@@ -21,7 +21,7 @@ const GameCompletionScreen: React.FC<GameCompletionScreenProps> = ({ onComplete 
     <div className="p-4 relative min-h-[80vh] flex flex-col justify-center items-center">
       <div className="max-w-2xl text-center">
         <TypewriterText
-          text="Congratulations! That wasn't easy. You should email control@classifiedaccessories.com a hello message with your CV and the code: 112233YD. To buy Protection from the Game, and access Level 2, please purchase a CLSFYD Product."
+          text="Congratulations! That wasn't easy. Very few people have made it here. But your next Challenge takes place in the greatest Game of all: real life. Email control@classifiedaccessories.com with the code 112233YD to unlock your next steps."
           className="text-xl"
           onComplete={handleTypewriterComplete}
         />
@@ -41,4 +41,3 @@ const GameCompletionScreen: React.FC<GameCompletionScreenProps> = ({ onComplete 
 };
 
 export default GameCompletionScreen;
-

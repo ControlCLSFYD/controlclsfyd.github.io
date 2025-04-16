@@ -44,6 +44,9 @@ const GameLevel: React.FC<GameLevelProps> = ({
   // Find the appropriate lesson for this level
   const levelLesson = lessonData.find(lesson => lesson.id === level) || lessonData[0];
 
+  // Set timer duration based on level - 1 minute for Level 5, 7 minutes for others
+  const timerDuration = level === 5 ? 60 : 7 * 60; // 1 minute or 7 minutes in seconds
+
   useEffect(() => {
     // Check if we have any previously answered questions
     const answered = questions
@@ -130,7 +133,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
         />
         {isActive && (
           <CountdownTimer 
-            initialTime={7 * 60} // 7 minutes in seconds
+            initialTime={timerDuration} // Dynamic timer based on level
             isActive={isActive}
           />
         )}

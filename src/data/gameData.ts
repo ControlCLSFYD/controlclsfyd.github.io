@@ -65,6 +65,13 @@ export const lessonData: LessonContent[] = [
       "But can you do all these things without an image search kickstarting your investigation?",
       "Let's find out."
     ]
+  },
+  {
+    id: 5,
+    title: "Speed Run Level",
+    content: [
+      "What are you doing?!? This is the speed run level, it's here to test you on what you already know, go back and do it. Quick!"
+    ]
   }
 ];
 
@@ -285,6 +292,7 @@ export const gameLevels: Level[] = [
   },
   {
     id: 5,
+    hasLesson: true,
     imageSrc: "/lovable-uploads/9f6705d8-64d1-4183-8114-2d02f58c91c1.png",
     questions: [
       [
