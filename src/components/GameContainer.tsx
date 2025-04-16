@@ -24,14 +24,14 @@ const GameContainer: React.FC<GameContainerProps> = ({
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showSpacePeaceGame,
+    showDuckHuntGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    spacePeaceDifficulty,
+    duckHuntDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -39,8 +39,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleSpacePeaceComplete,
-    handleSpacePeacePlayAgain,
+    handleDuckHuntComplete,
+    handleDuckHuntPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -63,22 +63,22 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
-              showSpacePeaceGame={showSpacePeaceGame}
+              showDuckHuntGame={showDuckHuntGame}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
               handleCourtPlayAgain={handleCourtPlayAgain}
-              handleSpacePeaceComplete={handleSpacePeaceComplete}
-              handleSpacePeacePlayAgain={handleSpacePeacePlayAgain}
+              handleDuckHuntComplete={handleDuckHuntComplete}
+              handleDuckHuntPlayAgain={handleDuckHuntPlayAgain}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
               handleSnekPlayAgain={handleSnekPlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
-              spacePeaceDifficulty={spacePeaceDifficulty}
+              duckHuntDifficulty={duckHuntDifficulty}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />

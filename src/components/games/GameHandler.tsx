@@ -2,29 +2,29 @@
 import React from 'react';
 import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
-import SpacePeaceGame from '../SpacePeaceGame';
+import DuckHunt from '../DuckHunt';
 import SnekGame from '../SnekGame';
 import UATGame from '../UATGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
   showCourtGame: boolean;
-  showSpacePeaceGame: boolean;
+  showDuckHuntGame: boolean;
   showUATGame: boolean;
   showSnekGame: boolean;
   handleNoughtsAndCrossesComplete: () => void;
   handleNoughtsAndCrossesPlayAgain: () => void;
   handleCourtComplete: () => void;
   handleCourtPlayAgain: (playerWon: boolean) => void;
-  handleSpacePeaceComplete: () => void;
-  handleSpacePeacePlayAgain: () => void;
+  handleDuckHuntComplete: () => void;
+  handleDuckHuntPlayAgain: () => void;
   handleUATComplete: () => void;
   handleUATPlayAgain: () => void;
   handleSnekComplete: () => void;
   handleSnekPlayAgain: () => void;
   noughtsAndCrossesDifficulty: number;
   courtDifficulty: number;
-  spacePeaceDifficulty: number;
+  duckHuntDifficulty: number;
   uatDifficulty: number;
   snekDifficulty: number;
 }
@@ -32,22 +32,22 @@ interface GameHandlerProps {
 const GameHandler: React.FC<GameHandlerProps> = ({
   showNoughtsAndCrossesGame,
   showCourtGame,
-  showSpacePeaceGame,
+  showDuckHuntGame,
   showUATGame, 
   showSnekGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
   handleCourtPlayAgain,
-  handleSpacePeaceComplete,
-  handleSpacePeacePlayAgain,
+  handleDuckHuntComplete,
+  handleDuckHuntPlayAgain,
   handleUATComplete,
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
-  spacePeaceDifficulty,
+  duckHuntDifficulty,
   uatDifficulty,
   snekDifficulty
 }) => {
@@ -71,12 +71,12 @@ const GameHandler: React.FC<GameHandlerProps> = ({
     );
   }
   
-  if (showSpacePeaceGame) {
+  if (showDuckHuntGame) {
     return (
-      <SpacePeaceGame 
-        onGameComplete={handleSpacePeaceComplete} 
-        onPlayAgain={handleSpacePeacePlayAgain}
-        difficulty={spacePeaceDifficulty}
+      <DuckHunt 
+        onGameComplete={handleDuckHuntComplete} 
+        onPlayAgain={handleDuckHuntPlayAgain}
+        difficulty={duckHuntDifficulty}
       />
     );
   }
