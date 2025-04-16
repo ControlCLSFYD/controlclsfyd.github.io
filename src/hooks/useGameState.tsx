@@ -22,6 +22,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
   const [showUATGame, setShowUATGame] = useState(false);
   const [showSnekGame, setShowSnekGame] = useState(false);
+  const [showSpacePeaceGame, setShowSpacePeaceGame] = useState(false);
   
   const { revolvingQuestions } = useRevolvingQuestions();
   
@@ -30,6 +31,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     courtCompleted, setCourtCompleted,
     noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted,
     duckHuntCompleted, setDuckHuntCompleted,
+    spacePeaceCompleted, setSpacePeaceCompleted,
     uatCompleted, setUATCompleted,
     snekCompleted, setSnekCompleted,
     currentLevel, setCurrentLevel
@@ -39,6 +41,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     courtDifficulty, increaseCourtDifficulty,
     noughtsAndCrossesDifficulty, increaseNoughtsAndCrossesDifficulty,
     duckHuntDifficulty, increaseDuckHuntDifficulty,
+    spacePeaceDifficulty, increaseSpacePeaceDifficulty,
     uatDifficulty, increaseUatDifficulty,
     snekDifficulty, increaseSnekDifficulty
   } = useGameDifficulty();
@@ -73,9 +76,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     if (currentLevel === 1 && !courtCompleted) {
       setShowCourtGame(true);
     } 
-    else if (currentLevel === 2) {
-      // Go directly to level 3 without showing Duck Hunt game
-      setCurrentLevel(3);
+    else if (currentLevel === 2 && !spacePeaceCompleted) {
+      setShowSpacePeaceGame(true);
     }
     else if (currentLevel === 3 && !uatCompleted) {
       setShowUATGame(true);
@@ -102,6 +104,19 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
       increaseCourtDifficulty();
     }
     setShowCourtGame(true);
+  };
+
+  const handleSpacePeaceComplete = () => {
+    setSpacePeaceCompleted(true);
+    setShowSpacePeaceGame(false);
+    setCurrentLevel(3);
+  };
+
+  const handleSpacePeacePlayAgain = (playerWon: boolean) => {
+    if (playerWon) {
+      increaseSpacePeaceDifficulty();
+    }
+    setShowSpacePeaceGame(true);
   };
 
   const handleUATComplete = () => {
@@ -137,7 +152,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowNoughtsAndCrossesGame(true);
   };
 
-  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame;
+  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame || showSpacePeaceGame;
 
   const getCurrentLevelQuestions = () => {
     return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
@@ -152,6 +167,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
+    showSpacePeaceGame,
     showUATGame,
     showSnekGame,
     currentLevel,
@@ -160,6 +176,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
+    spacePeaceDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -167,6 +184,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
+    handleSpacePeaceComplete,
+    handleSpacePeacePlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
