@@ -9,8 +9,8 @@ export const initializeGame = (canvasWidth: number, canvasHeight: number, diffic
   // Ship and bullet settings
   const shipSize = 10;
   const bulletSize = 3;
-  const playerSpeed = 5;
-  const enemySpeed = 3 + difficulty * 0.5;
+  const playerSpeed = 200; // Units per second (will be multiplied by deltaTime)
+  const enemySpeed = 100 + difficulty * 20; // Units per second
   const bulletSpeed = 7;
 
   // Calculate initial positions

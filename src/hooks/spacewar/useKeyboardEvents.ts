@@ -21,6 +21,11 @@ export const useKeyboardEvents = ({
 }: UseKeyboardEventsProps) => {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent default behavior for game controls to avoid scrolling
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+      }
+      
       if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
         keysPressed.current[e.key] = true;
       } else if (e.key === ' ' || e.key === 'Enter') {
@@ -39,6 +44,9 @@ export const useKeyboardEvents = ({
         keysPressed.current[e.key] = false;
       }
     };
+    
+    // Add focus to the document to ensure keyboard events are captured
+    document.body.focus();
     
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);

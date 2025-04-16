@@ -2,6 +2,7 @@
 import { useEffect, MutableRefObject } from 'react';
 import { updateGameState } from '../../utils/spacewarGameUtils';
 import { drawGame } from '../../utils/spacewarRenderer';
+import { updateStars } from '../../utils/spacewar/environment';
 import { GameState } from '../../interfaces/GameInterfaces';
 import { GameStateRef } from './types';
 
@@ -41,13 +42,17 @@ export const useGameLoop = ({
     if (!canvas) return;
     
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx || !gameStateRef.current) return;
     
     const runGameLoop = (timestamp: number) => {
       if (!gameStateRef.current) return;
       
       // Calculate delta time for smooth animation regardless of frame rate
-      const deltaTime = lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / 1000 : 0.016;
+      // Cap delta time to avoid huge jumps if browser tab was inactive
+      const deltaTime = Math.min(
+        lastFrameTimeRef.current ? (timestamp - lastFrameTimeRef.current) / 1000 : 0.016,
+        0.1 // Maximum delta time of 100ms
+      );
       lastFrameTimeRef.current = timestamp;
       
       // Only update game state if the page is visible or we want background updates
@@ -60,6 +65,9 @@ export const useGameLoop = ({
         
         // Update game state
         updateGameState(gameStateRef.current, deltaTime, difficulty);
+        
+        // Update stars for twinkling effect
+        updateStars(gameStateRef.current.stars, deltaTime);
         
         // Update scores
         if (gameStateRef.current.scoreChanged) {
@@ -81,7 +89,7 @@ export const useGameLoop = ({
       }
       
       // Always draw if visible
-      if (isPageVisible) {
+      if (isPageVisible && ctx) {
         drawGame(ctx, gameStateRef.current);
       }
       
@@ -89,12 +97,14 @@ export const useGameLoop = ({
       gameLoop.current = requestAnimationFrame(runGameLoop);
     };
     
+    // Start the game loop
     gameLoop.current = requestAnimationFrame(runGameLoop);
     
-    // Cleanup function
+    // Clean up on unmount or when dependencies change
     return () => {
       if (gameLoop.current) {
         cancelAnimationFrame(gameLoop.current);
+        gameLoop.current = null;
       }
     };
   }, [

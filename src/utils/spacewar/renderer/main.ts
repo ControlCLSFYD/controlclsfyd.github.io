@@ -5,7 +5,7 @@
 
 import { drawPlayerShip, drawEnemyShip } from './ships';
 import { drawBullets } from './projectiles';
-import { drawAsteroids, drawStars } from './environment';
+import { drawAsteroids, drawStars, drawCentralStar } from './environment';
 
 // Main drawing function that renders the entire game
 export const drawGame = (
@@ -17,6 +17,9 @@ export const drawGame = (
   
   // Draw stars in the background
   drawStars(ctx, gameState.stars);
+  
+  // Draw central star
+  drawCentralStar(ctx, ctx.canvas.width / 2, ctx.canvas.height / 2);
   
   // Draw asteroids
   drawAsteroids(ctx, gameState.asteroids, gameState.asteroidSize);

@@ -84,8 +84,9 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
             }
             
             if (newCount >= 20) {
-              gameState.gameWon = true;
-              gameState.gameOver = true;
+              const newGameState = {...gameState};
+              newGameState.gameWon = true;
+              newGameState.gameOver = true;
               originalHandleContinue();
             }
             

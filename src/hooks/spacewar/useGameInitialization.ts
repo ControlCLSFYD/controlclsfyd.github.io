@@ -16,14 +16,29 @@ export const useGameInitialization = ({
   difficulty
 }: UseGameInitializationProps) => {
   useEffect(() => {
-    if (canvasRef.current) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      
-      if (ctx) {
-        gameStateRef.current = initializeGame(canvas.width, canvas.height, difficulty);
-        drawGame(ctx, gameStateRef.current);
+    const initializeCanvas = () => {
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          // Initialize game state
+          gameStateRef.current = initializeGame(canvas.width, canvas.height, difficulty);
+          
+          // Draw initial game state
+          drawGame(ctx, gameStateRef.current);
+          
+          console.log('Game initialized with difficulty:', difficulty);
+        }
       }
-    }
+    };
+    
+    // Initialize game
+    initializeCanvas();
+    
+    // Re-initialize if difficulty changes
+    return () => {
+      // Clean up if needed
+    };
   }, [canvasRef, difficulty, gameStateRef]);
 };

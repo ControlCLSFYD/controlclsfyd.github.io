@@ -41,7 +41,7 @@ export interface GameStateRef {
   };
   playerBullets: Array<{ x: number; y: number; active: boolean }>;
   enemyBullets: Array<{ x: number; y: number; active: boolean }>;
-  stars: Array<{ x: number; y: number; size: number }>;
+  stars: Array<{ x: number; y: number; size: number; brightness: number }>;
   asteroids: Array<{ x: number; y: number; dx: number; dy: number }>;
   shipSize: number;
   bulletSize: number;

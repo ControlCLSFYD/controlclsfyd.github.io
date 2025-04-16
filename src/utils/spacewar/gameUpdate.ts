@@ -8,10 +8,10 @@ import { updateAsteroids } from './environment';
 export const updateGameState = (gameState: any, deltaTime: number, difficulty: number) => {
   // Update player position based on input
   if (gameState.player.movingLeft && gameState.player.x > gameState.shipSize) {
-    gameState.player.x -= gameState.player.speed;
+    gameState.player.x -= gameState.player.speed * deltaTime;
   }
   if (gameState.player.movingRight && gameState.player.x < gameState.canvasWidth - gameState.shipSize) {
-    gameState.player.x += gameState.player.speed;
+    gameState.player.x += gameState.player.speed * deltaTime;
   }
   
   // Update player shoot cooldown
@@ -54,7 +54,7 @@ export const updateGameState = (gameState: any, deltaTime: number, difficulty: n
   // Update bullets
   gameState.playerBullets.forEach(bullet => {
     if (bullet.active) {
-      bullet.y -= gameState.bulletSpeed;
+      bullet.y -= gameState.bulletSpeed * deltaTime * 60; // Scale by deltaTime and target 60fps
       
       // Check for collision with enemy
       if (checkCollision(
@@ -75,7 +75,7 @@ export const updateGameState = (gameState: any, deltaTime: number, difficulty: n
   
   gameState.enemyBullets.forEach(bullet => {
     if (bullet.active) {
-      bullet.y += gameState.bulletSpeed;
+      bullet.y += gameState.bulletSpeed * deltaTime * 60; // Scale by deltaTime and target 60fps
       
       // Check for collision with player
       if (checkCollision(
@@ -94,6 +94,37 @@ export const updateGameState = (gameState: any, deltaTime: number, difficulty: n
     }
   });
   
+  // Check for collisions with asteroids
+  gameState.asteroids.forEach(asteroid => {
+    // Check for collision with player ship
+    if (checkCollision(
+      asteroid.x, asteroid.y, gameState.asteroidSize,
+      gameState.player.x, gameState.player.y, gameState.shipSize
+    )) {
+      // Player loses a point when hitting an asteroid
+      gameState.computerScore++;
+      gameState.scoreChanged = true;
+      
+      // Reset asteroid position
+      asteroid.x = Math.random() * gameState.canvasWidth;
+      asteroid.y = Math.random() * (gameState.canvasHeight / 2) + 50;
+    }
+    
+    // Check for collision with enemy ship
+    if (checkCollision(
+      asteroid.x, asteroid.y, gameState.asteroidSize,
+      gameState.enemy.x, gameState.enemy.y, gameState.shipSize
+    )) {
+      // Enemy loses a point when hitting an asteroid
+      gameState.userScore++;
+      gameState.scoreChanged = true;
+      
+      // Reset asteroid position
+      asteroid.x = Math.random() * gameState.canvasWidth;
+      asteroid.y = Math.random() * (gameState.canvasHeight / 2) + 50;
+    }
+  });
+  
   // Update asteroids
-  updateAsteroids(gameState.asteroids, gameState.canvasWidth, gameState.canvasHeight, gameState.asteroidSize);
+  updateAsteroids(gameState.asteroids, gameState.canvasWidth, gameState.canvasHeight, gameState.asteroidSize, deltaTime);
 };
