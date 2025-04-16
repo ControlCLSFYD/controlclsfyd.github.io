@@ -56,6 +56,15 @@ export const lessonData: LessonContent[] = [
       "You should use these quotation marks around key words which you know are essential to find the desired search results.",
       "Can you combine the lessons of the previous lesson with this one? We'll see."
     ]
+  },
+  {
+    id: 4,
+    title: "Search Query Construction Using Exact Match",
+    content: [
+      "So, you can construct a query following an accurate online image search. You know how to use the exact match Boolean operators to help you find the desired result.",
+      "But can you do all these things without an image search kickstarting your investigation?",
+      "Let's find out."
+    ]
   }
 ];
 
@@ -66,8 +75,9 @@ export const gameLevels: Level[] = [
     hasLesson: true,
     imageSrc: [
       "/lovable-uploads/1fb6b7bb-34d5-486c-aff9-51bb886b406b.png", // Image for WGA question (aircraft)
-      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png",  // SWAPPED - Now for Kenneth Arnold question (hanging scene)
-      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png"  // SWAPPED - Now for Benito Mussolini question (man holding drawing)
+      "/lovable-uploads/de09e4b3-9288-41b0-9e3c-8a5b141c6121.png", // Kenneth Arnold question
+      "/lovable-uploads/ac576421-6c21-48d3-aff9-268fe77c8de9.png", // Benito Mussolini question
+      "/lovable-uploads/8ba06cfd-2e37-4b70-81cc-4ea5011b4c01.png"  // "Lucky" Luciano question (new)
     ],
     questions: [
       [
@@ -90,6 +100,13 @@ export const gameLevels: Level[] = [
           text: "What is the name of the man in this image?",
           answer: "BENITO MUSSOLINI"
         }
+      ],
+      [
+        {
+          id: "A",
+          text: "What was this man's nickname?",
+          answer: "LUCKY"
+        }
       ]
     ],
     currentQuestionSet: 0
@@ -97,7 +114,12 @@ export const gameLevels: Level[] = [
   {
     id: 2,
     hasLesson: true,
-    imageSrc: "/lovable-uploads/bd22cfea-71dc-4646-adf7-5ef6a9073db5.png",
+    imageSrc: [
+      "/lovable-uploads/bd22cfea-71dc-4646-adf7-5ef6a9073db5.png", // Original image
+      "/lovable-uploads/b792dd1e-eeca-4d12-bd4e-4109f3221af6.png", // Beirut complex (new)
+      "/lovable-uploads/f0a8248d-5369-45b1-b794-cb8cacd0feaa.png", // Paul hall (new)
+      "/lovable-uploads/ecab6a20-a929-4bfa-8fdc-e57e92c56fae.png"  // Nazi ring (new)
+    ],
     questions: [
       [
         {
@@ -114,6 +136,57 @@ export const gameLevels: Level[] = [
           id: "C",
           text: "Who was the developer?",
           answer: "Penta"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "In what city is this complex located?",
+          answer: "BEIRUT"
+        },
+        {
+          id: "B",
+          text: "How many acres does it span?",
+          answer: "43"
+        },
+        {
+          id: "C",
+          text: "In what Californian city is the architectural studio responsible for the complex based?",
+          answer: "CULVER"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "What apostle is this hall named after?",
+          answer: "PAUL"
+        },
+        {
+          id: "B",
+          text: "The building has attracted interest after people noticed its similarities to which animal?",
+          answer: "SNAKE"
+        },
+        {
+          id: "C",
+          text: "The sculpture supposedly depicts Jesus rising from what garden?",
+          answer: "GETHSEMANE"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "In what country is this ring located in?",
+          answer: "POLAND"
+        },
+        {
+          id: "B",
+          text: "According to certain historians, what was the German name of the advanced Nazi project that was tested here?",
+          answer: "DIE GLOCKE"
+        },
+        {
+          id: "C",
+          text: "What was the codename of the radioactive substance supposedly used by this device?",
+          answer: "XERUM 525"
         }
       ]
     ],
@@ -154,12 +227,57 @@ export const gameLevels: Level[] = [
   },
   {
     id: 4,
+    hasLesson: true,
     questions: [
       [
         {
           id: "A",
           text: "What infamous letter was published in 1950 by the Madrid Geo-Political Center.",
           answer: "Madrid Circular"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "What infamous letter was distributed in 1950 by the German Geo-Political Center in Madrid.",
+          answer: "Madrid Circular"
+        },
+        {
+          id: "B",
+          text: "What was the surname of the author who first translated and reprinted the letter?",
+          answer: "TETENS"
+        },
+        {
+          id: "C",
+          text: "The letter suggested that post-war Germany should create a political bloc out of which three regions:",
+          answer: "EUROPE"
+        },
+        {
+          id: "D",
+          text: "Region 2:",
+          answer: "LATIN AMERICA"
+        },
+        {
+          id: "E",
+          text: "Region 3:",
+          answer: "AFRICA"
+        }
+      ],
+      [
+        {
+          id: "A",
+          text: "In what French hotel did some Nazi's who smelled defeat organise a secretive meeting to plan for post-war recovery in 1943?",
+          answer: "MAISON ROUGE HOTEL"
+        },
+        {
+          id: "B",
+          text: "What famous German car brand was represented at the meeting?",
+          answer: "VOLKSWAGEN"
+        },
+        {
+          id: "C",
+          text: "What was the official acronym of the American aid program that secret Nazi-German money used as cover to flow back into Germany in 1948:",
+          answer: "ERP"
         }
       ]
     ],

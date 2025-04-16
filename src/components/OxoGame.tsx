@@ -86,7 +86,7 @@ const OxoGame: React.FC<OxoGameProps> = ({
       />
       
       {gameStatus !== 'playing' && (
-        <GameResult
+        <GameResult 
           gameWon={gameStatus === 'won'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
