@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 interface Ship {
   x: number;
@@ -19,6 +20,7 @@ interface Ship {
   standardWeaponCharge: number;
   firingSpecial: boolean;
   firingStandard: boolean;
+  rapidFireCount: number;
 }
 
 interface Torpedo {
@@ -39,6 +41,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
+  const windowSize = useWindowSize();
   const [gameState, setGameState] = useState({
     gameStarted: false,
     gameOver: false,
@@ -60,7 +63,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     specialWeaponCharge: 100,
     standardWeaponCharge: 100,
     firingSpecial: false,
-    firingStandard: false
+    firingStandard: false,
+    rapidFireCount: 0
   });
   
   const [cpu, setCpu] = useState<Ship>({
@@ -77,7 +81,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     specialWeaponCharge: 100,
     standardWeaponCharge: 100,
     firingSpecial: false,
-    firingStandard: false
+    firingStandard: false,
+    rapidFireCount: 0
   });
   
   const [torpedoes, setTorpedoes] = useState<Torpedo[]>([]);
@@ -85,26 +90,28 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   const [lastCpuFire, setLastCpuFire] = useState(0);
   const [lastPlayerStandardFire, setLastPlayerStandardFire] = useState(0);
   const [lastCpuStandardFire, setLastCpuStandardFire] = useState(0);
+  const [lastRapidFireTime, setLastRapidFireTime] = useState(0);
   
-  const PLAYER_FIRE_RATE = 400; // ms between shots
+  const PLAYER_FIRE_RATE = 400; // ms between auto shots
   const CPU_FIRE_RATE = 350; // CPU fires slightly faster
-  const STANDARD_WEAPON_FIRE_RATE = 700; // ms between standard shots
-  const STANDARD_WEAPON_COOLDOWN = 2000; // 2 seconds cooldown
+  const STANDARD_WEAPON_FIRE_RATE = 300; // ms between rapid shots (reduced from 700)
+  const STANDARD_WEAPON_COOLDOWN = 1000; // 1 seconds cooldown (reduced from 2s)
   const SPECIAL_WEAPON_COOLDOWN = 10000; // 10 seconds cooldown
   const WINNING_SCORE = 20;
+  const RAPID_FIRE_COUNT = 10; // Number of shots in a rapid burst
   
   // Game constants
-  const CANVAS_WIDTH = Math.min(800, window.innerWidth - 20);
+  const CANVAS_WIDTH = Math.min(800, windowSize.width - 20);
   const CANVAS_HEIGHT = 600;
   const SUN_RADIUS = 30;
   const GRAVITY_STRENGTH = 0.15;
   const ROTATION_SPEED = 0.1;
   const THRUST_POWER = 0.2;
   const TORPEDO_SPEED = 6;
-  const STANDARD_TORPEDO_SPEED = 7;
+  const STANDARD_TORPEDO_SPEED = 10; // Increased from 7
   const SPECIAL_TORPEDO_SPEED = 8;
   const TORPEDO_LIFESPAN = 60; // frames
-  const STANDARD_TORPEDO_LIFESPAN = 70; // frames
+  const STANDARD_TORPEDO_LIFESPAN = 90; // Increased from 70
   const SPECIAL_TORPEDO_LIFESPAN = 80; // frames
   const DIFFICULTY_MODIFIER = 0.2 * difficulty;
   
@@ -123,13 +130,19 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         case 'ArrowRight':
           setPlayer(prev => ({ ...prev, rotateRight: true }));
           break;
-        case ' ': // Spacebar for standard weapon
-          if (player.standardWeaponCharge >= 100) {
+        case ' ': // Spacebar for standard weapon (rapid fire)
+          if (player.standardWeaponCharge >= 100 && player.rapidFireCount === 0) {
+            // Start rapid fire sequence
+            setPlayer(prev => ({ 
+              ...prev, 
+              standardWeaponCharge: 0, 
+              firingStandard: true, 
+              rapidFireCount: RAPID_FIRE_COUNT 
+            }));
+            
+            // Fire the first shot immediately
             fireStandardWeapon('player', player);
-            setPlayer(prev => ({ ...prev, standardWeaponCharge: 0, firingStandard: true }));
-            setTimeout(() => {
-              setPlayer(prev => ({ ...prev, firingStandard: false }));
-            }, 300);
+            setLastRapidFireTime(Date.now());
           }
           break;
         case 'b': // B key for special weapon
@@ -166,7 +179,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState.gameOver, player.specialWeaponCharge, player.standardWeaponCharge]);
+  }, [gameState.gameOver, player.specialWeaponCharge, player.standardWeaponCharge, player.rapidFireCount]);
   
   // Initialize game
   useEffect(() => {
@@ -187,7 +200,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       specialWeaponCharge: 100,
       standardWeaponCharge: 100,
       firingSpecial: false,
-      firingStandard: false
+      firingStandard: false,
+      rapidFireCount: 0
     });
     
     setCpu({
@@ -204,11 +218,31 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       specialWeaponCharge: 100,
       standardWeaponCharge: 100,
       firingSpecial: false,
-      firingStandard: false
+      firingStandard: false,
+      rapidFireCount: 0
     });
     
     setTorpedoes([]);
   }, []);
+
+  // Handle rapid fire continuation
+  useEffect(() => {
+    if (player.rapidFireCount > 0) {
+      const now = Date.now();
+      if (now - lastRapidFireTime >= STANDARD_WEAPON_FIRE_RATE) {
+        // Fire the next shot in the sequence
+        fireStandardWeapon('player', player);
+        setLastRapidFireTime(now);
+        
+        // Decrement the rapid fire counter
+        setPlayer(prev => ({
+          ...prev,
+          rapidFireCount: prev.rapidFireCount - 1,
+          firingStandard: prev.rapidFireCount > 1
+        }));
+      }
+    }
+  }, [player.rapidFireCount, lastRapidFireTime]);
 
   // Special weapon handlers
   const fireSpecialWeapon = (owner: 'player' | 'cpu', ship: Ship) => {
@@ -228,7 +262,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     setTorpedoes(prev => [...prev, torpedo]);
   };
 
-  // Standard weapon handler
+  // Standard weapon handler - smaller, faster, longer range
   const fireStandardWeapon = (owner: 'player' | 'cpu', ship: Ship) => {
     const torpedo: Torpedo = {
       x: ship.x + Math.cos(ship.rotation) * (ship.size + 5),
@@ -275,6 +309,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     let cpuStandardWeaponTimer = 0;
     let cpuDecisionTimer = 0;
     let cpuTargetPosition = { x: 0, y: 0 };
+    let isOrbiting = false;
+    let orbitDirection = 1; // 1 clockwise, -1 counterclockwise
     
     const gameLoop = (timestamp: number) => {
       if (!canvasRef.current) return;
@@ -309,7 +345,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Recharge standard weapon
       if (updatedPlayer.standardWeaponCharge < 100) {
-        updatedPlayer.standardWeaponCharge = Math.min(100, updatedPlayer.standardWeaponCharge + 0.83); // Full recharge in 2 seconds
+        updatedPlayer.standardWeaponCharge = Math.min(100, updatedPlayer.standardWeaponCharge + 1.7); // Full recharge in 1 second (faster)
       }
       
       // Auto-fire normal weapon
@@ -364,7 +400,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setPlayer(updatedPlayer);
       
-      // Update CPU ship with enhanced AI
+      // Update CPU ship with enhanced orbital AI
       const updatedCpu = { ...cpu };
       
       // Recharge CPU special weapon
@@ -374,7 +410,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
 
       // Recharge CPU standard weapon
       if (updatedCpu.standardWeaponCharge < 100) {
-        updatedCpu.standardWeaponCharge = Math.min(100, updatedCpu.standardWeaponCharge + 0.83);
+        updatedCpu.standardWeaponCharge = Math.min(100, updatedCpu.standardWeaponCharge + 1.7);
       }
       
       // CPU auto-fire normal weapon
@@ -383,7 +419,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         setLastCpuFire(now);
       }
 
-      // CPU standard weapon firing logic
+      // CPU standard weapon firing logic - now rapid fire
       cpuStandardWeaponTimer++;
       
       // Fire standard weapon when charged and player is in medium range
@@ -394,15 +430,29 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       const angleToPlayer = Math.atan2(player.y - cpu.y, player.x - cpu.x);
       const angleToPlayerDiff = Math.abs(normalizeAngle(angleToPlayer - updatedCpu.rotation));
       
-      if (updatedCpu.standardWeaponCharge >= 100 && 
+      // CPU rapid fire logic
+      if (updatedCpu.rapidFireCount > 0) {
+        if (now - lastCpuStandardFire >= STANDARD_WEAPON_FIRE_RATE) {
+          fireStandardWeapon('cpu', cpu);
+          setLastCpuStandardFire(now);
+          
+          updatedCpu.rapidFireCount--;
+          if (updatedCpu.rapidFireCount <= 0) {
+            updatedCpu.firingStandard = false;
+          }
+        }
+      } else if (updatedCpu.standardWeaponCharge >= 100 && 
           distanceToPlayer < 300 && angleToPlayerDiff < 0.6) {
+        
+        // Start a rapid fire sequence
         cpuStandardWeaponTimer = 0;
-        fireStandardWeapon('cpu', cpu);
         updatedCpu.standardWeaponCharge = 0;
         updatedCpu.firingStandard = true;
-        setTimeout(() => {
-          setCpu(prev => ({ ...prev, firingStandard: false }));
-        }, 300);
+        updatedCpu.rapidFireCount = RAPID_FIRE_COUNT;
+        
+        // Fire first shot immediately
+        fireStandardWeapon('cpu', cpu);
+        setLastCpuStandardFire(now);
       }
 
       // CPU special weapon firing logic - more strategic
@@ -424,50 +474,72 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         }, 500);
       }
       
-      // Enhanced CPU AI logic
+      // Enhanced CPU AI logic with orbital mechanics
       cpuDecisionTimer++;
       
-      // Update target position every 2 seconds
+      // Update target position and strategy every 2 seconds
       if (cpuDecisionTimer >= 120) {
         cpuDecisionTimer = 0;
         
-        // Predict player's future position based on velocity
-        const predictionFactor = 1.5 + difficulty * 0.8; // Higher difficulty = better prediction
-        const predictedPlayerX = player.x + player.velocity.x * predictionFactor;
-        const predictedPlayerY = player.y + player.velocity.y * predictionFactor;
+        // Calculate distance to sun
+        const cpuToSun = {
+          x: CANVAS_WIDTH / 2 - cpu.x,
+          y: CANVAS_HEIGHT / 2 - cpu.y
+        };
+        const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
         
-        // Choose between strategies based on difficulty and game state
-        // 1. Chase player (60-80% chance based on difficulty)
-        // 2. Navigate to strategic position (20-40% chance)
-        // 3. Perform orbital maneuver around sun (new strategy)
-        const chasePlayerChance = 0.6 + (difficulty * 0.05);
-        const orbitalManeuverChance = 0.2 + (difficulty * 0.03);
+        // Choose between strategies based on game state
+        // 1. Orbit the sun (primary strategy)
+        // 2. Chase player when in good position
+        // 3. Avoid player when in bad position
         
-        const strategyRoll = Math.random();
+        // Get the angle between CPU and sun
+        const cpuAngleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
         
-        if (strategyRoll < chasePlayerChance) {
-          // Chase player strategy
-          cpuTargetPosition = { x: predictedPlayerX, y: predictedPlayerY };
-        } else if (strategyRoll < chasePlayerChance + orbitalManeuverChance) {
-          // Orbital maneuver - use sun's gravity to orbit and gain positional advantage
-          const orbitDistance = 120 + Math.random() * 50;
-          const orbitAngle = Math.atan2(cpu.y - CANVAS_HEIGHT/2, cpu.x - CANVAS_WIDTH/2);
-          const orbitTargetAngle = orbitAngle + 0.3; // Move in orbital direction
+        // Decide whether to orbit or chase
+        const idealOrbitDistance = 120 + Math.random() * 30;
+        
+        // Choose an orbit direction that gives an advantage
+        const playerAngleToSun = Math.atan2(playerToSun.y, playerToSun.x);
+        const angleDiff = normalizeAngle(playerAngleToSun - cpuAngleToSun);
+        
+        // Change orbit direction occasionally to be unpredictable
+        if (Math.random() < 0.1) {
+          orbitDirection = -orbitDirection;
+        }
+        
+        // Determine if we should be orbiting or attacking
+        if (distanceToPlayer > 300 || Math.abs(angleDiff) > 1.0) {
+          isOrbiting = true;
+          
+          // Calculate the target point along the orbit
+          const orbitOffset = 0.3 * orbitDirection; // How far to move along orbit
+          const targetOrbitAngle = cpuAngleToSun + orbitOffset;
           
           cpuTargetPosition = {
-            x: CANVAS_WIDTH/2 + Math.cos(orbitTargetAngle) * orbitDistance,
-            y: CANVAS_HEIGHT/2 + Math.sin(orbitTargetAngle) * orbitDistance
+            x: CANVAS_WIDTH/2 + Math.cos(targetOrbitAngle) * idealOrbitDistance,
+            y: CANVAS_HEIGHT/2 + Math.sin(targetOrbitAngle) * idealOrbitDistance
           };
         } else {
-          // Strategic position - find a position with good firing angle
-          // Calculate a position at a moderate distance from player
-          const strategicDistance = 200 + Math.random() * 100;
-          const randomAngle = Math.random() * Math.PI * 2;
+          // We have a good attacking position, stop orbiting and go for the player
+          isOrbiting = false;
           
+          // Predict player's future position for interception
+          const predictionFactor = 2.0 + difficulty * 0.8;
           cpuTargetPosition = {
-            x: predictedPlayerX + Math.cos(randomAngle) * strategicDistance,
-            y: predictedPlayerY + Math.sin(randomAngle) * strategicDistance
+            x: player.x + player.velocity.x * predictionFactor,
+            y: player.y + player.velocity.y * predictionFactor
           };
+          
+          // If we're too close to the player, maintain some distance
+          if (distanceToPlayer < 100) {
+            const retreatAngle = angleToPlayer + Math.PI;
+            const retreatDistance = 150;
+            cpuTargetPosition = {
+              x: cpu.x + Math.cos(retreatAngle) * retreatDistance,
+              y: cpu.y + Math.sin(retreatAngle) * retreatDistance
+            };
+          }
         }
       }
       
@@ -485,8 +557,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.x = CANVAS_WIDTH / 2 + Math.cos(respawnAngle) * respawnDistance;
         updatedCpu.y = CANVAS_HEIGHT / 2 + Math.sin(respawnAngle) * respawnDistance;
         updatedCpu.velocity = { x: 0, y: 0 };
-      } else if (cpuDistanceToSun < 100) {
-        // Enhanced sun avoidance when getting too close
+      } else if (cpuDistanceToSun < 60 && !isOrbiting) {
+        // Escape sun's gravity well if too close and not intentionally orbiting
         const angleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
         const escapeAngle = angleToSun + Math.PI / 2; // Tangential to orbit
         
@@ -513,15 +585,15 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       const thrustAngleThreshold = 0.3 / (1 + difficulty * 0.1);
       updatedCpu.thrust = Math.abs(angleToTurn) < thrustAngleThreshold;
       
-      // Occasionally adjust speed to match optimal engagement distance
-      const distanceToTarget = Math.sqrt(
-        Math.pow(cpuTargetPosition.x - cpu.x, 2) + 
-        Math.pow(cpuTargetPosition.y - cpu.y, 2)
-      );
-      
-      // If very close to target, stop thrusting to maintain distance
-      if (distanceToTarget < 50 && updatedCpu.thrust) {
-        updatedCpu.thrust = false;
+      // If we're orbiting, adjust thrust to maintain the right orbit distance
+      if (isOrbiting) {
+        const idealOrbitDistance = 120;
+        const orbitDifferential = Math.abs(cpuDistanceToSun - idealOrbitDistance);
+        
+        // If we're at approximately the right distance, don't thrust too much
+        if (orbitDifferential < 20) {
+          updatedCpu.thrust = updatedCpu.thrust && Math.random() < 0.7;
+        }
       }
       
       // Apply rotation - faster at higher difficulty
@@ -664,14 +736,14 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Draw weapon charge indicators
       drawChargeIndicator(ctx, player.specialWeaponCharge, 20, 40, '#00aaff', 'SPECIAL');
-      drawChargeIndicator(ctx, player.standardWeaponCharge, 20, 55, '#ffffff', 'STANDARD');
+      drawChargeIndicator(ctx, player.standardWeaponCharge, 20, 55, '#ffffff', 'RAPID FIRE');
       
       // Draw CPU ship
       drawShip(ctx, cpu);
       
       // Draw CPU weapon charge indicators
       drawChargeIndicator(ctx, cpu.specialWeaponCharge, CANVAS_WIDTH - 120, 40, '#00aaff', 'SPECIAL');
-      drawChargeIndicator(ctx, cpu.standardWeaponCharge, CANVAS_WIDTH - 120, 55, '#ffffff', 'STANDARD');
+      drawChargeIndicator(ctx, cpu.standardWeaponCharge, CANVAS_WIDTH - 120, 55, '#ffffff', 'RAPID FIRE');
       
       // Draw torpedoes
       torpedoes.forEach(torpedo => {
@@ -685,7 +757,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           torpedoSize = 5;
         } else if (torpedo.isStandard) {
           torpedoColor = torpedo.owner === 'player' ? '#ffffff' : '#ffcccc'; // Standard white/light red torpedo
-          torpedoSize = 4;
+          torpedoSize = 2; // Smaller size for standard weapons
         }
         
         ctx.fillStyle = torpedoColor;
@@ -700,6 +772,13 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       ctx.fillText(`Player: ${player.score}`, 20, 30);
       ctx.fillStyle = '#ff0000';
       ctx.fillText(`CPU: ${cpu.score}`, CANVAS_WIDTH - 120, 30);
+      
+      // Debug info for orbit behavior
+      if (isOrbiting) {
+        ctx.fillStyle = '#666666';
+        ctx.font = '12px monospace';
+        ctx.fillText('CPU: Orbiting', CANVAS_WIDTH - 120, 70);
+      }
       
       animationFrameId = requestAnimationFrame(gameLoop);
     };
@@ -777,7 +856,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameState.gameStarted, gameState.gameOver, player, cpu, torpedoes, lastPlayerFire, lastCpuFire]);
+  }, [gameState.gameStarted, gameState.gameOver, player, cpu, torpedoes, lastPlayerFire, lastCpuFire, lastRapidFireTime]);
   
   const handleContinue = () => {
     onGameComplete();
@@ -793,7 +872,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       y: 300, 
       velocity: { x: 0, y: 0 },
       specialWeaponCharge: 100,
-      standardWeaponCharge: 100
+      standardWeaponCharge: 100,
+      rapidFireCount: 0
     }));
     setCpu(prev => ({ 
       ...prev, 
@@ -802,7 +882,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       y: 300, 
       velocity: { x: 0, y: 0 },
       specialWeaponCharge: 100,
-      standardWeaponCharge: 100
+      standardWeaponCharge: 100,
+      rapidFireCount: 0
     }));
     setTorpedoes([]);
   };
@@ -833,17 +914,22 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           <div className="flex gap-8 mb-4">
             <button
               onTouchStart={() => {
-                if (player.standardWeaponCharge >= 100) {
+                if (player.standardWeaponCharge >= 100 && player.rapidFireCount === 0) {
+                  setPlayer(prev => ({ 
+                    ...prev, 
+                    standardWeaponCharge: 0, 
+                    firingStandard: true, 
+                    rapidFireCount: RAPID_FIRE_COUNT 
+                  }));
+                  
+                  // Fire the first shot immediately
                   fireStandardWeapon('player', player);
-                  setPlayer(prev => ({ ...prev, standardWeaponCharge: 0, firingStandard: true }));
-                  setTimeout(() => {
-                    setPlayer(prev => ({ ...prev, firingStandard: false }));
-                  }, 300);
+                  setLastRapidFireTime(Date.now());
                 }
               }}
               className={`${player.standardWeaponCharge >= 100 ? 'bg-white' : 'bg-gray-500'} text-black p-3 rounded-full font-bold`}
             >
-              STANDARD
+              RAPID FIRE
             </button>
             <button
               onTouchStart={() => {
@@ -887,7 +973,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       )}
       
       <div className="mt-2 text-sm text-terminal-green">
-        {!isMobile ? "Controls: Arrow Keys to move, SPACE for standard weapon, B for special weapon" : "Use on-screen buttons to control your ship"}
+        {!isMobile ? "Controls: Arrow Keys to move, SPACE for rapid fire, B for special weapon" : "Use on-screen buttons to control your ship"}
       </div>
     </div>
   );

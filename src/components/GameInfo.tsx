@@ -28,7 +28,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
               <span>Use</span>
               <ArrowLeft className="mx-1" size={20} />
               <ArrowRight className="mx-1" size={20} />
-              <span>keys to move. SPACE for standard weapon, B for special!</span>
+              <span>keys to move. SPACE for rapid fire, B for special weapon!</span>
             </div>
             <div className="text-xs mt-1 text-yellow-400">
               Both ships autofire. First to reach {winningScore} points wins!
