@@ -8,6 +8,7 @@ import {
 import { Button } from './ui/button';
 import InvestiGator from './InvestiGator';
 import { LessonContent } from './LessonScreen';
+import { INVESTI_HEAD_ICON } from '../utils/investigatorImages';
 
 interface LessonModalProps {
   lesson: LessonContent;
@@ -33,7 +34,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
           className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black mb-2"
         >
           <img 
-            src="/lovable-uploads/f4308e48-123d-4416-9df6-ac0dc4b0342c.png" 
+            src={INVESTI_HEAD_ICON}
             alt="Investi Gator" 
             className="w-6 h-6 object-contain bg-black"
           />
