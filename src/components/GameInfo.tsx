@@ -35,7 +35,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
               <span className="text-yellow-400">SPACE for rapid fire, B for special weapon!</span>
             </div>
             <div className="text-xs mt-1 text-yellow-400">
-              First to reach {winningScore} points wins!
+              First to reach {winningScore} points wins! Ships bounce off the edges!
             </div>
           </div>
         ) : (

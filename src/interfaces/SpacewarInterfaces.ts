@@ -49,4 +49,6 @@ export interface GameConstants {
   WINNING_SCORE: number;
   RAPID_FIRE_COUNT: number;
   DIFFICULTY_MODIFIER: number;
+  FRICTION: number;
+  BOUNCE_DAMPENING: number;
 }

@@ -49,22 +49,59 @@ export const applySunGravity = (
   return { x: newVelocityX, y: newVelocityY, hitSun: false };
 };
 
-// Wrap position around screen edges
-export const wrapPosition = (
+// Handle solid border collisions
+export const handleBorderCollision = (
   x: number,
   y: number,
-  width: number, 
-  height: number
-): { x: number; y: number } => {
+  velocity: { x: number; y: number },
+  size: number,
+  width: number,
+  height: number,
+  dampening: number
+): { position: { x: number; y: number }, velocity: { x: number; y: number }, collision: boolean } => {
   let newX = x;
   let newY = y;
+  let newVelocityX = velocity.x;
+  let newVelocityY = velocity.y;
+  let collision = false;
   
-  if (newX > width) newX = 0;
-  if (newX < 0) newX = width;
-  if (newY > height) newY = 0;
-  if (newY < 0) newY = height;
+  // Check for collisions with boundaries
+  if (newX - size < 0) {
+    newX = size; // Set position at boundary
+    newVelocityX = Math.abs(newVelocityX) * dampening; // Reverse and reduce velocity
+    collision = true;
+  } else if (newX + size > width) {
+    newX = width - size; // Set position at boundary
+    newVelocityX = -Math.abs(newVelocityX) * dampening; // Reverse and reduce velocity
+    collision = true;
+  }
   
-  return { x: newX, y: newY };
+  if (newY - size < 0) {
+    newY = size; // Set position at boundary
+    newVelocityY = Math.abs(newVelocityY) * dampening; // Reverse and reduce velocity
+    collision = true;
+  } else if (newY + size > height) {
+    newY = height - size; // Set position at boundary
+    newVelocityY = -Math.abs(newVelocityY) * dampening; // Reverse and reduce velocity
+    collision = true;
+  }
+  
+  return {
+    position: { x: newX, y: newY },
+    velocity: { x: newVelocityX, y: newVelocityY },
+    collision
+  };
+};
+
+// Apply friction to velocity
+export const applyFriction = (
+  velocity: { x: number; y: number },
+  friction: number
+): { x: number; y: number } => {
+  return {
+    x: velocity.x * friction,
+    y: velocity.y * friction
+  };
 };
 
 // Handle sun collision with respawn

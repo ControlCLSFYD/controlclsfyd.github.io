@@ -10,8 +10,8 @@ import {
   drawScores, drawSun, drawDebugInfo 
 } from '../utils/spacewarRendering';
 import { 
-  applySunGravity, wrapPosition, normalizeAngle, 
-  checkTorpedoHit, handleSunCollision 
+  applySunGravity, normalizeAngle, checkTorpedoHit, 
+  handleSunCollision, handleBorderCollision, applyFriction
 } from '../utils/spacewarUtils';
 import { fireTorpedo } from '../utils/spacewarWeapons';
 
@@ -129,12 +129,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Recharge special weapon
       if (updatedPlayer.specialWeaponCharge < 100) {
-        updatedPlayer.specialWeaponCharge = Math.min(100, updatedPlayer.specialWeaponCharge + 0.16); // Full recharge in 10 seconds
+        updatedPlayer.specialWeaponCharge = Math.min(100, updatedPlayer.specialWeaponCharge + 0.16);
       }
       
       // Recharge standard weapon
       if (updatedPlayer.standardWeaponCharge < 100) {
-        updatedPlayer.standardWeaponCharge = Math.min(100, updatedPlayer.standardWeaponCharge + 1.7); // Full recharge in 1 second (faster)
+        updatedPlayer.standardWeaponCharge = Math.min(100, updatedPlayer.standardWeaponCharge + 1.7);
       }
       
       // Auto-fire normal weapon
@@ -162,6 +162,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       if (player.thrust) {
         updatedPlayer.velocity.x += Math.cos(player.rotation) * constants.THRUST_POWER;
         updatedPlayer.velocity.y += Math.sin(player.rotation) * constants.THRUST_POWER;
+      } else {
+        // Apply friction when not thrusting
+        updatedPlayer.velocity = applyFriction(updatedPlayer.velocity, constants.FRICTION);
       }
       
       // Apply sun gravity to player
@@ -195,15 +198,20 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.y += updatedPlayer.velocity.y;
       }
       
-      // Wrap around edges
-      const wrappedPosition = wrapPosition(
-        updatedPlayer.x, 
-        updatedPlayer.y, 
-        constants.CANVAS_WIDTH, 
-        constants.CANVAS_HEIGHT
+      // Handle border collisions (solid edges)
+      const playerBorderCollision = handleBorderCollision(
+        updatedPlayer.x,
+        updatedPlayer.y,
+        updatedPlayer.velocity,
+        updatedPlayer.size,
+        constants.CANVAS_WIDTH,
+        constants.CANVAS_HEIGHT,
+        constants.BOUNCE_DAMPENING
       );
-      updatedPlayer.x = wrappedPosition.x;
-      updatedPlayer.y = wrappedPosition.y;
+      
+      updatedPlayer.x = playerBorderCollision.position.x;
+      updatedPlayer.y = playerBorderCollision.position.y;
+      updatedPlayer.velocity = playerBorderCollision.velocity;
       
       setPlayer(updatedPlayer);
       
@@ -221,7 +229,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       }
       
       // CPU auto-fire normal weapon
-      if (now - lastCpuFire > constants.CPU_FIRE_RATE) {  // CPU fires slightly faster
+      if (now - lastCpuFire > constants.CPU_FIRE_RATE) {
         const newTorpedo = fireTorpedo(
           'cpu', 
           cpu, 
@@ -262,6 +270,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       if (updatedCpu.thrust) {
         updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
         updatedCpu.velocity.y += Math.sin(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
+      } else {
+        // Apply friction when not thrusting
+        updatedCpu.velocity = applyFriction(updatedCpu.velocity, constants.FRICTION);
       }
       
       // CPU standard weapon firing logic (rapid fire)
@@ -356,15 +367,20 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.y += updatedCpu.velocity.y;
       }
       
-      // Wrap around edges for CPU
-      const wrappedCpuPosition = wrapPosition(
-        updatedCpu.x, 
-        updatedCpu.y, 
-        constants.CANVAS_WIDTH, 
-        constants.CANVAS_HEIGHT
+      // Handle border collisions for CPU (solid edges)
+      const cpuBorderCollision = handleBorderCollision(
+        updatedCpu.x,
+        updatedCpu.y,
+        updatedCpu.velocity,
+        updatedCpu.size,
+        constants.CANVAS_WIDTH,
+        constants.CANVAS_HEIGHT,
+        constants.BOUNCE_DAMPENING
       );
-      updatedCpu.x = wrappedCpuPosition.x;
-      updatedCpu.y = wrappedCpuPosition.y;
+      
+      updatedCpu.x = cpuBorderCollision.position.x;
+      updatedCpu.y = cpuBorderCollision.position.y;
+      updatedCpu.velocity = cpuBorderCollision.velocity;
       
       setCpu(updatedCpu);
       
@@ -406,15 +422,24 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         newTorpedo.velocity.x = torpedoGravity.x;
         newTorpedo.velocity.y = torpedoGravity.y;
         
-        // Wrap around edges
-        const wrappedTorpPosition = wrapPosition(
+        // Handle torpedo border collisions (destroy torpedo if it hits the border)
+        const torpedoBorderCollision = handleBorderCollision(
           newTorpedo.x,
           newTorpedo.y,
+          newTorpedo.velocity,
+          2, // Small collision radius for torpedoes
           constants.CANVAS_WIDTH,
-          constants.CANVAS_HEIGHT
+          constants.CANVAS_HEIGHT,
+          constants.BOUNCE_DAMPENING
         );
-        newTorpedo.x = wrappedTorpPosition.x;
-        newTorpedo.y = wrappedTorpPosition.y;
+        
+        if (torpedoBorderCollision.collision) {
+          newTorpedo.alive = false;
+          return newTorpedo;
+        }
+        
+        newTorpedo.x = torpedoBorderCollision.position.x;
+        newTorpedo.y = torpedoBorderCollision.position.y;
         
         // Check for collision with player
         if (newTorpedo.owner === 'cpu') {

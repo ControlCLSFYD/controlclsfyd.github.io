@@ -1,8 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Ship, Torpedo, GameConstants } from '../interfaces/SpacewarInterfaces';
 import { fireSpecialWeapon, fireStandardWeapon, fireTorpedo } from '../utils/spacewarWeapons';
-import { checkTorpedoHit, applySunGravity, wrapPosition, handleSunCollision } from '../utils/spacewarUtils';
+import { 
+  checkTorpedoHit, applySunGravity, 
+  handleSunCollision, handleBorderCollision, applyFriction 
+} from '../utils/spacewarUtils';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
 import { useWindowSize } from './useWindowSize';
 
@@ -27,10 +29,12 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   SPECIAL_WEAPON_COOLDOWN: 10000,
   WINNING_SCORE: 20,
   RAPID_FIRE_COUNT: 10,
-  DIFFICULTY_MODIFIER: 0 // Will be set based on difficulty prop
+  DIFFICULTY_MODIFIER: 0,
+  FRICTION: 0.99,
+  BOUNCE_DAMPENING: 0.7
 });
 
-// Initial ship state
+// Initial ship state - with smaller size (1/3 of original)
 const createInitialPlayerShip = (): Ship => ({
   x: 200,
   y: 300,
@@ -40,7 +44,7 @@ const createInitialPlayerShip = (): Ship => ({
   rotateLeft: false,
   rotateRight: false,
   score: 0,
-  size: 15,
+  size: 5,
   color: '#00ff00',
   specialWeaponCharge: 100,
   standardWeaponCharge: 100,
@@ -58,7 +62,7 @@ const createInitialCpuShip = (): Ship => ({
   rotateLeft: false,
   rotateRight: false,
   score: 0,
-  size: 15,
+  size: 5,
   color: '#ff0000',
   specialWeaponCharge: 100,
   standardWeaponCharge: 100,
