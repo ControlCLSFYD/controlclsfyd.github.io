@@ -25,7 +25,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showSpacePeaceGame,
     showUATGame,
     showSnekGame,
     currentLevel,
@@ -34,7 +33,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    spacePeaceDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -42,8 +40,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleSpacePeaceComplete,
-    handleSpacePeacePlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -74,7 +70,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
               showDuckHuntGame={false}
-              showSpacePeaceGame={showSpacePeaceGame}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
@@ -83,8 +78,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
               handleCourtPlayAgain={handleCourtPlayAgain}
               handleDuckHuntComplete={() => {}}
               handleDuckHuntPlayAgain={() => {}}
-              handleSpacePeaceComplete={handleSpacePeaceComplete}
-              handleSpacePeacePlayAgain={handleSpacePeacePlayAgain}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
@@ -92,7 +85,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
               duckHuntDifficulty={1}
-              spacePeaceDifficulty={spacePeaceDifficulty}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />

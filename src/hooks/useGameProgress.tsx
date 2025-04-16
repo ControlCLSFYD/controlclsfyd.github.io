@@ -14,7 +14,6 @@ export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGamePro
   const [noughtsAndCrossesCompleted, setNoughtsAndCrossesCompleted] = useState(false);
   const [courtCompleted, setCourtCompleted] = useState(false);
   const [duckHuntCompleted, setDuckHuntCompleted] = useState(false);
-  const [spacePeaceCompleted, setSpacePeaceCompleted] = useState(false);
   const [uatCompleted, setUATCompleted] = useState(false);
   const [snekCompleted, setSnekCompleted] = useState(false);
   
@@ -75,8 +74,6 @@ export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGamePro
     setCourtCompleted,
     duckHuntCompleted,
     setDuckHuntCompleted,
-    spacePeaceCompleted,
-    setSpacePeaceCompleted,
     uatCompleted,
     setUATCompleted,
     snekCompleted,
