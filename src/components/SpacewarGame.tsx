@@ -6,14 +6,15 @@ import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { useSpacewarGame } from '../hooks/useSpacewarGame';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
 import { 
-  drawShip, drawTorpedo, drawChargeIndicator, 
+  drawShip, drawBeam, drawChargeIndicator, 
   drawScores, drawSun, drawDebugInfo 
 } from '../utils/spacewarRendering';
 import { 
-  applySunGravity, normalizeAngle, checkTorpedoHit, 
+  applySunGravity, normalizeAngle, checkBeamHit, 
   handleSunCollision, handleBorderCollision, applyFriction
 } from '../utils/spacewarUtils';
-import { fireTorpedo } from '../utils/spacewarWeapons';
+import { createBeam, fireBeamProjectile } from '../utils/spacewarWeapons';
+import GameInfo from './GameInfo';
 
 const SpacewarGame: React.FC<BaseGameProps> = ({
   onGameComplete,
@@ -33,15 +34,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     setPlayer,
     cpu,
     setCpu,
-    torpedoes,
-    setTorpedoes,
-    lastPlayerFire,
-    setLastPlayerFire,
-    lastCpuFire,
-    setLastCpuFire,
+    playerBeam,
+    setPlayerBeam,
+    cpuBeam,
+    setCpuBeam,
     resetGame,
-    handleFireSpecialWeapon,
-    handleFireStandardWeapon,
+    handleFirePlayerBeam,
     updatePlayerControls,
     setGameOver,
     setGameWon
@@ -62,12 +60,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         case 'ArrowRight':
           updatePlayerControls('rotateRight', true);
           break;
-        case ' ': // Spacebar for standard weapon (rapid fire)
-          handleFireStandardWeapon();
-          break;
-        case 'b': // B key for special weapon
+        case ' ': // Spacebar for beam
+        case 'b': // B key also for beam
         case 'B':
-          handleFireSpecialWeapon();
+          handleFirePlayerBeam();
           break;
       }
     };
@@ -101,8 +97,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     
     let animationFrameId: number;
     let lastTime = 0;
-    let cpuSpecialWeaponTimer = 0;
-    let cpuStandardWeaponTimer = 0;
+    let cpuBeamTimer = 0;
     
     const gameLoop = (timestamp: number) => {
       if (!canvasRef.current) return;
@@ -127,27 +122,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       // Update player ship
       const updatedPlayer = { ...player };
       
-      // Recharge special weapon
-      if (updatedPlayer.specialWeaponCharge < 100) {
-        updatedPlayer.specialWeaponCharge = Math.min(100, updatedPlayer.specialWeaponCharge + 0.16);
-      }
-      
-      // Recharge standard weapon
-      if (updatedPlayer.standardWeaponCharge < 100) {
-        updatedPlayer.standardWeaponCharge = Math.min(100, updatedPlayer.standardWeaponCharge + 1.7);
-      }
-      
-      // Auto-fire normal weapon
-      const now = Date.now();
-      if (now - lastPlayerFire > constants.PLAYER_FIRE_RATE) {
-        const newTorpedo = fireTorpedo(
-          'player', 
-          player, 
-          constants.TORPEDO_SPEED, 
-          constants.TORPEDO_LIFESPAN
-        );
-        setTorpedoes(prev => [...prev, newTorpedo]);
-        setLastPlayerFire(now);
+      // Handle beam cooldown for player
+      if (updatedPlayer.beamCooldown > 0) {
+        updatedPlayer.beamCooldown--;
+        if (updatedPlayer.beamCooldown <= 0) {
+          updatedPlayer.beamActive = false;
+        }
       }
       
       // Apply rotation to player
@@ -218,26 +198,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       // Update CPU ship with enhanced orbital AI
       const updatedCpu = { ...cpu };
       
-      // Recharge CPU special weapon
-      if (updatedCpu.specialWeaponCharge < 100) {
-        updatedCpu.specialWeaponCharge = Math.min(100, updatedCpu.specialWeaponCharge + 0.16);
-      }
-
-      // Recharge CPU standard weapon
-      if (updatedCpu.standardWeaponCharge < 100) {
-        updatedCpu.standardWeaponCharge = Math.min(100, updatedCpu.standardWeaponCharge + 1.7);
-      }
-      
-      // CPU auto-fire normal weapon
-      if (now - lastCpuFire > constants.CPU_FIRE_RATE) {
-        const newTorpedo = fireTorpedo(
-          'cpu', 
-          cpu, 
-          constants.TORPEDO_SPEED, 
-          constants.TORPEDO_LIFESPAN
-        );
-        setTorpedoes(prev => [...prev, newTorpedo]);
-        setLastCpuFire(now);
+      // Handle beam cooldown for CPU
+      if (updatedCpu.beamCooldown > 0) {
+        updatedCpu.beamCooldown--;
+        if (updatedCpu.beamCooldown <= 0) {
+          updatedCpu.beamActive = false;
+        }
       }
       
       // CPU AI logic
@@ -275,8 +241,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.velocity = applyFriction(updatedCpu.velocity, constants.FRICTION);
       }
       
-      // CPU standard weapon firing logic (rapid fire)
-      cpuStandardWeaponTimer++;
+      // CPU beam firing logic
+      cpuBeamTimer++;
       
       // Calculate distance and angle to player for weapon targeting
       const distanceToPlayer = Math.sqrt(
@@ -286,54 +252,34 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       const angleToPlayer = Math.atan2(player.y - cpu.y, player.x - cpu.x);
       const angleToPlayerDiff = Math.abs(normalizeAngle(angleToPlayer - updatedCpu.rotation));
       
-      // CPU rapid fire logic
-      if (updatedCpu.rapidFireCount > 0) {
-        if (now - lastCpuFire >= constants.STANDARD_WEAPON_FIRE_RATE) {
-          const newTorpedo = fireTorpedo(
-            'cpu', 
-            cpu, 
-            constants.STANDARD_TORPEDO_SPEED, 
-            constants.STANDARD_TORPEDO_LIFESPAN
-          );
-          setTorpedoes(prev => [...prev, newTorpedo]);
-          setLastCpuFire(now);
-          
-          updatedCpu.rapidFireCount--;
-          if (updatedCpu.rapidFireCount <= 0) {
-            updatedCpu.firingStandard = false;
-          }
-        }
-      } else if (updatedCpu.standardWeaponCharge >= 100 && 
-          distanceToPlayer < 300 && angleToPlayerDiff < 0.6) {
-        
-        // Start a rapid fire sequence
-        cpuStandardWeaponTimer = 0;
-        updatedCpu.standardWeaponCharge = 0;
-        updatedCpu.firingStandard = true;
-        updatedCpu.rapidFireCount = constants.RAPID_FIRE_COUNT;
-      }
-
-      // CPU special weapon firing logic
-      cpuSpecialWeaponTimer++;
-      
-      // Fire special weapon when player is in good position
+      // Fire beam when player is in good position
       const playerInFrontAndClose = distanceToPlayer < 200 && angleToPlayerDiff < 0.5;
       
-      if (updatedCpu.specialWeaponCharge >= 100 && 
-          (playerInFrontAndClose || cpuSpecialWeaponTimer > 480)) {
-        cpuSpecialWeaponTimer = 0;
-        const newTorpedo = fireTorpedo(
-          'cpu', 
-          cpu, 
-          constants.SPECIAL_TORPEDO_SPEED, 
-          constants.SPECIAL_TORPEDO_LIFESPAN
-        );
-        setTorpedoes(prev => [...prev, newTorpedo]);
-        updatedCpu.specialWeaponCharge = 0;
-        updatedCpu.firingSpecial = true;
+      if (updatedCpu.beamCooldown <= 0 && 
+          (playerInFrontAndClose || cpuBeamTimer > 120)) {
+        cpuBeamTimer = 0;
+        
+        // Create CPU beam
+        const newBeam = createBeam('cpu', {
+          ...updatedCpu,
+          beamLength: constants.BEAM_LENGTH
+        });
+        setCpuBeam(newBeam);
+        
+        updatedCpu.beamActive = true;
+        updatedCpu.beamCooldown = constants.BEAM_COOLDOWN;
+        
+        // After a short delay, fire the projectile
         setTimeout(() => {
-          setCpu(prev => ({ ...prev, firingSpecial: false }));
-        }, 500);
+          if (cpuBeam) {
+            const beamWithProjectile = fireBeamProjectile(
+              cpuBeam,
+              constants.BEAM_PROJECTILE_SPEED,
+              constants.BEAM_PROJECTILE_LIFESPAN
+            );
+            setCpuBeam(beamWithProjectile);
+          }
+        }, 200);
       }
       
       // Apply sun gravity to CPU
@@ -384,130 +330,228 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setCpu(updatedCpu);
       
-      // Update torpedoes
-      const updatedTorpedoes = torpedoes.map(torpedo => {
-        if (!torpedo.alive) return torpedo;
-        
-        const newTorpedo = { ...torpedo };
-        newTorpedo.lifespan--;
-        
-        if (newTorpedo.lifespan <= 0) {
-          newTorpedo.alive = false;
-          return newTorpedo;
+      // Update player beam
+      if (playerBeam) {
+        // Update beam position to follow the ship
+        if (player.beamActive) {
+          const shipTipX = player.x + Math.cos(player.rotation) * (player.size + 2);
+          const shipTipY = player.y + Math.sin(player.rotation) * (player.size + 2);
+          const beamEndX = player.x + Math.cos(player.rotation) * constants.BEAM_LENGTH;
+          const beamEndY = player.y + Math.sin(player.rotation) * constants.BEAM_LENGTH;
+          
+          setPlayerBeam({
+            ...playerBeam,
+            startX: shipTipX,
+            startY: shipTipY,
+            endX: beamEndX,
+            endY: beamEndY,
+            rotation: player.rotation,
+            intensity: playerBeam.intensity * 0.95 // Gradually fade
+          });
+        } else {
+          // Turn off beam if ship is no longer beaming
+          setPlayerBeam({
+            ...playerBeam,
+            active: false
+          });
         }
         
-        // Move torpedo
-        newTorpedo.x += newTorpedo.velocity.x;
-        newTorpedo.y += newTorpedo.velocity.y;
-        
-        // Apply sun gravity to torpedo
-        const torpedoGravity = applySunGravity(
-          newTorpedo.x,
-          newTorpedo.y,
-          constants.CANVAS_WIDTH / 2,
-          constants.CANVAS_HEIGHT / 2,
-          constants.GRAVITY_STRENGTH,
-          constants.SUN_RADIUS,
-          newTorpedo.velocity.x,
-          newTorpedo.velocity.y
-        );
-        
-        // Handle torpedo-sun collision
-        if (torpedoGravity.hitSun) {
-          newTorpedo.alive = false;
-          return newTorpedo;
-        }
-        
-        // Update torpedo velocity with gravity
-        newTorpedo.velocity.x = torpedoGravity.x;
-        newTorpedo.velocity.y = torpedoGravity.y;
-        
-        // Handle torpedo border collisions (destroy torpedo if it hits the border)
-        const torpedoBorderCollision = handleBorderCollision(
-          newTorpedo.x,
-          newTorpedo.y,
-          newTorpedo.velocity,
-          2, // Small collision radius for torpedoes
-          constants.CANVAS_WIDTH,
-          constants.CANVAS_HEIGHT,
-          constants.BOUNCE_DAMPENING
-        );
-        
-        if (torpedoBorderCollision.collision) {
-          newTorpedo.alive = false;
-          return newTorpedo;
-        }
-        
-        newTorpedo.x = torpedoBorderCollision.position.x;
-        newTorpedo.y = torpedoBorderCollision.position.y;
-        
-        // Check for collision with player
-        if (newTorpedo.owner === 'cpu') {
-          if (checkTorpedoHit(newTorpedo, player)) {
-            newTorpedo.alive = false;
+        // Update player beam projectile if active
+        if (playerBeam.projectileActive) {
+          const updatedPlayerBeam = { ...playerBeam };
+          
+          // Update projectile lifespan
+          updatedPlayerBeam.projectileLifespan--;
+          
+          if (updatedPlayerBeam.projectileLifespan <= 0) {
+            updatedPlayerBeam.projectileActive = false;
+          } else {
+            // Move projectile
+            updatedPlayerBeam.projectileX += updatedPlayerBeam.projectileVelocity.x;
+            updatedPlayerBeam.projectileY += updatedPlayerBeam.projectileVelocity.y;
             
-            // Different weapons deal different damage
-            let pointsToAdd = 1; // Regular torpedo
-            if (newTorpedo.isSpecial) pointsToAdd = 2; // Special weapon
-            if (newTorpedo.isStandard) pointsToAdd = 1; // Standard weapon
+            // Apply sun gravity to projectile
+            const projectileGravity = applySunGravity(
+              updatedPlayerBeam.projectileX,
+              updatedPlayerBeam.projectileY,
+              constants.CANVAS_WIDTH / 2,
+              constants.CANVAS_HEIGHT / 2,
+              constants.GRAVITY_STRENGTH,
+              constants.SUN_RADIUS,
+              updatedPlayerBeam.projectileVelocity.x,
+              updatedPlayerBeam.projectileVelocity.y
+            );
             
-            setCpu(prevCpu => {
-              const newScore = prevCpu.score + pointsToAdd;
+            // Handle projectile-sun collision
+            if (projectileGravity.hitSun) {
+              updatedPlayerBeam.projectileActive = false;
+            } else {
+              // Update projectile velocity with gravity
+              updatedPlayerBeam.projectileVelocity.x = projectileGravity.x;
+              updatedPlayerBeam.projectileVelocity.y = projectileGravity.y;
               
-              // Check for game over
-              if (newScore >= constants.WINNING_SCORE) {
-                setGameOver(true);
-                setGameWon(false);
+              // Handle border collisions (deactivate projectile if it hits the border)
+              const projectileBorderCollision = handleBorderCollision(
+                updatedPlayerBeam.projectileX,
+                updatedPlayerBeam.projectileY,
+                updatedPlayerBeam.projectileVelocity,
+                2, // Small collision radius for projectiles
+                constants.CANVAS_WIDTH,
+                constants.CANVAS_HEIGHT,
+                constants.BOUNCE_DAMPENING
+              );
+              
+              if (projectileBorderCollision.collision) {
+                updatedPlayerBeam.projectileActive = false;
+              } else {
+                updatedPlayerBeam.projectileX = projectileBorderCollision.position.x;
+                updatedPlayerBeam.projectileY = projectileBorderCollision.position.y;
+                
+                // Check for collision with CPU
+                if (checkBeamHit(updatedPlayerBeam, cpu)) {
+                  updatedPlayerBeam.projectileActive = false;
+                  
+                  setPlayer(prevPlayer => {
+                    const newScore = prevPlayer.score + 1;
+                    
+                    // Check for win
+                    if (newScore >= constants.WINNING_SCORE) {
+                      setGameOver(true);
+                      setGameWon(true);
+                    }
+                    
+                    return { ...prevPlayer, score: newScore };
+                  });
+                }
               }
-              
-              return { ...prevCpu, score: newScore };
-            });
+            }
           }
+          
+          setPlayerBeam(updatedPlayerBeam);
+        }
+      }
+      
+      // Update CPU beam
+      if (cpuBeam) {
+        // Update beam position to follow the CPU ship
+        if (cpu.beamActive) {
+          const shipTipX = cpu.x + Math.cos(cpu.rotation) * (cpu.size + 2);
+          const shipTipY = cpu.y + Math.sin(cpu.rotation) * (cpu.size + 2);
+          const beamEndX = cpu.x + Math.cos(cpu.rotation) * constants.BEAM_LENGTH;
+          const beamEndY = cpu.y + Math.sin(cpu.rotation) * constants.BEAM_LENGTH;
+          
+          setCpuBeam({
+            ...cpuBeam,
+            startX: shipTipX,
+            startY: shipTipY,
+            endX: beamEndX,
+            endY: beamEndY,
+            rotation: cpu.rotation,
+            intensity: cpuBeam.intensity * 0.95 // Gradually fade
+          });
+        } else {
+          // Turn off beam if CPU ship is no longer beaming
+          setCpuBeam({
+            ...cpuBeam,
+            active: false
+          });
         }
         
-        // Check for collision with CPU
-        if (newTorpedo.owner === 'player') {
-          if (checkTorpedoHit(newTorpedo, cpu)) {
-            newTorpedo.alive = false;
+        // Update CPU beam projectile if active
+        if (cpuBeam.projectileActive) {
+          const updatedCpuBeam = { ...cpuBeam };
+          
+          // Update projectile lifespan
+          updatedCpuBeam.projectileLifespan--;
+          
+          if (updatedCpuBeam.projectileLifespan <= 0) {
+            updatedCpuBeam.projectileActive = false;
+          } else {
+            // Move projectile
+            updatedCpuBeam.projectileX += updatedCpuBeam.projectileVelocity.x;
+            updatedCpuBeam.projectileY += updatedCpuBeam.projectileVelocity.y;
             
-            // Different weapons deal different damage
-            let pointsToAdd = 1; // Regular torpedo
-            if (newTorpedo.isSpecial) pointsToAdd = 2; // Special weapon
-            if (newTorpedo.isStandard) pointsToAdd = 1; // Standard weapon
+            // Apply sun gravity to projectile
+            const projectileGravity = applySunGravity(
+              updatedCpuBeam.projectileX,
+              updatedCpuBeam.projectileY,
+              constants.CANVAS_WIDTH / 2,
+              constants.CANVAS_HEIGHT / 2,
+              constants.GRAVITY_STRENGTH,
+              constants.SUN_RADIUS,
+              updatedCpuBeam.projectileVelocity.x,
+              updatedCpuBeam.projectileVelocity.y
+            );
             
-            setPlayer(prevPlayer => {
-              const newScore = prevPlayer.score + pointsToAdd;
+            // Handle projectile-sun collision
+            if (projectileGravity.hitSun) {
+              updatedCpuBeam.projectileActive = false;
+            } else {
+              // Update projectile velocity with gravity
+              updatedCpuBeam.projectileVelocity.x = projectileGravity.x;
+              updatedCpuBeam.projectileVelocity.y = projectileGravity.y;
               
-              // Check for win
-              if (newScore >= constants.WINNING_SCORE) {
-                setGameOver(true);
-                setGameWon(true);
+              // Handle border collisions (deactivate projectile if it hits the border)
+              const projectileBorderCollision = handleBorderCollision(
+                updatedCpuBeam.projectileX,
+                updatedCpuBeam.projectileY,
+                updatedCpuBeam.projectileVelocity,
+                2, // Small collision radius for projectiles
+                constants.CANVAS_WIDTH,
+                constants.CANVAS_HEIGHT,
+                constants.BOUNCE_DAMPENING
+              );
+              
+              if (projectileBorderCollision.collision) {
+                updatedCpuBeam.projectileActive = false;
+              } else {
+                updatedCpuBeam.projectileX = projectileBorderCollision.position.x;
+                updatedCpuBeam.projectileY = projectileBorderCollision.position.y;
+                
+                // Check for collision with player
+                if (checkBeamHit(updatedCpuBeam, player)) {
+                  updatedCpuBeam.projectileActive = false;
+                  
+                  setCpu(prevCpu => {
+                    const newScore = prevCpu.score + 1;
+                    
+                    // Check for game over
+                    if (newScore >= constants.WINNING_SCORE) {
+                      setGameOver(true);
+                      setGameWon(false);
+                    }
+                    
+                    return { ...prevCpu, score: newScore };
+                  });
+                }
               }
-              
-              return { ...prevPlayer, score: newScore };
-            });
+            }
           }
+          
+          setCpuBeam(updatedCpuBeam);
         }
-        
-        return newTorpedo;
-      }).filter(torpedo => torpedo.alive);
+      }
       
-      setTorpedoes(updatedTorpedoes);
-      
-      // Draw player ship and indicators
+      // Draw player ship
       drawShip(ctx, player);
-      drawChargeIndicator(ctx, player.specialWeaponCharge, 20, 40, '#00aaff', 'SPECIAL');
-      drawChargeIndicator(ctx, player.standardWeaponCharge, 20, 55, '#ffffff', 'RAPID FIRE');
       
-      // Draw CPU ship and indicators
+      // Draw CPU ship
       drawShip(ctx, cpu);
-      drawChargeIndicator(ctx, cpu.specialWeaponCharge, constants.CANVAS_WIDTH - 120, 40, '#00aaff', 'SPECIAL');
-      drawChargeIndicator(ctx, cpu.standardWeaponCharge, constants.CANVAS_WIDTH - 120, 55, '#ffffff', 'RAPID FIRE');
       
-      // Draw torpedoes
-      torpedoes.forEach(torpedo => {
-        drawTorpedo(ctx, torpedo);
-      });
+      // Draw beams
+      if (playerBeam) drawBeam(ctx, playerBeam);
+      if (cpuBeam) drawBeam(ctx, cpuBeam);
+      
+      // Draw beam cooldown indicators
+      const playerBeamCharge = player.beamCooldown > 0 
+        ? 100 - (player.beamCooldown / constants.BEAM_COOLDOWN * 100) 
+        : 100;
+      drawChargeIndicator(ctx, playerBeamCharge, 20, 40, '#00aaff', 'BEAM');
+      
+      const cpuBeamCharge = cpu.beamCooldown > 0 
+        ? 100 - (cpu.beamCooldown / constants.BEAM_COOLDOWN * 100) 
+        : 100;
+      drawChargeIndicator(ctx, cpuBeamCharge, constants.CANVAS_WIDTH - 120, 40, '#00aaff', 'BEAM');
       
       // Draw scores
       drawScores(ctx, player.score, cpu.score, constants.CANVAS_WIDTH);
@@ -523,7 +567,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, gameOver, player, cpu, torpedoes, lastPlayerFire, lastCpuFire, constants]);
+  }, [gameStarted, gameOver, player, cpu, playerBeam, cpuBeam, constants]);
   
   const handleContinue = () => {
     onGameComplete();
@@ -537,6 +581,15 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   return (
     <div className="relative w-full flex flex-col items-center justify-center bg-black">
       <h2 className="text-terminal-green text-xl mb-2 font-mono">SPACEWAR!</h2>
+      
+      <GameInfo 
+        showInstructions={true}
+        winningScore={constants.WINNING_SCORE}
+        userScore={player.score}
+        computerScore={cpu.score}
+        difficulty={difficulty}
+      />
+      
       <div className="border-2 border-terminal-green relative">
         <canvas 
           ref={canvasRef} 
@@ -557,20 +610,13 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       {isMobile && !gameOver && (
         <div className="mt-4 flex flex-col items-center">
-          <div className="flex gap-8 mb-4">
-            <button
-              onTouchStart={handleFireStandardWeapon}
-              className={`${player.standardWeaponCharge >= 100 ? 'bg-white' : 'bg-gray-500'} text-black p-3 rounded-full font-bold`}
-            >
-              RAPID FIRE
-            </button>
-            <button
-              onTouchStart={handleFireSpecialWeapon}
-              className={`${player.specialWeaponCharge >= 100 ? 'bg-blue-500' : 'bg-gray-500'} text-black p-3 rounded-full font-bold`}
-            >
-              SPECIAL
-            </button>
-          </div>
+          <button
+            onTouchStart={handleFirePlayerBeam}
+            className={`${player.beamCooldown <= 0 ? 'bg-blue-500' : 'bg-gray-500'} text-black p-3 rounded-full font-bold mb-4`}
+          >
+            BEAM
+          </button>
+          
           <button
             onTouchStart={() => updatePlayerControls('thrust', true)}
             onTouchEnd={() => updatePlayerControls('thrust', false)}
@@ -598,7 +644,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       )}
       
       <div className="mt-2 text-sm text-terminal-green">
-        {!isMobile ? "Controls: Arrow Keys to move, SPACE for rapid fire, B for special weapon" : "Use on-screen buttons to control your ship"}
+        {!isMobile ? "Controls: Arrow Keys to move, SPACE or B to fire beam" : "Use on-screen buttons to control your ship"}
       </div>
     </div>
   );

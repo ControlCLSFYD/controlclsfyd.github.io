@@ -1,5 +1,5 @@
 
-import { Ship, Torpedo } from '../interfaces/SpacewarInterfaces';
+import { Ship, Beam } from '../interfaces/SpacewarInterfaces';
 
 // Normalize angle to range -PI to PI
 export const normalizeAngle = (angle: number) => {
@@ -8,13 +8,15 @@ export const normalizeAngle = (angle: number) => {
   return angle;
 };
 
-// Check if torpedo hit a ship
-export const checkTorpedoHit = (
-  torpedo: Torpedo, 
+// Check if beam projectile hit a ship
+export const checkBeamHit = (
+  beam: Beam, 
   ship: Ship
 ): boolean => {
-  const dx = torpedo.x - ship.x;
-  const dy = torpedo.y - ship.y;
+  if (!beam.projectileActive) return false;
+  
+  const dx = beam.projectileX - ship.x;
+  const dy = beam.projectileY - ship.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   return distance < ship.size;
 };

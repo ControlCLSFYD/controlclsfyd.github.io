@@ -10,22 +10,25 @@ export interface Ship {
   score: number;
   size: number;
   color: string;
-  specialWeaponCharge: number;
-  standardWeaponCharge: number;
-  firingSpecial: boolean;
-  firingStandard: boolean;
-  rapidFireCount: number;
+  beamActive: boolean;
+  beamCooldown: number;
+  beamLength: number;
 }
 
-export interface Torpedo {
-  x: number;
-  y: number;
-  velocity: { x: number; y: number };
-  alive: boolean;
+export interface Beam {
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  rotation: number;
   owner: 'player' | 'cpu';
-  lifespan: number;
-  isSpecial?: boolean;
-  isStandard?: boolean;
+  active: boolean;
+  intensity: number;
+  projectileActive: boolean;
+  projectileX: number;
+  projectileY: number;
+  projectileVelocity: { x: number; y: number };
+  projectileLifespan: number;
 }
 
 export interface GameConstants {
@@ -35,19 +38,12 @@ export interface GameConstants {
   GRAVITY_STRENGTH: number;
   ROTATION_SPEED: number;
   THRUST_POWER: number;
-  TORPEDO_SPEED: number;
-  STANDARD_TORPEDO_SPEED: number;
-  SPECIAL_TORPEDO_SPEED: number;
-  TORPEDO_LIFESPAN: number;
-  STANDARD_TORPEDO_LIFESPAN: number;
-  SPECIAL_TORPEDO_LIFESPAN: number;
-  PLAYER_FIRE_RATE: number;
-  CPU_FIRE_RATE: number;
-  STANDARD_WEAPON_FIRE_RATE: number;
-  STANDARD_WEAPON_COOLDOWN: number;
-  SPECIAL_WEAPON_COOLDOWN: number;
+  BEAM_LENGTH: number;
+  BEAM_COOLDOWN: number;
+  BEAM_DURATION: number;
+  BEAM_PROJECTILE_SPEED: number;
+  BEAM_PROJECTILE_LIFESPAN: number;
   WINNING_SCORE: number;
-  RAPID_FIRE_COUNT: number;
   DIFFICULTY_MODIFIER: number;
   FRICTION: number;
   BOUNCE_DAMPENING: number;
