@@ -32,14 +32,14 @@ const GameContainer: React.FC<GameContainerProps> = ({
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showSpacePeaceGame,
+    showPongGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    spacePeaceDifficulty,
+    pongDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -47,8 +47,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleSpacePeaceComplete,
-    handleSpacePeacePlayAgain,
+    handlePongComplete,
+    handlePongPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -100,22 +100,22 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
-              showSpacePeaceGame={showSpacePeaceGame}
+              showPongGame={showPongGame}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
               handleCourtPlayAgain={handleCourtPlayAgain}
-              handleSpacePeaceComplete={handleSpacePeaceComplete}
-              handleSpacePeacePlayAgain={handleSpacePeacePlayAgain}
+              handlePongComplete={handlePongComplete}
+              handlePongPlayAgain={handlePongPlayAgain}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
               handleSnekPlayAgain={handleSnekPlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
-              spacePeaceDifficulty={spacePeaceDifficulty}
+              pongDifficulty={pongDifficulty}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />
