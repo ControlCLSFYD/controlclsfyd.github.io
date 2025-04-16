@@ -2,7 +2,7 @@
 import React from 'react';
 import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
-import SpacePeaceGame from '../SpacePeaceGame';
+import SpaceWarGame from '../SpaceWarGame';
 import SnekGame from '../SnekGame';
 import UATGame from '../UATGame';
 
@@ -73,7 +73,7 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   
   if (showSpacePeaceGame) {
     return (
-      <SpacePeaceGame 
+      <SpaceWarGame 
         onGameComplete={handleSpacePeaceComplete} 
         onPlayAgain={handleSpacePeacePlayAgain}
         difficulty={spacePeaceDifficulty}
