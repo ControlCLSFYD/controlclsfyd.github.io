@@ -24,14 +24,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showDuckHuntGame,
     showUATGame,
     showSnekGame,
     currentLevel,
     isGameActive,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    duckHuntDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -39,8 +37,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleDuckHuntComplete,
-    handleDuckHuntPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -63,22 +59,22 @@ const GameContainer: React.FC<GameContainerProps> = ({
             <GameHandler 
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
-              showDuckHuntGame={showDuckHuntGame}
+              showDuckHuntGame={false}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
               handleCourtPlayAgain={handleCourtPlayAgain}
-              handleDuckHuntComplete={handleDuckHuntComplete}
-              handleDuckHuntPlayAgain={handleDuckHuntPlayAgain}
+              handleDuckHuntComplete={() => {}}
+              handleDuckHuntPlayAgain={() => {}}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
               handleSnekPlayAgain={handleSnekPlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
-              duckHuntDifficulty={duckHuntDifficulty}
+              duckHuntDifficulty={1}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />

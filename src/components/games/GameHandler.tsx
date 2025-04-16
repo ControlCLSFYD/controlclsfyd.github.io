@@ -2,9 +2,8 @@
 import React from 'react';
 import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
-import DuckHunt from '../DuckHunt';
-import SnekGame from '../SnekGame';
 import UATGame from '../UATGame';
+import SnekGame from '../SnekGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
@@ -32,22 +31,18 @@ interface GameHandlerProps {
 const GameHandler: React.FC<GameHandlerProps> = ({
   showNoughtsAndCrossesGame,
   showCourtGame,
-  showDuckHuntGame,
   showUATGame, 
   showSnekGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
   handleCourtPlayAgain,
-  handleDuckHuntComplete,
-  handleDuckHuntPlayAgain,
   handleUATComplete,
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
-  duckHuntDifficulty,
   uatDifficulty,
   snekDifficulty
 }) => {
@@ -67,16 +62,6 @@ const GameHandler: React.FC<GameHandlerProps> = ({
         onGameComplete={handleCourtComplete} 
         onPlayAgain={handleCourtPlayAgain}
         difficulty={courtDifficulty}
-      />
-    );
-  }
-  
-  if (showDuckHuntGame) {
-    return (
-      <DuckHunt 
-        onGameComplete={handleDuckHuntComplete} 
-        onPlayAgain={handleDuckHuntPlayAgain}
-        difficulty={duckHuntDifficulty}
       />
     );
   }

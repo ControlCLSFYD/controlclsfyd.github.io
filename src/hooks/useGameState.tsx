@@ -63,8 +63,9 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     if (currentLevel === 1 && !courtCompleted) {
       setShowCourtGame(true);
     } 
-    else if (currentLevel === 2 && !duckHuntCompleted) {
-      setShowDuckHuntGame(true);
+    else if (currentLevel === 2) {
+      // Go directly to level 3 without showing Duck Hunt game
+      setCurrentLevel(3);
     }
     else if (currentLevel === 3 && !uatCompleted) {
       setShowUATGame(true);
@@ -130,7 +131,7 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowEndScreenPsalm(false);
   };
 
-  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showDuckHuntGame || showUATGame || showSnekGame;
+  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame;
 
   const getCurrentLevelQuestions = () => {
     return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
