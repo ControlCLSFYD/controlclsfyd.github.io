@@ -5,6 +5,7 @@ import GameResult from './GameResult';
 import GameControls from './GameControls';
 import GameInfo from './GameInfo';
 import useSpacewarGame from '../hooks/useSpacewarGame';
+import ProgressTracker from './ProgressTracker';
 
 interface SpacePeaceGameProps extends BaseGameProps {}
 
@@ -174,6 +175,12 @@ const SpacePeaceGame: React.FC<SpacePeaceGameProps> = ({
           handleButtonUp={handleButtonUp}
         />
       )}
+      
+      <div className="w-full max-w-[80%] mt-4">
+        <ProgressTracker 
+          value={((userScore - computerScore + WINNING_SCORE) / (WINNING_SCORE * 2)) * 100} 
+        />
+      </div>
     </div>
   );
 };

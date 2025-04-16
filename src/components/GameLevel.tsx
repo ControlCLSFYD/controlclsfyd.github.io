@@ -41,6 +41,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
 
   // Set timer duration based on level - 1 minute for Level 5, 7 minutes for others
   const timerDuration = level === 5 ? 60 : 7 * 60; // 1 minute or 7 minutes in seconds
+  
+  // Calculate progress as percentage of answered questions
+  const progress = questions.length > 0 
+    ? (answeredQuestions.length / questions.length) * 100 
+    : 0;
 
   useEffect(() => {
     // Check if we have any previously answered questions
@@ -99,11 +104,12 @@ const GameLevel: React.FC<GameLevelProps> = ({
 
   return (
     <div className="p-4" ref={containerRef}>
-      {/* Level Header with Timer */}
+      {/* Level Header with Timer and Progress */}
       <GameHeader 
         level={level} 
         isActive={isActive} 
-        timerDuration={timerDuration} 
+        timerDuration={timerDuration}
+        progress={progress}
       />
       
       {/* Level Image (if any) */}
