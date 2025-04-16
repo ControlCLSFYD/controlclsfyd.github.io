@@ -1,5 +1,5 @@
 
-import { Level } from '../data/gameData';
+import { Level } from '../interfaces/GameDataInterfaces';
 
 export const getCurrentImageSrc = (level: number, levelData: Level[], revolvingQuestions: {[key: number]: number}) => {
   const levelInfo = levelData[level - 1];
