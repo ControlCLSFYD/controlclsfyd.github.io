@@ -26,6 +26,16 @@ interface UseDuckHuntProps {
   difficulty: number;
 }
 
+// Duck image preloading
+let duckImage: HTMLImageElement | null = null;
+const preloadDuckImage = () => {
+  if (!duckImage) {
+    duckImage = new Image();
+    duckImage.src = '/lovable-uploads/b6cf4009-662b-4cde-98d0-bc2e9397dd3e.png';
+  }
+  return duckImage;
+};
+
 export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHuntProps) => {
   const [gameState, setGameState] = useState<DuckHuntGameState>({
     ducks: [],
@@ -39,14 +49,14 @@ export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHu
     if (!canvasRef.current) return null;
     
     const canvas = canvasRef.current;
-    const size = 30;
+    const size = 40; // Increased size for better visibility and click target
     const x = -size;
     const y = Math.random() * (canvas.height - size * 2) + size;
     
-    // Speed increases with difficulty
-    const baseSpeed = 1 + difficulty * 0.5;
-    const speedX = baseSpeed + Math.random() * difficulty;
-    const speedVariation = Math.random() > 0.5 ? -1 : 1;
+    // Speed increases with difficulty - make it faster as requested
+    const baseSpeed = 3 + difficulty * 1.5;
+    const speedX = baseSpeed + Math.random() * difficulty * 2;
+    const speedVariation = Math.random() > 0.5 ? -0.5 : 0.5;
     const speedY = (Math.random() * 0.5 * difficulty) * speedVariation;
     
     return {
@@ -64,8 +74,22 @@ export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHu
   const duckTimerRef = useRef<number | null>(null);
   
   useEffect(() => {
+    // Preload the duck image
+    preloadDuckImage();
+    
     // Start generating ducks when the game starts
     if (duckTimerRef.current === null) {
+      // Generate first duck immediately
+      const firstDuck = generateRandomDuck();
+      if (firstDuck) {
+        setGameState(prev => ({
+          ...prev,
+          ducks: [firstDuck],
+          ducksGenerated: 1
+        }));
+      }
+      
+      // Then continue generating more ducks
       duckTimerRef.current = window.setInterval(() => {
         if (gameState.ducksGenerated >= 10) {
           // Stop generating ducks after 10
@@ -99,7 +123,7 @@ export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHu
             ducksGenerated: prev.ducksGenerated + 1
           }));
         }
-      }, 1500 / difficulty); // Faster duck generation with higher difficulty
+      }, 1000 / difficulty); // Faster duck generation with higher difficulty
     }
     
     return () => {
@@ -175,7 +199,8 @@ export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHu
     if (!ctx) return;
     
     // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#33a5ff'; // Match the background color of the duck image
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     setGameState(prev => {
       // Update duck positions and handle offscreen ducks
@@ -214,31 +239,44 @@ export const useDuckHunt = ({ canvasRef, onGameComplete, difficulty }: UseDuckHu
     });
     
     // Draw ducks
-    gameState.ducks.forEach(duck => {
-      if (!duck.active) return;
-      
-      if (duck.hit) {
-        // Draw hit animation (falling duck)
-        ctx.fillStyle = 'rgba(255, 0, 0, ' + (1 - duck.hitAnimation / 20) + ')';
-        ctx.beginPath();
-        ctx.arc(duck.x, duck.y + duck.hitAnimation * 2, duck.size, 0, Math.PI * 2);
-        ctx.fill();
-      } else {
-        // Draw normal duck
-        ctx.fillStyle = 'brown';
-        ctx.beginPath();
-        ctx.arc(duck.x, duck.y, duck.size, 0, Math.PI * 2);
-        ctx.fill();
+    const img = preloadDuckImage();
+    if (img.complete) {
+      gameState.ducks.forEach(duck => {
+        if (!duck.active) return;
         
-        // Draw beak
-        ctx.fillStyle = 'orange';
-        ctx.beginPath();
-        ctx.moveTo(duck.x + duck.size, duck.y);
-        ctx.lineTo(duck.x + duck.size + 10, duck.y - 5);
-        ctx.lineTo(duck.x + duck.size + 10, duck.y + 5);
-        ctx.fill();
-      }
-    });
+        if (duck.hit) {
+          // Draw hit animation (falling duck with fading)
+          ctx.save();
+          ctx.globalAlpha = 1 - duck.hitAnimation / 20;
+          ctx.translate(duck.x, duck.y + duck.hitAnimation * 5);
+          ctx.rotate(duck.hitAnimation * 0.2);
+          ctx.drawImage(img, -duck.size/2, -duck.size/2, duck.size, duck.size);
+          ctx.restore();
+        } else {
+          // Draw normal duck
+          ctx.drawImage(img, duck.x - duck.size/2, duck.y - duck.size/2, duck.size, duck.size);
+        }
+      });
+    } else {
+      // Fallback if image not loaded
+      gameState.ducks.forEach(duck => {
+        if (!duck.active) return;
+        
+        if (duck.hit) {
+          // Draw hit animation
+          ctx.fillStyle = 'rgba(255, 0, 0, ' + (1 - duck.hitAnimation / 20) + ')';
+          ctx.beginPath();
+          ctx.arc(duck.x, duck.y + duck.hitAnimation * 2, duck.size/2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          // Draw placeholder duck
+          ctx.fillStyle = 'green';
+          ctx.beginPath();
+          ctx.arc(duck.x, duck.y, duck.size/2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    }
     
   }, [canvasRef, gameState.ducks]);
   

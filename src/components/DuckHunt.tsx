@@ -60,7 +60,7 @@ const DuckHunt: React.FC<BaseGameProps> = ({
     <div className="flex flex-col items-center justify-center p-4 h-full">
       <div className="text-lg mb-2">Score: {gameState.score} / 10</div>
       <div 
-        className="relative w-full h-[70vh] md:h-[60vh] bg-sky-200 border border-gray-400 rounded-md overflow-hidden"
+        className="relative w-full h-[70vh] md:h-[60vh] bg-[#33a5ff] border border-gray-400 rounded-md overflow-hidden"
         style={{ touchAction: 'none' }}
       >
         <canvas
