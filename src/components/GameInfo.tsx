@@ -27,7 +27,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
             <span>Use</span>
             <ArrowLeft className="mx-1" size={20} />
             <ArrowRight className="mx-1" size={20} />
-            <span>keys to move. Auto-firing enabled!</span>
+            <span>keys to move. SPACE for special weapon!</span>
           </div>
         ) : (
           <>
