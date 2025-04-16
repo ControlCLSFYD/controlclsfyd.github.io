@@ -1,7 +1,6 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useWindowSize } from '../hooks/useWindowSize';
-import { useMobile } from '../hooks/use-mobile';
+import { useIsMobile } from '../hooks/use-mobile';
 import GameControls from './GameControls';
 import GameInfo from './GameInfo';
 import GameResult from './GameResult';
@@ -40,7 +39,7 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { width, height } = useWindowSize();
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   const [showInstructions, setShowInstructions] = useState(true);
   const [gameStarted, setGameStarted] = useState(false);
@@ -94,7 +93,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
   const gravitationalConstant = 0.5;
   const friction = 0.98;
   
-  // Game loop using requestAnimationFrame
   useEffect(() => {
     if (!gameStarted || gameOver) return;
     
@@ -107,28 +105,22 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     let animationFrameId: number;
     
     const render = () => {
-      // Clear canvas
       context.fillStyle = 'black';
       context.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw sun
       context.beginPath();
       context.arc(sun.x, sun.y, sun.radius, 0, Math.PI * 2);
       context.fillStyle = 'yellow';
       context.fill();
       
-      // Physics update and collision detection
       updateGameState();
       
-      // Draw ships
       drawShip(context, playerShip, '#D6BCFA');
       drawShip(context, cpuShip, '#F97316');
       
-      // Draw projectiles
       drawProjectiles(context, playerShip.projectiles, '#D6BCFA');
       drawProjectiles(context, cpuShip.projectiles, '#F97316');
       
-      // Check for game end
       if (playerShip.hitCount >= WINNING_SCORE) {
         setGameOver(true);
         setGameWon(true);
@@ -147,7 +139,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     };
   }, [gameStarted, gameOver, playerShip.hitCount, cpuShip.hitCount]);
   
-  // Handle keyboard controls for desktop
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
@@ -174,20 +165,17 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     };
   }, []);
   
-  // Game initialization
   useEffect(() => {
     if (!showInstructions) {
       setGameStarted(true);
     }
   }, [showInstructions]);
   
-  // Function to handle ship rendering
   const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship, color: string) => {
     ctx.save();
     ctx.translate(ship.x, ship.y);
     ctx.rotate(ship.angle);
     
-    // Draw ship body
     ctx.beginPath();
     ctx.moveTo(10, 0);
     ctx.lineTo(-8, 8);
@@ -200,7 +188,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     ctx.lineWidth = 1;
     ctx.stroke();
     
-    // Draw thrust if active
     if (ship.thrust) {
       ctx.beginPath();
       ctx.moveTo(-5, 0);
@@ -215,7 +202,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     ctx.restore();
   };
   
-  // Function to draw projectiles
   const drawProjectiles = (ctx: CanvasRenderingContext2D, projectiles: Projectile[], color: string) => {
     projectiles.forEach(projectile => {
       if (!projectile.active) return;
@@ -227,24 +213,16 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     });
   };
   
-  // Core game physics and update logic
   const updateGameState = () => {
-    // Update player ship
     updateShip(playerShip, setPlayerShip, keys);
-    
-    // Update CPU ship with AI logic
     const cpuKeys = getAIInput();
     updateShip(cpuShip, setCpuShip, cpuKeys);
-    
-    // Check for projectile hits
     checkProjectileHits();
   };
   
-  // Ship physics update
   const updateShip = (ship: Ship, setShipState: React.Dispatch<React.SetStateAction<Ship>>, controls: {left: boolean, right: boolean}) => {
     let newShip = { ...ship };
     
-    // Update ship angle based on controls
     if (controls.left) {
       newShip.angle -= turnSpeed;
     }
@@ -252,16 +230,13 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
       newShip.angle += turnSpeed;
     }
     
-    // Always apply thrust for better gameplay
     newShip.thrust = true;
     
-    // Apply thrust force
     if (newShip.thrust) {
       newShip.velocity.x += Math.cos(newShip.angle) * shipThrustPower;
       newShip.velocity.y += Math.sin(newShip.angle) * shipThrustPower;
     }
     
-    // Apply gravitational force from the sun
     const dx = sun.x - newShip.x;
     const dy = sun.y - newShip.y;
     const distSq = dx * dx + dy * dy;
@@ -275,21 +250,17 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
       newShip.velocity.y += Math.sin(angle) * force;
     }
     
-    // Apply friction to velocity
     newShip.velocity.x *= friction;
     newShip.velocity.y *= friction;
     
-    // Update position
     newShip.x += newShip.velocity.x;
     newShip.y += newShip.velocity.y;
     
-    // Handle wrapping around the screen
     if (newShip.x > gameAreaWidth) newShip.x = 0;
     if (newShip.x < 0) newShip.x = gameAreaWidth;
     if (newShip.y > gameAreaHeight) newShip.y = 0;
     if (newShip.y < 0) newShip.y = gameAreaHeight;
     
-    // Update projectiles
     const updatedProjectiles = newShip.projectiles
       .map(proj => {
         if (!proj.active) return proj;
@@ -302,11 +273,9 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
           return newProj;
         }
         
-        // Update projectile position
         newProj.x += newProj.velocity.x;
         newProj.y += newProj.velocity.y;
         
-        // Apply gravitational force to projectiles too
         const dx = sun.x - newProj.x;
         const dy = sun.y - newProj.y;
         const distSq = dx * dx + dy * dy;
@@ -319,7 +288,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
           newProj.velocity.y += Math.sin(angle) * force;
         }
         
-        // Wrap projectiles around screen
         if (newProj.x > gameAreaWidth) newProj.x = 0;
         if (newProj.x < 0) newProj.x = gameAreaWidth;
         if (newProj.y > gameAreaHeight) newProj.y = 0;
@@ -331,7 +299,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     
     newShip.projectiles = updatedProjectiles;
     
-    // Auto-fire logic
     if (newShip.cooldown > 0) {
       newShip.cooldown--;
     } else {
@@ -342,39 +309,31 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     setShipState(newShip);
   };
   
-  // AI control logic
   const getAIInput = () => {
     const aiKeys = { left: false, right: false };
     
-    // Calculate angle to player
     const dx = playerShip.x - cpuShip.x;
     const dy = playerShip.y - cpuShip.y;
     const angleToPlayer = Math.atan2(dy, dx);
     
-    // Normalize angles
     let cpuAngle = cpuShip.angle % (2 * Math.PI);
     if (cpuAngle < 0) cpuAngle += 2 * Math.PI;
     
     let targetAngle = angleToPlayer % (2 * Math.PI);
     if (targetAngle < 0) targetAngle += 2 * Math.PI;
     
-    // Calculate difference between current angle and target angle
     let angleDiff = targetAngle - cpuAngle;
     
-    // Normalize angle difference to [-PI, PI]
     if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
     if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
     
-    // Determine turning direction
     if (angleDiff > 0.1) {
       aiKeys.right = true;
     } else if (angleDiff < -0.1) {
       aiKeys.left = true;
     }
     
-    // Add intelligence based on difficulty
     if (difficulty > 1) {
-      // Avoid sun by detecting if we're heading towards it
       const distToSun = Math.sqrt(
         Math.pow(cpuShip.x - sun.x, 2) + 
         Math.pow(cpuShip.y - sun.y, 2)
@@ -384,7 +343,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
         const angleToSun = Math.atan2(cpuShip.y - sun.y, cpuShip.x - sun.x);
         const sunAngleDiff = angleToSun - cpuShip.angle;
         
-        // If heading toward sun, change course
         if (Math.abs(sunAngleDiff) < Math.PI / 4) {
           aiKeys.left = !aiKeys.left;
           aiKeys.right = !aiKeys.right;
@@ -392,7 +350,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
       }
     }
     
-    // Higher difficulty means more randomness to make it unpredictable
     if (difficulty > 2 && Math.random() < 0.05) {
       aiKeys.left = Math.random() > 0.5;
       aiKeys.right = !aiKeys.left;
@@ -401,7 +358,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     return aiKeys;
   };
   
-  // Fire a projectile from the ship
   const fireProjectile = (ship: Ship) => {
     const newProjectile: Projectile = {
       x: ship.x + Math.cos(ship.angle) * 15,
@@ -424,12 +380,10 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     }
   };
   
-  // Check if projectiles hit the other ship
   const checkProjectileHits = () => {
     let playerShipUpdated = { ...playerShip };
     let cpuShipUpdated = { ...cpuShip };
     
-    // Check if player projectiles hit CPU
     playerShipUpdated.projectiles.forEach((proj, i) => {
       if (!proj.active) return;
       
@@ -438,13 +392,11 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance < cpuShip.radius + 5) {
-        // Hit detected
         playerShipUpdated.projectiles[i].active = false;
         cpuShipUpdated.hitCount++;
       }
     });
     
-    // Check if CPU projectiles hit player
     cpuShipUpdated.projectiles.forEach((proj, i) => {
       if (!proj.active) return;
       
@@ -453,7 +405,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
       const distance = Math.sqrt(dx * dx + dy * dy);
       
       if (distance < playerShip.radius + 5) {
-        // Hit detected
         cpuShipUpdated.projectiles[i].active = false;
         playerShipUpdated.hitCount++;
       }
@@ -463,7 +414,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
     setCpuShip(cpuShipUpdated);
   };
   
-  // Touch control handlers for mobile
   const handleLeftButton = () => {
     setKeys(prev => ({ ...prev, left: true }));
   };
@@ -477,7 +427,6 @@ const SpacePeaceGame: React.FC<BaseGameProps> = ({
   };
   
   const handlePlayAgain = () => {
-    // Reset game state
     setPlayerShip({
       x: gameAreaWidth * 0.25,
       y: gameAreaHeight / 2,
