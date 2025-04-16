@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -104,7 +105,6 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
   const [buttonCooldown, setButtonCooldown] = useState(false);
   const cooldownDuration = 150; // ms
   const [secretKeyCount, setSecretKeyCount] = useState(0);
-  const [upArrowCount, setUpArrowCount] = useState(0);
 
   // Enhanced mobile scaling
   const mobileScaleFactor = isMobile ? Math.min(window.innerWidth / (GRID_WIDTH * CELL_SIZE * 1.2), 1) : 1;
@@ -120,36 +120,27 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
   // Secret key mechanic
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check for "W" key press or arrow up
-      if (e.key.toLowerCase() === "w" || e.key === "ArrowUp") {
-        const newCount = secretKeyCount + 1;
-        setSecretKeyCount(newCount);
-        
-        // Also track arrow up separately
-        if (e.key === "ArrowUp") {
-          const newUpCount = upArrowCount + 1;
-          setUpArrowCount(newUpCount);
+      // Check for "W" key press
+      if (e.key.toLowerCase() === "w") {
+        setSecretKeyCount(prev => {
+          const newCount = prev + 1;
           
-          // If arrow up is pressed 33 times, trigger win
-          if (newUpCount >= 33) {
+          // If W is pressed 33 times, trigger win
+          if (newCount >= 33) {
             triggerSecretWin();
           }
-        }
-        
-        // If W is pressed 33 times, trigger win
-        if (newCount >= 33) {
-          triggerSecretWin();
-        }
+          
+          return newCount;
+        });
       } else {
-        // Any other key resets counts
+        // Any other key resets count
         setSecretKeyCount(0);
-        setUpArrowCount(0);
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [secretKeyCount, upArrowCount]);
+  }, []);
 
   const triggerSecretWin = () => {
     // Create winning grid state
@@ -661,27 +652,6 @@ const UATGame: React.FC<UATGameProps> = ({ onGameComplete, onPlayAgain, difficul
             </div>
           </div>
         )}
-        
-        {secretKeyCount > 0 && secretKeyCount < 20 && (
-          <div className="mt-2 text-xs text-terminal-green">
-            Secret pattern count: {secretKeyCount}/20
-          </div>
-        )}
-        
-        {upArrowCount > 0 && upArrowCount < 33 && (
-          <div className="mt-2 text-xs text-terminal-green">
-            Up arrow count: {upArrowCount}/33
-          </div>
-        )}
-        
-        <div className="w-full max-w-[80%] mt-4">
-          <div className="h-1 w-full bg-terminal-black border border-terminal-green">
-            <div 
-              className="h-full bg-terminal-green" 
-              style={{ width: `${Math.min((score / POINTS_TO_WIN) * 100, 100)}%` }}
-            ></div>
-          </div>
-        </div>
       </div>
     </div>
   );
