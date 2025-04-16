@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
@@ -322,7 +321,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         <canvas 
           ref={canvasRef} 
           width={constants.CANVAS_WIDTH} 
-          height={constants.CANVAS_HEIGHT}
+          height={400} // Now 400px
           className="bg-black"
         />
         

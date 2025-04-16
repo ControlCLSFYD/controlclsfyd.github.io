@@ -6,7 +6,7 @@ import { useWindowSize } from './useWindowSize';
 // Initial game constants
 const createGameConstants = (canvasWidth: number): GameConstants => ({
   CANVAS_WIDTH: canvasWidth,
-  CANVAS_HEIGHT: 600,
+  CANVAS_HEIGHT: 400, // Reduced from 600 to 400
   SUN_RADIUS: 30,
   GRAVITY_STRENGTH: 0.15,
   ROTATION_SPEED: 0.1,
@@ -20,7 +20,7 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
 // Initial ship state
 const createInitialPlayerShip = (): Ship => ({
   x: 200,
-  y: 300,
+  y: 200, // Adjusted to be centered in the smaller canvas
   rotation: 0,
   velocity: { x: 0, y: 0 },
   thrust: false,
@@ -33,7 +33,7 @@ const createInitialPlayerShip = (): Ship => ({
 
 const createInitialCpuShip = (): Ship => ({
   x: 600,
-  y: 300,
+  y: 200, // Adjusted to be centered in the smaller canvas
   rotation: Math.PI,
   velocity: { x: 0, y: 0 },
   thrust: false,
