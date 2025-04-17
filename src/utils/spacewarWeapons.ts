@@ -6,7 +6,9 @@ export const createProjectile = (
   owner: 'player' | 'cpu',
   ship: Ship,
   projectileSpeed: number,
-  projectileSize: number
+  projectileSize: number,
+  isSpecial: boolean = false,
+  specialColor: string = '#ffffff'
 ): Projectile => {
   // Calculate the exact position at the tip of the ship
   const shipTipX = ship.x + Math.cos(ship.rotation) * (ship.size + 2);
@@ -23,7 +25,8 @@ export const createProjectile = (
     owner: owner,
     active: true,
     size: projectileSize,
-    color: owner === 'player' ? '#00ffff' : '#ff00ff' // Cyan for player, magenta for CPU
+    color: isSpecial ? specialColor : (owner === 'player' ? '#00ffff' : '#ff00ff'), // Cyan for player, magenta for CPU
+    special: isSpecial
   };
 };
 
@@ -41,7 +44,10 @@ export const checkProjectileHit = (
   projectile: Projectile,
   ship: Ship
 ): boolean => {
-  if (projectile.owner === 'player' && ship === projectile) return false;
+  // Fixed: Don't compare the projectile with the ship object directly
+  // Instead check if the projectile's owner is the same as the ship we're checking against
+  if (projectile.owner === 'player' && ship.color === '#00ff00') return false;
+  if (projectile.owner === 'cpu' && ship.color === '#ff0000') return false;
   
   const distance = Math.sqrt(
     Math.pow(projectile.x - ship.x, 2) + 

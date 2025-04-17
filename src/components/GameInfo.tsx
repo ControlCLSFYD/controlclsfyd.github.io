@@ -29,16 +29,18 @@ const GameInfo: React.FC<GameInfoProps> = ({
               <span>for thrust,</span>
               <ArrowLeft className="mx-1" size={20} />
               <ArrowRight className="mx-1" size={20} />
-              <span>to turn.</span>
+              <span>to turn,</span>
+              <span className="mx-1 font-bold">SPACE</span>
+              <span>to shoot special projectile.</span>
             </div>
             <div className="text-xs mt-1 text-yellow-400">
               Both ships auto-fire projectiles. Hit the CPU with your shots to score!
             </div>
             <div className="text-xs mt-1 text-yellow-400">
-              Get points when the CPU flies into the sun, but lose points if you hit the sun!
+              The CPU scores if you hit the sun! Ships bounce off the edges!
             </div>
             <div className="text-xs mt-1 text-yellow-400">
-              First to reach {winningScore} points wins! Ships bounce off the edges!
+              First to reach {winningScore} points wins!
             </div>
           </div>
         ) : (

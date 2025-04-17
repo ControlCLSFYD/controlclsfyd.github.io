@@ -34,9 +34,28 @@ export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
 export const drawProjectile = (ctx: CanvasRenderingContext2D, projectile: Projectile) => {
   ctx.save();
   ctx.fillStyle = projectile.color;
+  
+  if (projectile.special) {
+    // Draw special projectile with a glowing effect
+    const gradient = ctx.createRadialGradient(
+      projectile.x, projectile.y, 0,
+      projectile.x, projectile.y, projectile.size * 1.5
+    );
+    gradient.addColorStop(0, projectile.color);
+    gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
+    
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(projectile.x, projectile.y, projectile.size * 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // Draw the core of the projectile
+  ctx.fillStyle = projectile.color;
   ctx.beginPath();
   ctx.arc(projectile.x, projectile.y, projectile.size, 0, Math.PI * 2);
   ctx.fill();
+  
   ctx.restore();
 };
 

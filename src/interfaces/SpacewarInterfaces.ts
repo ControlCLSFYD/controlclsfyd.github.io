@@ -26,6 +26,9 @@ export interface GameConstants {
   PROJECTILE_SPEED: number;
   PROJECTILE_SIZE: number;
   PROJECTILE_INTERVAL: number;
+  SPECIAL_PROJECTILE_SPEED: number;
+  SPECIAL_PROJECTILE_SIZE: number;
+  SPECIAL_PROJECTILE_COLOR: string;
 }
 
 export interface Projectile {
@@ -37,4 +40,5 @@ export interface Projectile {
   active: boolean;
   size: number;
   color: string;
+  special?: boolean;
 }

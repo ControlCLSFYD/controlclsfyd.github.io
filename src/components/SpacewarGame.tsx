@@ -29,6 +29,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   // Projectile timing reference
   const lastPlayerProjectileRef = useRef<number>(0);
   const lastCpuProjectileRef = useRef<number>(0);
+  const lastSpecialProjectileRef = useRef<number>(0);
+  const canFireSpecialRef = useRef<boolean>(true);
   
   const {
     constants,
@@ -63,6 +65,25 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         case 'ArrowRight':
           updatePlayerControls('rotateRight', true);
           break;
+        case ' ': // Spacebar for special projectile
+          if (canFireSpecialRef.current) {
+            const specialProjectile = createProjectile(
+              'player', 
+              player, 
+              constants.SPECIAL_PROJECTILE_SPEED, 
+              constants.SPECIAL_PROJECTILE_SIZE,
+              true,
+              constants.SPECIAL_PROJECTILE_COLOR
+            );
+            addProjectile(specialProjectile);
+            
+            // Set cooldown
+            canFireSpecialRef.current = false;
+            setTimeout(() => {
+              canFireSpecialRef.current = true;
+            }, 500); // 0.5s cooldown
+          }
+          break;
       }
     };
     
@@ -87,7 +108,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameOver]);
+  }, [gameOver, player, constants]);
   
   // Main game loop
   useEffect(() => {
@@ -408,7 +429,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         <canvas 
           ref={canvasRef} 
           width={constants.CANVAS_WIDTH} 
-          height={400} // Now 400px
+          height={constants.CANVAS_HEIGHT}
           className="bg-black"
         />
         
@@ -447,11 +468,39 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
               TURN →
             </button>
           </div>
+          <div className="mt-4">
+            <button
+              onTouchStart={() => {
+                if (canFireSpecialRef.current) {
+                  const specialProjectile = createProjectile(
+                    'player', 
+                    player, 
+                    constants.SPECIAL_PROJECTILE_SPEED, 
+                    constants.SPECIAL_PROJECTILE_SIZE,
+                    true,
+                    constants.SPECIAL_PROJECTILE_COLOR
+                  );
+                  addProjectile(specialProjectile);
+                  
+                  // Set cooldown
+                  canFireSpecialRef.current = false;
+                  setTimeout(() => {
+                    canFireSpecialRef.current = true;
+                  }, 500); // 0.5s cooldown
+                }
+              }}
+              className="bg-yellow-500 text-black p-3 rounded-full font-bold"
+            >
+              FIRE SPECIAL
+            </button>
+          </div>
         </div>
       )}
       
       <div className="mt-2 text-sm text-terminal-green">
-        {!isMobile ? "Controls: Arrow Keys to move. Score points when CPU flies into the sun or your projectiles hit it!" : "Use on-screen buttons to control your ship"}
+        {!isMobile 
+          ? "Controls: Arrow Keys to move, SPACE to fire. Score points when CPU flies into the sun or your projectiles hit it!" 
+          : "Use on-screen buttons to control your ship and fire special projectiles"}
       </div>
     </div>
   );

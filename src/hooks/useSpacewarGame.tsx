@@ -6,24 +6,27 @@ import { useWindowSize } from './useWindowSize';
 // Initial game constants
 const createGameConstants = (canvasWidth: number): GameConstants => ({
   CANVAS_WIDTH: canvasWidth,
-  CANVAS_HEIGHT: 400, // Reduced from 600 to 400
+  CANVAS_HEIGHT: 400,
   SUN_RADIUS: 30,
   GRAVITY_STRENGTH: 0.15,
   ROTATION_SPEED: 0.1,
-  THRUST_POWER: 0.1, // Reduced from 0.2 to 0.1
-  WINNING_SCORE: 20,
+  THRUST_POWER: 0.1,
+  WINNING_SCORE: 10, // Changed from 20 to 10
   DIFFICULTY_MODIFIER: 0,
   FRICTION: 0.99,
   BOUNCE_DAMPENING: 0.7,
   PROJECTILE_SPEED: 5,
   PROJECTILE_SIZE: 3,
-  PROJECTILE_INTERVAL: 200 // 0.2 seconds in milliseconds
+  PROJECTILE_INTERVAL: 200, // 0.2 seconds in milliseconds
+  SPECIAL_PROJECTILE_SPEED: 10, // Faster than regular projectiles
+  SPECIAL_PROJECTILE_SIZE: 4, // Slightly bigger
+  SPECIAL_PROJECTILE_COLOR: '#ffff00' // Yellow
 });
 
 // Initial ship state
 const createInitialPlayerShip = (): Ship => ({
   x: 200,
-  y: 200, // Adjusted to be centered in the smaller canvas
+  y: 200,
   rotation: 0,
   velocity: { x: 0, y: 0 },
   thrust: false,
@@ -36,7 +39,7 @@ const createInitialPlayerShip = (): Ship => ({
 
 const createInitialCpuShip = (): Ship => ({
   x: 600,
-  y: 200, // Adjusted to be centered in the smaller canvas
+  y: 200,
   rotation: Math.PI,
   velocity: { x: 0, y: 0 },
   thrust: false,
