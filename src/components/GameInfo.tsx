@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
 
 interface GameInfoProps {
   showInstructions: boolean;
@@ -19,9 +18,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
 }) => {
   return (
     <>
-      {/* Only show title in one place */}
-      
-      <div className="h-[40px] mb-2">
+      <div className="h-[30px] mb-2">
         {showInstructions ? (
           <div className="flex flex-col items-center p-2 border border-terminal-green">
             <div className="text-xs mt-1 text-yellow-400">

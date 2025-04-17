@@ -35,7 +35,7 @@ export const updateCpuAI = (
   const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
   
   // Define a safe radius from the sun (larger than sunRadius)
-  const sunSafeRadius = sunRadius * 2.5;
+  const sunSafeRadius = sunRadius * 3; // Increased safe radius
   
   // Immediate sun avoidance logic - higher priority than anything else
   if (cpuDistanceToSun < sunSafeRadius) {
@@ -43,25 +43,25 @@ export const updateCpuAI = (
     const angleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
     const escapeAngle = angleToSun + Math.PI; // Direct away from sun
     
-    // Set target far from sun
+    // Set target far from sun with increased distance
     updatedAiState.cpuTargetPosition = { 
-      x: canvasWidth / 2 + Math.cos(escapeAngle) * (sunSafeRadius * 1.5),
-      y: canvasHeight / 2 + Math.sin(escapeAngle) * (sunSafeRadius * 1.5)
+      x: canvasWidth / 2 + Math.cos(escapeAngle) * (sunSafeRadius * 2),
+      y: canvasHeight / 2 + Math.sin(escapeAngle) * (sunSafeRadius * 2)
     };
     
-    // Force CPU to prioritize sun avoidance
+    // Force CPU to prioritize sun avoidance with higher urgency
     const angleToTarget = Math.atan2(
       updatedAiState.cpuTargetPosition.y - cpu.y,
       updatedAiState.cpuTargetPosition.x - cpu.x
     );
     
-    // More precise rotation for emergencies
+    // More precise rotation for emergencies with narrower threshold
     const angleToTurn = normalizeAngle(angleToTarget - updatedCpu.rotation);
-    updatedCpu.rotateLeft = angleToTurn < -0.05;
-    updatedCpu.rotateRight = angleToTurn > 0.05;
+    updatedCpu.rotateLeft = angleToTurn < -0.03;
+    updatedCpu.rotateRight = angleToTurn > 0.03;
     
-    // Full thrust to escape
-    updatedCpu.thrust = Math.abs(angleToTurn) < 0.5;
+    // Full thrust to escape with higher urgency
+    updatedCpu.thrust = Math.abs(angleToTurn) < 0.7;
     
     return { updatedCpu, aiState: updatedAiState };
   }
@@ -96,7 +96,7 @@ export const updateCpuAI = (
       updatedAiState.isOrbiting = true;
       
       // Calculate the ideal orbit distance - safely away from sun
-      const idealOrbitDistance = sunSafeRadius + 20 + Math.random() * 30;
+      const idealOrbitDistance = sunSafeRadius + 40 + Math.random() * 40; // Further orbit distance
       
       // Calculate the target point along the orbit
       const orbitOffset = 0.3 * updatedAiState.orbitDirection; // How far to move along orbit
@@ -149,7 +149,7 @@ export const updateCpuAI = (
   
   // If we're orbiting, adjust thrust to maintain the right orbit distance
   if (updatedAiState.isOrbiting) {
-    const idealOrbitDistance = sunSafeRadius + 20;
+    const idealOrbitDistance = sunSafeRadius + 40; // Increased orbit distance
     const orbitDifferential = Math.abs(cpuDistanceToSun - idealOrbitDistance);
     
     // If we're at approximately the right distance, don't thrust too much

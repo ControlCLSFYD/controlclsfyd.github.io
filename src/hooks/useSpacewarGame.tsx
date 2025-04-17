@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Ship, GameConstants, Projectile } from '../interfaces/SpacewarInterfaces';
 import { useWindowSize } from './useWindowSize';
@@ -17,7 +18,7 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   PROJECTILE_SPEED: 5,
   PROJECTILE_SIZE: 3,
   PROJECTILE_INTERVAL: 200,
-  SPECIAL_PROJECTILE_SPEED: 15,
+  SPECIAL_PROJECTILE_SPEED: 20, // Increased from 15 to 20
   SPECIAL_PROJECTILE_SIZE: 4,
   SPECIAL_PROJECTILE_COLOR: '#ffff00'
 });

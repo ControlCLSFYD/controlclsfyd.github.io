@@ -70,7 +70,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
             const specialProjectile = createProjectile(
               'player', 
               player, 
-              constants.SPECIAL_PROJECTILE_SPEED, 
+              constants.SPECIAL_PROJECTILE_SPEED * 2, // Doubled speed
               constants.SPECIAL_PROJECTILE_SIZE,
               true,
               constants.SPECIAL_PROJECTILE_COLOR
@@ -137,15 +137,14 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
-      
-      // Auto-fire special projectiles at a rate of 4 per second for both ships
-      // NOTE: This is now outside the gameOver check, so it works in menus and demo mode
+
+      // Auto-fire projectiles for both ships - this now happens regardless of game state
       if (timestamp - lastPlayerProjectileRef.current >= 250) { // 4 times per second (250ms)
         lastPlayerProjectileRef.current = timestamp;
         const playerProjectile = createProjectile(
           'player', 
           player, 
-          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SPEED * 2, // Increased speed
           constants.SPECIAL_PROJECTILE_SIZE,
           true,
           constants.SPECIAL_PROJECTILE_COLOR
@@ -158,7 +157,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         const cpuProjectile = createProjectile(
           'cpu', 
           cpu, 
-          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SPEED * 2, // Increased speed
           constants.SPECIAL_PROJECTILE_SIZE,
           true,
           constants.SPECIAL_PROJECTILE_COLOR
@@ -266,7 +265,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Handle sun collision - Player hits sun, CPU gets a point
       if (playerGravity.hitSun) {
-        // Award a point to the CPU - FIXED: This was inconsistent before
+        // Award a point to the CPU when player hits sun
         setCpu(prevCpu => {
           const newScore = prevCpu.score + 1;
           
@@ -502,7 +501,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
                   const specialProjectile = createProjectile(
                     'player', 
                     player, 
-                    constants.SPECIAL_PROJECTILE_SPEED, 
+                    constants.SPECIAL_PROJECTILE_SPEED * 2, // Doubled speed
                     constants.SPECIAL_PROJECTILE_SIZE,
                     true,
                     constants.SPECIAL_PROJECTILE_COLOR
@@ -513,7 +512,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
                   canFireSpecialRef.current = false;
                   setTimeout(() => {
                     canFireSpecialRef.current = true;
-                  }, 500); // 0.5s cooldown
+                  }, 250); // 0.25s cooldown (faster)
                 }
               }}
               className="bg-yellow-500 text-black p-3 rounded-full font-bold"
