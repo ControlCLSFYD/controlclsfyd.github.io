@@ -27,16 +27,48 @@ export const updateCpuAI = (
   // Update decision timer
   updatedAiState.cpuDecisionTimer++;
   
-  // Update target position and strategy every 2 seconds
+  // Calculate distance to sun
+  const cpuToSun = {
+    x: canvasWidth / 2 - cpu.x,
+    y: canvasHeight / 2 - cpu.y
+  };
+  const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
+  
+  // Define a safe radius from the sun (larger than sunRadius)
+  const sunSafeRadius = sunRadius * 2.5;
+  
+  // Immediate sun avoidance logic - higher priority than anything else
+  if (cpuDistanceToSun < sunSafeRadius) {
+    // Escape sun's gravity well urgently
+    const angleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
+    const escapeAngle = angleToSun + Math.PI; // Direct away from sun
+    
+    // Set target far from sun
+    updatedAiState.cpuTargetPosition = { 
+      x: canvasWidth / 2 + Math.cos(escapeAngle) * (sunSafeRadius * 1.5),
+      y: canvasHeight / 2 + Math.sin(escapeAngle) * (sunSafeRadius * 1.5)
+    };
+    
+    // Force CPU to prioritize sun avoidance
+    const angleToTarget = Math.atan2(
+      updatedAiState.cpuTargetPosition.y - cpu.y,
+      updatedAiState.cpuTargetPosition.x - cpu.x
+    );
+    
+    // More precise rotation for emergencies
+    const angleToTurn = normalizeAngle(angleToTarget - updatedCpu.rotation);
+    updatedCpu.rotateLeft = angleToTurn < -0.05;
+    updatedCpu.rotateRight = angleToTurn > 0.05;
+    
+    // Full thrust to escape
+    updatedCpu.thrust = Math.abs(angleToTurn) < 0.5;
+    
+    return { updatedCpu, aiState: updatedAiState };
+  }
+  
+  // Regular AI logic - only runs if not in emergency sun avoidance
   if (updatedAiState.cpuDecisionTimer >= 120) {
     updatedAiState.cpuDecisionTimer = 0;
-    
-    // Calculate distance to sun
-    const cpuToSun = {
-      x: canvasWidth / 2 - cpu.x,
-      y: canvasHeight / 2 - cpu.y
-    };
-    const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
     
     // Calculate distance to player
     const distanceToPlayer = Math.sqrt(
@@ -59,12 +91,12 @@ export const updateCpuAI = (
       updatedAiState.orbitDirection = -updatedAiState.orbitDirection;
     }
     
-    // Decide the ideal orbit distance
-    const idealOrbitDistance = 120 + Math.random() * 30;
-    
     // Determine if we should be orbiting or attacking
     if (distanceToPlayer > 300 || Math.abs(angleDiff) > 1.0) {
       updatedAiState.isOrbiting = true;
+      
+      // Calculate the ideal orbit distance - safely away from sun
+      const idealOrbitDistance = sunSafeRadius + 20 + Math.random() * 30;
       
       // Calculate the target point along the orbit
       const orbitOffset = 0.3 * updatedAiState.orbitDirection; // How far to move along orbit
@@ -98,24 +130,6 @@ export const updateCpuAI = (
     }
   }
   
-  // Sun avoidance - enhanced to handle closer approaches more carefully
-  const cpuToSun = {
-    x: canvasWidth / 2 - cpu.x,
-    y: canvasHeight / 2 - cpu.y
-  };
-  const cpuDistanceToSun = Math.sqrt(cpuToSun.x * cpuToSun.x + cpuToSun.y * cpuToSun.y);
-  
-  if (cpuDistanceToSun < 60 && !updatedAiState.isOrbiting) {
-    // Escape sun's gravity well if too close and not intentionally orbiting
-    const angleToSun = Math.atan2(cpuToSun.y, cpuToSun.x);
-    const escapeAngle = angleToSun + Math.PI / 2; // Tangential to orbit
-    
-    const sunAvoidanceX = canvasWidth / 2 + Math.cos(escapeAngle) * 150;
-    const sunAvoidanceY = canvasHeight / 2 + Math.sin(escapeAngle) * 150;
-    
-    updatedAiState.cpuTargetPosition = { x: sunAvoidanceX, y: sunAvoidanceY };
-  }
-  
   // Calculate thrust and rotation to reach target
   const angleToTarget = Math.atan2(
     updatedAiState.cpuTargetPosition.y - cpu.y,
@@ -135,7 +149,7 @@ export const updateCpuAI = (
   
   // If we're orbiting, adjust thrust to maintain the right orbit distance
   if (updatedAiState.isOrbiting) {
-    const idealOrbitDistance = 120;
+    const idealOrbitDistance = sunSafeRadius + 20;
     const orbitDifferential = Math.abs(cpuDistanceToSun - idealOrbitDistance);
     
     // If we're at approximately the right distance, don't thrust too much

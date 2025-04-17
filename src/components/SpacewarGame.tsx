@@ -112,7 +112,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   
   // Main game loop
   useEffect(() => {
-    if (!canvasRef.current || !gameStarted || gameOver) return;
+    if (!canvasRef.current) return;
     
     let animationFrameId: number;
     let lastTime = 0;
@@ -139,6 +139,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
       
       // Auto-fire special projectiles at a rate of 4 per second for both ships
+      // NOTE: This is now outside the gameOver check, so it works in menus and demo mode
       if (timestamp - lastPlayerProjectileRef.current >= 250) { // 4 times per second (250ms)
         lastPlayerProjectileRef.current = timestamp;
         const playerProjectile = createProjectile(
@@ -163,6 +164,21 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           constants.SPECIAL_PROJECTILE_COLOR
         );
         addProjectile(cpuProjectile);
+      }
+      
+      // Don't process game logic if game is over
+      if (gameOver) {
+        // Still draw all projectiles in game over state
+        projectiles.forEach(projectile => {
+          drawProjectile(ctx, projectile);
+        });
+        
+        // Draw ships in their current positions
+        drawShip(ctx, player);
+        drawShip(ctx, cpu);
+        
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
       }
       
       // Update and process projectiles
@@ -250,7 +266,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Handle sun collision - Player hits sun, CPU gets a point
       if (playerGravity.hitSun) {
-        // Award a point to the CPU
+        // Award a point to the CPU - FIXED: This was inconsistent before
         setCpu(prevCpu => {
           const newScore = prevCpu.score + 1;
           

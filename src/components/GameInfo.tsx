@@ -19,7 +19,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
 }) => {
   return (
     <>
-      <h2 className="text-xl mb-4">SPACEWAR!</h2>
+      {/* Only show title in one place */}
       
       <div className="h-[40px] mb-2">
         {showInstructions ? (
