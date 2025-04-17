@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Ship, GameConstants, Projectile } from '../interfaces/SpacewarInterfaces';
 import { useWindowSize } from './useWindowSize';
@@ -10,17 +9,17 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   SUN_RADIUS: 30,
   GRAVITY_STRENGTH: 0.15,
   ROTATION_SPEED: 0.1,
-  THRUST_POWER: 0.1,
-  WINNING_SCORE: 10, // Changed from 20 to 10
+  THRUST_POWER: 0.05,
+  WINNING_SCORE: 10,
   DIFFICULTY_MODIFIER: 0,
   FRICTION: 0.99,
   BOUNCE_DAMPENING: 0.7,
   PROJECTILE_SPEED: 5,
   PROJECTILE_SIZE: 3,
-  PROJECTILE_INTERVAL: 200, // 0.2 seconds in milliseconds
-  SPECIAL_PROJECTILE_SPEED: 10, // Faster than regular projectiles
-  SPECIAL_PROJECTILE_SIZE: 4, // Slightly bigger
-  SPECIAL_PROJECTILE_COLOR: '#ffff00' // Yellow
+  PROJECTILE_INTERVAL: 200,
+  SPECIAL_PROJECTILE_SPEED: 15,
+  SPECIAL_PROJECTILE_SIZE: 4,
+  SPECIAL_PROJECTILE_COLOR: '#ffff00'
 });
 
 // Initial ship state

@@ -59,20 +59,6 @@ export const drawProjectile = (ctx: CanvasRenderingContext2D, projectile: Projec
   ctx.restore();
 };
 
-// Draw the game scores
-export const drawScores = (
-  ctx: CanvasRenderingContext2D,
-  playerScore: number,
-  cpuScore: number,
-  canvasWidth: number
-) => {
-  ctx.font = '20px monospace';
-  ctx.fillStyle = '#00ff00';
-  ctx.fillText(`Player: ${playerScore}`, 20, 30);
-  ctx.fillStyle = '#ff0000';
-  ctx.fillText(`CPU: ${cpuScore}`, canvasWidth - 120, 30);
-};
-
 // Draw the sun
 export const drawSun = (
   ctx: CanvasRenderingContext2D,

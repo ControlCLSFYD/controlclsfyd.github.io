@@ -6,7 +6,7 @@ import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { useSpacewarGame } from '../hooks/useSpacewarGame';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
 import { 
-  drawShip, drawScores, drawSun, drawDebugInfo, drawProjectile 
+  drawShip, drawSun, drawDebugInfo, drawProjectile 
 } from '../utils/spacewarRendering';
 import { 
   applySunGravity, normalizeAngle,
@@ -81,7 +81,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
             canFireSpecialRef.current = false;
             setTimeout(() => {
               canFireSpecialRef.current = true;
-            }, 500); // 0.5s cooldown
+            }, 250); // 0.25s cooldown (faster than before)
           }
           break;
       }
@@ -138,16 +138,30 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
       
-      // Fire projectiles based on timing
-      if (timestamp - lastPlayerProjectileRef.current >= constants.PROJECTILE_INTERVAL) {
+      // Auto-fire special projectiles at a rate of 4 per second for both ships
+      if (timestamp - lastPlayerProjectileRef.current >= 250) { // 4 times per second (250ms)
         lastPlayerProjectileRef.current = timestamp;
-        const playerProjectile = createProjectile('player', player, constants.PROJECTILE_SPEED, constants.PROJECTILE_SIZE);
+        const playerProjectile = createProjectile(
+          'player', 
+          player, 
+          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SIZE,
+          true,
+          constants.SPECIAL_PROJECTILE_COLOR
+        );
         addProjectile(playerProjectile);
       }
       
-      if (timestamp - lastCpuProjectileRef.current >= constants.PROJECTILE_INTERVAL) {
+      if (timestamp - lastCpuProjectileRef.current >= 250) { // 4 times per second (250ms)
         lastCpuProjectileRef.current = timestamp;
-        const cpuProjectile = createProjectile('cpu', cpu, constants.PROJECTILE_SPEED, constants.PROJECTILE_SIZE);
+        const cpuProjectile = createProjectile(
+          'cpu', 
+          cpu, 
+          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SIZE,
+          true,
+          constants.SPECIAL_PROJECTILE_COLOR
+        );
         addProjectile(cpuProjectile);
       }
       
@@ -387,9 +401,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Draw CPU ship
       drawShip(ctx, cpu);
-      
-      // Draw scores
-      drawScores(ctx, player.score, cpu.score, constants.CANVAS_WIDTH);
       
       // Draw debug info (orbit behavior)
       drawDebugInfo(ctx, aiStateRef.current.isOrbiting, constants.CANVAS_WIDTH);
