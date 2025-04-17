@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
@@ -25,7 +25,13 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isMobile = useIsMobile();
   const aiStateRef = useRef(createInitialAIState());
-
+  
+  // Projectile timing reference
+  const lastPlayerProjectileRef = useRef<number>(0);
+  const lastCpuProjectileRef = useRef<number>(0);
+  const lastSpecialProjectileRef = useRef<number>(0);
+  const canFireSpecialRef = useRef<boolean>(true);
+  
   const {
     constants,
     gameStarted,
@@ -43,13 +49,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     setGameOver,
     setGameWon
   } = useSpacewarGame(difficulty, () => {});
-
-  const lastFireTimeRef = useRef({ player: 0, cpu: 0 });
-  const FIRE_INTERVAL = 250; // milliseconds
-
+  
+  // Setup keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameOver) return;
+      
       switch (e.key) {
         case 'ArrowUp':
           updatePlayerControls('thrust', true);
@@ -60,8 +65,28 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         case 'ArrowRight':
           updatePlayerControls('rotateRight', true);
           break;
+        case ' ': // Spacebar for special projectile
+          if (canFireSpecialRef.current) {
+            const specialProjectile = createProjectile(
+              'player', 
+              player, 
+              constants.SPECIAL_PROJECTILE_SPEED, 
+              constants.SPECIAL_PROJECTILE_SIZE,
+              true,
+              constants.SPECIAL_PROJECTILE_COLOR
+            );
+            addProjectile(specialProjectile);
+            
+            // Set cooldown
+            canFireSpecialRef.current = false;
+            setTimeout(() => {
+              canFireSpecialRef.current = true;
+            }, 250); // 0.25s cooldown (faster than before)
+          }
+          break;
       }
     };
+    
     const handleKeyUp = (e: KeyboardEvent) => {
       switch (e.key) {
         case 'ArrowUp':
@@ -75,144 +100,435 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           break;
       }
     };
+    
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameOver]);
-
+  }, [gameOver, player, constants]);
+  
+  // Main game loop
   useEffect(() => {
     if (!canvasRef.current) return;
-    const ctx = canvasRef.current.getContext('2d');
-    if (!ctx) return;
-
+    
     let animationFrameId: number;
-    let lastTime = performance.now();
-
+    let lastTime = 0;
+    
     const gameLoop = (timestamp: number) => {
-      const dt = timestamp - lastTime;
+      if (!canvasRef.current) return;
+      
+      // Cap the frame rate
+      if (timestamp - lastTime < 16) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
+      const deltaTime = timestamp - lastTime;
       lastTime = timestamp;
+      
+      const ctx = canvasRef.current.getContext('2d');
+      if (!ctx) return;
+      
+      // Clear canvas
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
+      
+      // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
-
-      const shouldFire = (lastFireTime: number) => timestamp - lastFireTime > FIRE_INTERVAL;
-
-      if (!gameOver) {
-        if (shouldFire(lastFireTimeRef.current.player)) {
-          lastFireTimeRef.current.player = timestamp;
-          const projectile = createProjectile('player', player, constants.SPECIAL_PROJECTILE_SPEED, constants.SPECIAL_PROJECTILE_SIZE, true, constants.SPECIAL_PROJECTILE_COLOR);
-          addProjectile(projectile);
-        }
-        if (shouldFire(lastFireTimeRef.current.cpu)) {
-          lastFireTimeRef.current.cpu = timestamp;
-          const projectile = createProjectile('cpu', cpu, constants.SPECIAL_PROJECTILE_SPEED, constants.SPECIAL_PROJECTILE_SIZE, true, constants.SPECIAL_PROJECTILE_COLOR);
-          addProjectile(projectile);
-        }
+      
+      // Auto-fire special projectiles at a rate of 4 per second for both ships
+      // NOTE: This is now outside the gameOver check, so it works in menus and demo mode
+      if (timestamp - lastPlayerProjectileRef.current >= 250) { // 4 times per second (250ms)
+        lastPlayerProjectileRef.current = timestamp;
+        const playerProjectile = createProjectile(
+          'player', 
+          player, 
+          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SIZE,
+          true,
+          constants.SPECIAL_PROJECTILE_COLOR
+        );
+        addProjectile(playerProjectile);
       }
-
-      let updatedProjectiles = projectiles.map(updateProjectile).filter(p => {
-        const hitCpu = p.owner === 'player' && checkProjectileHit(p, cpu);
-        const hitPlayer = p.owner === 'cpu' && checkProjectileHit(p, player);
-        const hitBorder = checkProjectileBorder(p, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
-
-        if (hitCpu) {
+      
+      if (timestamp - lastCpuProjectileRef.current >= 250) { // 4 times per second (250ms)
+        lastCpuProjectileRef.current = timestamp;
+        const cpuProjectile = createProjectile(
+          'cpu', 
+          cpu, 
+          constants.SPECIAL_PROJECTILE_SPEED, 
+          constants.SPECIAL_PROJECTILE_SIZE,
+          true,
+          constants.SPECIAL_PROJECTILE_COLOR
+        );
+        addProjectile(cpuProjectile);
+      }
+      
+      // Don't process game logic if game is over
+      if (gameOver) {
+        // Still draw all projectiles in game over state
+        projectiles.forEach(projectile => {
+          drawProjectile(ctx, projectile);
+        });
+        
+        // Draw ships in their current positions
+        drawShip(ctx, player);
+        drawShip(ctx, cpu);
+        
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
+      
+      // Update and process projectiles
+      let updatedProjectiles = [...projectiles];
+      
+      // Process each projectile
+      updatedProjectiles = updatedProjectiles.map(p => updateProjectile(p)).filter(p => {
+        // Check if projectile hits enemy ship
+        if (p.owner === 'player' && checkProjectileHit(p, cpu)) {
+          // Player hit CPU
           setPlayer(prev => {
             const newScore = prev.score + 1;
+            // Check for win condition
             if (newScore >= constants.WINNING_SCORE) {
               setGameOver(true);
               setGameWon(true);
             }
             return { ...prev, score: newScore };
           });
-          return false;
+          return false; // Remove this projectile
         }
-
-        if (hitPlayer) {
+        
+        if (p.owner === 'cpu' && checkProjectileHit(p, player)) {
+          // CPU hit player
           setCpu(prev => {
             const newScore = prev.score + 1;
+            // Check for win condition
             if (newScore >= constants.WINNING_SCORE) {
               setGameOver(true);
               setGameWon(false);
             }
             return { ...prev, score: newScore };
           });
-          return false;
+          return false; // Remove this projectile
         }
-
-        return !hitBorder;
+        
+        // Check if projectile hits border
+        if (checkProjectileBorder(p, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT)) {
+          return false; // Remove this projectile
+        }
+        
+        return true; // Keep this projectile
       });
-
+      
       updateProjectiles(updatedProjectiles);
-      updatedProjectiles.forEach(p => drawProjectile(ctx, p));
-
-      const updateShip = (ship: any, aiResult?: any) => {
-        const s = { ...ship };
-        if (s.thrust) {
-          s.velocity.x += Math.cos(s.rotation) * constants.THRUST_POWER;
-          s.velocity.y += Math.sin(s.rotation) * constants.THRUST_POWER;
-        } else {
-          s.velocity = applyFriction(s.velocity, constants.FRICTION);
-        }
-        if (s.rotateLeft) s.rotation -= constants.ROTATION_SPEED;
-        if (s.rotateRight) s.rotation += constants.ROTATION_SPEED;
-
-        const gravity = applySunGravity(s.x, s.y, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.GRAVITY_STRENGTH, constants.SUN_RADIUS, s.velocity.x, s.velocity.y);
-        s.velocity.x = gravity.x;
-        s.velocity.y = gravity.y;
-
-        if (gravity.hitSun) {
-          const scorer = s === player ? setCpu : setPlayer;
-          scorer(prev => {
-            const newScore = prev.score + 1;
-            if (newScore >= constants.WINNING_SCORE) {
-              setGameOver(true);
-              setGameWon(s === player ? false : true);
-            }
-            return { ...prev, score: newScore };
-          });
-          const respawn = handleSunCollision(s.x, s.y, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2);
-          s.x = respawn.x;
-          s.y = respawn.y;
-          s.velocity = respawn.velocity;
-        } else {
-          s.x += s.velocity.x;
-          s.y += s.velocity.y;
-        }
-
-        const border = handleBorderCollision(s.x, s.y, s.velocity, s.size, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT, constants.BOUNCE_DAMPENING);
-        s.x = border.position.x;
-        s.y = border.position.y;
-        s.velocity = border.velocity;
-        return s;
-      };
-
-      let updatedPlayer = updateShip(player);
-      let updatedCpu = updateShip(cpu);
-
-      const aiResult = updateCpuAI(updatedCpu, updatedPlayer, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT, constants.SUN_RADIUS, aiStateRef.current, difficulty);
-      aiStateRef.current = aiResult.aiState;
-      updatedCpu = { ...updatedCpu, ...aiResult.updatedCpu };
-
+      
+      // Draw all projectiles
+      updatedProjectiles.forEach(projectile => {
+        drawProjectile(ctx, projectile);
+      });
+      
+      // Update player ship
+      const updatedPlayer = { ...player };
+      
+      // Apply rotation to player
+      if (player.rotateLeft) {
+        updatedPlayer.rotation -= constants.ROTATION_SPEED;
+      }
+      if (player.rotateRight) {
+        updatedPlayer.rotation += constants.ROTATION_SPEED;
+      }
+      
+      // Apply thrust to player
+      if (player.thrust) {
+        updatedPlayer.velocity.x += Math.cos(player.rotation) * constants.THRUST_POWER;
+        updatedPlayer.velocity.y += Math.sin(player.rotation) * constants.THRUST_POWER;
+      } else {
+        // Apply friction when not thrusting
+        updatedPlayer.velocity = applyFriction(updatedPlayer.velocity, constants.FRICTION);
+      }
+      
+      // Apply sun gravity to player
+      const playerGravity = applySunGravity(
+        player.x, 
+        player.y, 
+        constants.CANVAS_WIDTH / 2, 
+        constants.CANVAS_HEIGHT / 2, 
+        constants.GRAVITY_STRENGTH, 
+        constants.SUN_RADIUS, 
+        updatedPlayer.velocity.x, 
+        updatedPlayer.velocity.y
+      );
+      updatedPlayer.velocity.x = playerGravity.x;
+      updatedPlayer.velocity.y = playerGravity.y;
+      
+      // Handle sun collision - Player hits sun, CPU gets a point
+      if (playerGravity.hitSun) {
+        // Award a point to the CPU - FIXED: This was inconsistent before
+        setCpu(prevCpu => {
+          const newScore = prevCpu.score + 1;
+          
+          // Check for win
+          if (newScore >= constants.WINNING_SCORE) {
+            setGameOver(true);
+            setGameWon(false);
+          }
+          
+          return { ...prevCpu, score: newScore };
+        });
+        
+        // Respawn player
+        const respawn = handleSunCollision(
+          player.x, 
+          player.y, 
+          constants.CANVAS_WIDTH / 2, 
+          constants.CANVAS_HEIGHT / 2
+        );
+        updatedPlayer.x = respawn.x;
+        updatedPlayer.y = respawn.y;
+        updatedPlayer.velocity = respawn.velocity;
+      } else {
+        // Update player position if no collision
+        updatedPlayer.x += updatedPlayer.velocity.x;
+        updatedPlayer.y += updatedPlayer.velocity.y;
+      }
+      
+      // Handle border collisions (solid edges)
+      const playerBorderCollision = handleBorderCollision(
+        updatedPlayer.x,
+        updatedPlayer.y,
+        updatedPlayer.velocity,
+        updatedPlayer.size,
+        constants.CANVAS_WIDTH,
+        constants.CANVAS_HEIGHT,
+        constants.BOUNCE_DAMPENING
+      );
+      
+      updatedPlayer.x = playerBorderCollision.position.x;
+      updatedPlayer.y = playerBorderCollision.position.y;
+      updatedPlayer.velocity = playerBorderCollision.velocity;
+      
       setPlayer(updatedPlayer);
+      
+      // Update CPU ship with enhanced orbital AI
+      const updatedCpu = { ...cpu };
+      
+      // CPU AI logic
+      const aiResult = updateCpuAI(
+        updatedCpu, 
+        player, 
+        constants.CANVAS_WIDTH, 
+        constants.CANVAS_HEIGHT, 
+        constants.SUN_RADIUS,
+        aiStateRef.current,
+        difficulty
+      );
+      
+      // Update AI state
+      aiStateRef.current = aiResult.aiState;
+      
+      // Get the updated CPU with AI decisions
+      const aiCpu = aiResult.updatedCpu;
+      
+      // Apply rotation based on AI decisions
+      if (aiCpu.rotateLeft) {
+        updatedCpu.rotation -= constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
+      }
+      if (aiCpu.rotateRight) {
+        updatedCpu.rotation += constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
+      }
+      
+      // Apply thrust based on AI decisions
+      updatedCpu.thrust = aiCpu.thrust;
+      if (updatedCpu.thrust) {
+        updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
+        updatedCpu.velocity.y += Math.sin(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
+      } else {
+        // Apply friction when not thrusting
+        updatedCpu.velocity = applyFriction(updatedCpu.velocity, constants.FRICTION);
+      }
+      
+      // Apply sun gravity to CPU
+      const cpuGravity = applySunGravity(
+        cpu.x, 
+        cpu.y, 
+        constants.CANVAS_WIDTH / 2, 
+        constants.CANVAS_HEIGHT / 2, 
+        constants.GRAVITY_STRENGTH, 
+        constants.SUN_RADIUS, 
+        updatedCpu.velocity.x, 
+        updatedCpu.velocity.y
+      );
+      updatedCpu.velocity.x = cpuGravity.x;
+      updatedCpu.velocity.y = cpuGravity.y;
+      
+      // Handle sun collision for CPU - Player gets a point
+      if (cpuGravity.hitSun) {
+        // Award a point to the player
+        setPlayer(prevPlayer => {
+          const newScore = prevPlayer.score + 1;
+          
+          // Check for win
+          if (newScore >= constants.WINNING_SCORE) {
+            setGameOver(true);
+            setGameWon(true);
+          }
+          
+          return { ...prevPlayer, score: newScore };
+        });
+        
+        // Respawn CPU
+        const respawn = handleSunCollision(
+          cpu.x, 
+          cpu.y, 
+          constants.CANVAS_WIDTH / 2, 
+          constants.CANVAS_HEIGHT / 2
+        );
+        updatedCpu.x = respawn.x;
+        updatedCpu.y = respawn.y;
+        updatedCpu.velocity = respawn.velocity;
+      } else {
+        // Update CPU position if no collision
+        updatedCpu.x += updatedCpu.velocity.x;
+        updatedCpu.y += updatedCpu.velocity.y;
+      }
+      
+      // Handle border collisions for CPU (solid edges)
+      const cpuBorderCollision = handleBorderCollision(
+        updatedCpu.x,
+        updatedCpu.y,
+        updatedCpu.velocity,
+        updatedCpu.size,
+        constants.CANVAS_WIDTH,
+        constants.CANVAS_HEIGHT,
+        constants.BOUNCE_DAMPENING
+      );
+      
+      updatedCpu.x = cpuBorderCollision.position.x;
+      updatedCpu.y = cpuBorderCollision.position.y;
+      updatedCpu.velocity = cpuBorderCollision.velocity;
+      
       setCpu(updatedCpu);
-
-      drawShip(ctx, updatedPlayer);
-      drawShip(ctx, updatedCpu);
-
+      
+      // Draw player ship
+      drawShip(ctx, player);
+      
+      // Draw CPU ship
+      drawShip(ctx, cpu);
+      
+      // Draw debug info (orbit behavior)
+      drawDebugInfo(ctx, aiStateRef.current.isOrbiting, constants.CANVAS_WIDTH);
+      
       animationFrameId = requestAnimationFrame(gameLoop);
     };
-
+    
     animationFrameId = requestAnimationFrame(gameLoop);
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [canvasRef, constants]);
-
+    
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [gameStarted, gameOver, player, cpu, projectiles, constants]);
+  
+  const handleContinue = () => {
+    onGameComplete();
+  };
+  
+  const handlePlayAgain = () => {
+    resetGame();
+    onPlayAgain(gameWon);
+  };
+  
   return (
-    <div className="relative w-full h-full">
-      <canvas ref={canvasRef} width={constants.CANVAS_WIDTH} height={constants.CANVAS_HEIGHT} />
-      {gameOver && <GameResult won={gameWon} onPlayAgain={onPlayAgain} />}
+    <div className="relative w-full flex flex-col items-center justify-center bg-black">
+      <h2 className="text-terminal-green text-xl mb-2 font-mono">SPACEWAR!</h2>
+      
+      <GameInfo 
+        showInstructions={true}
+        winningScore={constants.WINNING_SCORE}
+        userScore={player.score}
+        computerScore={cpu.score}
+        difficulty={difficulty}
+      />
+      
+      <div className="border-2 border-terminal-green relative">
+        <canvas 
+          ref={canvasRef} 
+          width={constants.CANVAS_WIDTH} 
+          height={constants.CANVAS_HEIGHT}
+          className="bg-black"
+        />
+        
+        {gameOver && (
+          <GameResult
+            gameWon={gameWon}
+            onContinue={handleContinue}
+            onPlayAgain={handlePlayAgain}
+            alwaysShowContinue={gameWon}
+          />
+        )}
+      </div>
+      
+      {isMobile && !gameOver && (
+        <div className="mt-4 flex flex-col items-center">
+          <button
+            onTouchStart={() => updatePlayerControls('thrust', true)}
+            onTouchEnd={() => updatePlayerControls('thrust', false)}
+            className="bg-terminal-green text-black p-3 rounded-full mb-2 font-bold"
+          >
+            THRUST
+          </button>
+          <div className="flex gap-8">
+            <button
+              onTouchStart={() => updatePlayerControls('rotateLeft', true)}
+              onTouchEnd={() => updatePlayerControls('rotateLeft', false)}
+              className="bg-terminal-green text-black p-3 rounded-full font-bold"
+            >
+              ← TURN
+            </button>
+            <button
+              onTouchStart={() => updatePlayerControls('rotateRight', true)}
+              onTouchEnd={() => updatePlayerControls('rotateRight', false)}
+              className="bg-terminal-green text-black p-3 rounded-full font-bold"
+            >
+              TURN →
+            </button>
+          </div>
+          <div className="mt-4">
+            <button
+              onTouchStart={() => {
+                if (canFireSpecialRef.current) {
+                  const specialProjectile = createProjectile(
+                    'player', 
+                    player, 
+                    constants.SPECIAL_PROJECTILE_SPEED, 
+                    constants.SPECIAL_PROJECTILE_SIZE,
+                    true,
+                    constants.SPECIAL_PROJECTILE_COLOR
+                  );
+                  addProjectile(specialProjectile);
+                  
+                  // Set cooldown
+                  canFireSpecialRef.current = false;
+                  setTimeout(() => {
+                    canFireSpecialRef.current = true;
+                  }, 500); // 0.5s cooldown
+                }
+              }}
+              className="bg-yellow-500 text-black p-3 rounded-full font-bold"
+            >
+              FIRE SPECIAL
+            </button>
+          </div>
+        </div>
+      )}
+      
+      <div className="mt-2 text-sm text-terminal-green">
+        {!isMobile 
+          ? "Controls: Arrow Keys to move, SPACE to fire. Score points when CPU flies into the sun or your projectiles hit it!" 
+          : "Use on-screen buttons to control your ship and fire special projectiles"}
+      </div>
     </div>
   );
 };
