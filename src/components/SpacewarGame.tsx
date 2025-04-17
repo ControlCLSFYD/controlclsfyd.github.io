@@ -1,21 +1,19 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { useSpacewarGame } from '../hooks/useSpacewarGame';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
+import { drawShip, drawSun, drawDebugInfo, drawProjectile } from '../utils/spacewarRendering';
 import { 
-  drawShip, drawSun, drawDebugInfo, drawProjectile 
-} from '../utils/spacewarRendering';
-import { 
-  applySunGravity, normalizeAngle,
-  handleSunCollision, handleBorderCollision, applyFriction,
-  checkSunCollision
+  applySunGravity, handleSunCollision, 
+  handleBorderCollision, applyFriction, checkSunCollision 
 } from '../utils/spacewarUtils';
-import { createProjectile, updateProjectile, checkProjectileHit, checkProjectileBorder } from '../utils/spacewarWeapons';
+import { 
+  createProjectile, processProjectiles, manageAutofire
+} from '../systems/projectileSystem';
 import GameInfo from './GameInfo';
-import { Projectile } from '../interfaces/SpacewarInterfaces';
 
 const SpacewarGame: React.FC<BaseGameProps> = ({
   onGameComplete,
@@ -26,17 +24,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   const isMobile = useIsMobile();
   const aiStateRef = useRef(createInitialAIState());
   
-  // Projectile timing reference
-  const lastPlayerProjectileRef = useRef<number>(0);
-  const lastCpuProjectileRef = useRef<number>(0);
-  const lastSpecialProjectileRef = useRef<number>(0);
-  const canFireSpecialRef = useRef<boolean>(true);
-  
   const {
     constants,
     gameStarted,
-    gameOver,
-    gameWon,
+    scoreState,
     player,
     setPlayer,
     cpu,
@@ -46,14 +37,15 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     updateProjectiles,
     resetGame,
     updatePlayerControls,
-    setGameOver,
-    setGameWon
-  } = useSpacewarGame(difficulty, () => {});
+    updatePlayerScore,
+    updateCpuScore,
+    autofireManagerRef
+  } = useSpacewarGame(difficulty, onGameComplete);
   
   // Setup keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameOver) return;
+      if (scoreState.gameOver) return;
       
       switch (e.key) {
         case 'ArrowUp':
@@ -66,23 +58,16 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           updatePlayerControls('rotateRight', true);
           break;
         case ' ': // Spacebar for special projectile
-          if (canFireSpecialRef.current) {
-            const specialProjectile = createProjectile(
-              'player', 
-              player, 
-              constants.SPECIAL_PROJECTILE_SPEED * 2, // Doubled speed
-              constants.SPECIAL_PROJECTILE_SIZE,
-              true,
-              constants.SPECIAL_PROJECTILE_COLOR
-            );
-            addProjectile(specialProjectile);
-            
-            // Set cooldown
-            canFireSpecialRef.current = false;
-            setTimeout(() => {
-              canFireSpecialRef.current = true;
-            }, 250); // 0.25s cooldown (faster than before)
-          }
+          // This is now handled by autofire, but could be kept for manual special shots
+          const specialProjectile = createProjectile(
+            'player', 
+            player, 
+            constants.SPECIAL_PROJECTILE_SPEED * 2,
+            constants.SPECIAL_PROJECTILE_SIZE,
+            true,
+            constants.SPECIAL_PROJECTILE_COLOR
+          );
+          addProjectile(specialProjectile);
           break;
       }
     };
@@ -108,7 +93,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameOver, player, constants]);
+  }, [scoreState.gameOver, player, constants]);
   
   // Main game loop
   useEffect(() => {
@@ -137,14 +122,23 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
-
-      // Auto-fire projectiles for both ships - this now happens regardless of game state
-      if (timestamp - lastPlayerProjectileRef.current >= 250) { // 4 times per second (250ms)
-        lastPlayerProjectileRef.current = timestamp;
+      
+      // ---- PROJECTILE SYSTEM - AUTO FIRING SYSTEM ----
+      // This happens in every frame, even in game over state for visual effects
+      // Update autofire manager
+      autofireManagerRef.current = manageAutofire(
+        timestamp, 
+        autofireManagerRef.current,
+        constants.PROJECTILE_INTERVAL,
+        250 // Special cooldown (ms)
+      );
+      
+      // Auto-fire standard projectiles for both ships
+      if (autofireManagerRef.current.canPlayerFire) {
         const playerProjectile = createProjectile(
           'player', 
           player, 
-          constants.SPECIAL_PROJECTILE_SPEED * 2, // Increased speed
+          constants.SPECIAL_PROJECTILE_SPEED * 2,
           constants.SPECIAL_PROJECTILE_SIZE,
           true,
           constants.SPECIAL_PROJECTILE_COLOR
@@ -152,12 +146,11 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         addProjectile(playerProjectile);
       }
       
-      if (timestamp - lastCpuProjectileRef.current >= 250) { // 4 times per second (250ms)
-        lastCpuProjectileRef.current = timestamp;
+      if (autofireManagerRef.current.canCpuFire) {
         const cpuProjectile = createProjectile(
           'cpu', 
           cpu, 
-          constants.SPECIAL_PROJECTILE_SPEED * 2, // Increased speed
+          constants.SPECIAL_PROJECTILE_SPEED * 2,
           constants.SPECIAL_PROJECTILE_SIZE,
           true,
           constants.SPECIAL_PROJECTILE_COLOR
@@ -165,63 +158,17 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         addProjectile(cpuProjectile);
       }
       
-      // Don't process game logic if game is over
-      if (gameOver) {
-        // Still draw all projectiles in game over state
-        projectiles.forEach(projectile => {
-          drawProjectile(ctx, projectile);
-        });
-        
-        // Draw ships in their current positions
-        drawShip(ctx, player);
-        drawShip(ctx, cpu);
-        
-        animationFrameId = requestAnimationFrame(gameLoop);
-        return;
-      }
+      // Process all projectiles (movement, collisions, scoring)
+      const updatedProjectiles = processProjectiles(
+        projectiles, 
+        player, 
+        cpu, 
+        constants,
+        updatePlayerScore,
+        updateCpuScore
+      );
       
-      // Update and process projectiles
-      let updatedProjectiles = [...projectiles];
-      
-      // Process each projectile
-      updatedProjectiles = updatedProjectiles.map(p => updateProjectile(p)).filter(p => {
-        // Check if projectile hits enemy ship
-        if (p.owner === 'player' && checkProjectileHit(p, cpu)) {
-          // Player hit CPU
-          setPlayer(prev => {
-            const newScore = prev.score + 1;
-            // Check for win condition
-            if (newScore >= constants.WINNING_SCORE) {
-              setGameOver(true);
-              setGameWon(true);
-            }
-            return { ...prev, score: newScore };
-          });
-          return false; // Remove this projectile
-        }
-        
-        if (p.owner === 'cpu' && checkProjectileHit(p, player)) {
-          // CPU hit player
-          setCpu(prev => {
-            const newScore = prev.score + 1;
-            // Check for win condition
-            if (newScore >= constants.WINNING_SCORE) {
-              setGameOver(true);
-              setGameWon(false);
-            }
-            return { ...prev, score: newScore };
-          });
-          return false; // Remove this projectile
-        }
-        
-        // Check if projectile hits border
-        if (checkProjectileBorder(p, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT)) {
-          return false; // Remove this projectile
-        }
-        
-        return true; // Keep this projectile
-      });
-      
+      // Update projectile state
       updateProjectiles(updatedProjectiles);
       
       // Draw all projectiles
@@ -229,7 +176,17 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         drawProjectile(ctx, projectile);
       });
       
-      // Update player ship
+      // Don't process game logic if game is over
+      if (scoreState.gameOver) {
+        // Still draw ships in their current positions
+        drawShip(ctx, player);
+        drawShip(ctx, cpu);
+        
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
+      
+      // ---- PLAYER SHIP PHYSICS ----
       const updatedPlayer = { ...player };
       
       // Apply rotation to player
@@ -263,20 +220,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedPlayer.velocity.x = playerGravity.x;
       updatedPlayer.velocity.y = playerGravity.y;
       
+      // ---- SCORING SYSTEM - PLAYER HIT SUN ----
       // Handle sun collision - Player hits sun, CPU gets a point
       if (playerGravity.hitSun) {
-        // Award a point to the CPU when player hits sun
-        setCpu(prevCpu => {
-          const newScore = prevCpu.score + 1;
-          
-          // Check for win
-          if (newScore >= constants.WINNING_SCORE) {
-            setGameOver(true);
-            setGameWon(false);
-          }
-          
-          return { ...prevCpu, score: newScore };
-        });
+        console.log("Player crashed into sun! CPU +1 point");
+        // Award a point to the CPU 
+        updateCpuScore(1);
         
         // Respawn player
         const respawn = handleSunCollision(
@@ -311,7 +260,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setPlayer(updatedPlayer);
       
-      // Update CPU ship with enhanced orbital AI
+      // ---- CPU SHIP AI AND PHYSICS ----
       const updatedCpu = { ...cpu };
       
       // CPU AI logic
@@ -363,20 +312,12 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedCpu.velocity.x = cpuGravity.x;
       updatedCpu.velocity.y = cpuGravity.y;
       
+      // ---- SCORING SYSTEM - CPU HIT SUN ----
       // Handle sun collision for CPU - Player gets a point
       if (cpuGravity.hitSun) {
+        console.log("CPU crashed into sun! Player +1 point");
         // Award a point to the player
-        setPlayer(prevPlayer => {
-          const newScore = prevPlayer.score + 1;
-          
-          // Check for win
-          if (newScore >= constants.WINNING_SCORE) {
-            setGameOver(true);
-            setGameWon(true);
-          }
-          
-          return { ...prevPlayer, score: newScore };
-        });
+        updatePlayerScore(1);
         
         // Respawn CPU
         const respawn = handleSunCollision(
@@ -428,7 +369,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, gameOver, player, cpu, projectiles, constants]);
+  }, [gameStarted, player, cpu, projectiles, constants, scoreState]);
   
   const handleContinue = () => {
     onGameComplete();
@@ -436,7 +377,7 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
   
   const handlePlayAgain = () => {
     resetGame();
-    onPlayAgain(gameWon);
+    onPlayAgain(scoreState.playerWon);
   };
   
   return (
@@ -446,8 +387,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       <GameInfo 
         showInstructions={true}
         winningScore={constants.WINNING_SCORE}
-        userScore={player.score}
-        computerScore={cpu.score}
+        userScore={scoreState.playerScore}
+        computerScore={scoreState.cpuScore}
         difficulty={difficulty}
       />
       
@@ -459,17 +400,17 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           className="bg-black"
         />
         
-        {gameOver && (
+        {scoreState.gameOver && (
           <GameResult
-            gameWon={gameWon}
+            gameWon={scoreState.playerWon}
             onContinue={handleContinue}
             onPlayAgain={handlePlayAgain}
-            alwaysShowContinue={gameWon}
+            alwaysShowContinue={scoreState.playerWon}
           />
         )}
       </div>
       
-      {isMobile && !gameOver && (
+      {isMobile && !scoreState.gameOver && (
         <div className="mt-4 flex flex-col items-center">
           <button
             onTouchStart={() => updatePlayerControls('thrust', true)}
@@ -497,23 +438,15 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
           <div className="mt-4">
             <button
               onTouchStart={() => {
-                if (canFireSpecialRef.current) {
-                  const specialProjectile = createProjectile(
-                    'player', 
-                    player, 
-                    constants.SPECIAL_PROJECTILE_SPEED * 2, // Doubled speed
-                    constants.SPECIAL_PROJECTILE_SIZE,
-                    true,
-                    constants.SPECIAL_PROJECTILE_COLOR
-                  );
-                  addProjectile(specialProjectile);
-                  
-                  // Set cooldown
-                  canFireSpecialRef.current = false;
-                  setTimeout(() => {
-                    canFireSpecialRef.current = true;
-                  }, 250); // 0.25s cooldown (faster)
-                }
+                const specialProjectile = createProjectile(
+                  'player', 
+                  player, 
+                  constants.SPECIAL_PROJECTILE_SPEED * 2,
+                  constants.SPECIAL_PROJECTILE_SIZE,
+                  true,
+                  constants.SPECIAL_PROJECTILE_COLOR
+                );
+                addProjectile(specialProjectile);
               }}
               className="bg-yellow-500 text-black p-3 rounded-full font-bold"
             >

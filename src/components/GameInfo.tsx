@@ -18,20 +18,13 @@ const GameInfo: React.FC<GameInfoProps> = ({
 }) => {
   return (
     <>
-      <div className="h-[30px] mb-2">
-        {showInstructions ? (
-          <div className="flex flex-col items-center p-2 border border-terminal-green">
-            <div className="text-xs mt-1 text-yellow-400">
+      <div className="h-[20px] mb-2">
+        {showInstructions && (
+          <div className="flex flex-col items-center">
+            <div className="text-xs text-yellow-400">
               First to reach {winningScore} points wins!
             </div>
           </div>
-        ) : (
-          <>
-            <p className="mb-2">First to score {winningScore} points wins!</p>
-            {difficulty > 1 && (
-              <p className="mb-2 text-yellow-400">CPU Difficulty Level: {difficulty}</p>
-            )}
-          </>
         )}
       </div>
       

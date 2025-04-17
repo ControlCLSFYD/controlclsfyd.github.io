@@ -1,7 +1,11 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Ship, GameConstants, Projectile } from '../interfaces/SpacewarInterfaces';
 import { useWindowSize } from './useWindowSize';
+import { 
+  ScoreState, createScoreState, incrementPlayerScore, incrementCpuScore
+} from '../systems/scoringSystem';
+import { AutofireManager, createAutofireManager } from '../systems/projectileSystem';
 
 // Initial game constants
 const createGameConstants = (canvasWidth: number): GameConstants => ({
@@ -17,8 +21,8 @@ const createGameConstants = (canvasWidth: number): GameConstants => ({
   BOUNCE_DAMPENING: 0.7,
   PROJECTILE_SPEED: 5,
   PROJECTILE_SIZE: 3,
-  PROJECTILE_INTERVAL: 200,
-  SPECIAL_PROJECTILE_SPEED: 20, // Increased from 15 to 20
+  PROJECTILE_INTERVAL: 250, // 4 times per second
+  SPECIAL_PROJECTILE_SPEED: 20,
   SPECIAL_PROJECTILE_SIZE: 4,
   SPECIAL_PROJECTILE_COLOR: '#ffff00'
 });
@@ -56,12 +60,16 @@ export const useSpacewarGame = (
 ) => {
   const windowSize = useWindowSize();
   const [gameStarted, setGameStarted] = useState<boolean>(true);
-  const [gameOver, setGameOver] = useState<boolean>(false);
-  const [gameWon, setGameWon] = useState<boolean>(false);
   
   // Calculate canvas width based on window size
   const calculatedCanvasWidth = Math.min(800, windowSize.width - 20);
   const [constants, setConstants] = useState<GameConstants>(createGameConstants(calculatedCanvasWidth));
+  
+  // Scoring system state
+  const [scoreState, setScoreState] = useState<ScoreState>(createScoreState(constants.WINNING_SCORE));
+  
+  // Autofire manager ref
+  const autofireManagerRef = useRef<AutofireManager>(createAutofireManager());
   
   // Update constants when window size changes
   useEffect(() => {
@@ -77,14 +85,35 @@ export const useSpacewarGame = (
   const [cpu, setCpu] = useState<Ship>(createInitialCpuShip());
   const [projectiles, setProjectiles] = useState<Projectile[]>([]);
   
+  // Score updater functions
+  const updatePlayerScore = (increment: number) => {
+    setScoreState(prev => {
+      const updated = incrementPlayerScore(prev);
+      if (updated.gameOver) {
+        onGameOver(true);
+      }
+      return updated;
+    });
+  };
+  
+  const updateCpuScore = (increment: number) => {
+    setScoreState(prev => {
+      const updated = incrementCpuScore(prev);
+      if (updated.gameOver) {
+        onGameOver(false);
+      }
+      return updated;
+    });
+  };
+  
   // Reset game
   const resetGame = () => {
     setGameStarted(true);
-    setGameOver(false);
-    setGameWon(false);
+    setScoreState(createScoreState(constants.WINNING_SCORE));
     setPlayer(createInitialPlayerShip());
     setCpu(createInitialCpuShip());
     setProjectiles([]);
+    autofireManagerRef.current = createAutofireManager();
   };
   
   // Update player controls
@@ -105,8 +134,7 @@ export const useSpacewarGame = (
   return {
     constants,
     gameStarted,
-    gameOver,
-    gameWon,
+    scoreState,
     player,
     setPlayer,
     cpu,
@@ -116,7 +144,8 @@ export const useSpacewarGame = (
     updateProjectiles,
     resetGame,
     updatePlayerControls,
-    setGameOver,
-    setGameWon
+    updatePlayerScore,
+    updateCpuScore,
+    autofireManagerRef
   };
 };
