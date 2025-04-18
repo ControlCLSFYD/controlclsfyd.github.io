@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 
 type Player = 'X' | 'O' | null;
@@ -123,25 +124,23 @@ export const useTicTacToeGame = ({
     setShowInstructions(true);
     setInitialCpuMoveCompleted(false);
     
+    // Set a single timeout to hide instructions and handle CPU's first move if needed
     const timer = setTimeout(() => {
       setShowInstructions(false);
       
-      if (cpuMovesFirst) {
-        setTimeout(() => {
-          if (!initialCpuMoveCompleted) {
-            const initialMove = getBestMove(Array(9).fill(null));
-            const newBoard = Array(9).fill(null);
-            newBoard[initialMove] = 'X';
-            setBoard(newBoard);
-            setIsPlayerTurn(true);
-            setInitialCpuMoveCompleted(true);
-          }
-        }, 100);
+      // If CPU goes first, make its move immediately after instructions hide
+      if (cpuMovesFirst && !initialCpuMoveCompleted) {
+        const initialMove = getBestMove(Array(9).fill(null));
+        const newBoard = Array(9).fill(null);
+        newBoard[initialMove] = 'X';
+        setBoard(newBoard);
+        setIsPlayerTurn(true);
+        setInitialCpuMoveCompleted(true);
       }
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [cpuMovesFirst, getBestMove, initialCpuMoveCompleted]);
+  }, [cpuMovesFirst, getBestMove]);
 
   const handleCellClick = useCallback((index: number) => {
     if (board[index] || !isPlayerTurn || gameStatus !== 'playing') return;
@@ -168,8 +167,14 @@ export const useTicTacToeGame = ({
   }, [resetGame, cpuMovesFirst]);
 
   useEffect(() => {
+    // Only make a CPU move after the initial setup is complete and instructions are gone
     if (!isPlayerTurn && gameStatus === 'playing' && !showInstructions) {
-      makeCpuMove();
+      // Add a small delay for better user experience, but not too long
+      const timer = setTimeout(() => {
+        makeCpuMove();
+      }, 300);
+      
+      return () => clearTimeout(timer);
     }
   }, [isPlayerTurn, gameStatus, showInstructions, makeCpuMove]);
 
