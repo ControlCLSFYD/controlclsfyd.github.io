@@ -88,6 +88,7 @@ const OxoGame: React.FC<OxoGameProps> = ({
       {gameStatus !== 'playing' && (
         <GameResult 
           gameWon={gameStatus === 'won'}
+          gameDrawn={gameStatus === 'draw'}
           onContinue={handleContinue}
           onPlayAgain={handlePlayAgain}
           alwaysShowContinue={gameStatus === 'draw' && drawCount >= 2}

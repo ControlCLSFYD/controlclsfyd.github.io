@@ -18,6 +18,7 @@ export const useTicTacToeGame = ({
   const [isPlayerTurn, setIsPlayerTurn] = useState<boolean>(!cpuMovesFirst);
   const [gameStatus, setGameStatus] = useState<GameStatus>('playing');
   const [showInstructions, setShowInstructions] = useState(true);
+  const [initialCpuMoveCompleted, setInitialCpuMoveCompleted] = useState(false);
 
   const checkWinner = useCallback((board: BoardState, player: Player): boolean => {
     const winPatterns = [
@@ -88,31 +89,26 @@ export const useTicTacToeGame = ({
     }
   }, [checkWinner, getAvailableMoves]);
 
-  const getComputerMove = useCallback((board: BoardState): number => {
-    // Use smartness level based on difficulty (always use minimax for highest difficulty)
-    const smartnessChance = Math.min(0.4 + (difficulty * 0.12), 0.99);
-    
-    if (Math.random() > smartnessChance) {
-      const emptyCells = getAvailableMoves(board);
-      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    }
-    
-    // Use minimax for optimal move
+  const getBestMove = useCallback((board: BoardState): number => {
+    // Always use minimax for optimal play - ignore difficulty parameter
+    // as we want CPU to always play optimally
     const result = minimax(board, 0, true);
+    
     if (result.move !== undefined) {
       return result.move;
     }
     
-    // Fallback to random move (shouldn't happen with proper minimax)
-    const emptyCells = getAvailableMoves(board);
-    return emptyCells[Math.floor(Math.random() * emptyCells.length)];
-  }, [difficulty, getAvailableMoves, minimax]);
+    // Fallback to center or first available (shouldn't happen with proper minimax)
+    const availableMoves = getAvailableMoves(board);
+    if (availableMoves.includes(4)) return 4; // Prefer center if available
+    return availableMoves[0]; // First available as last resort
+  }, [getAvailableMoves, minimax]);
   
   const makeCpuMove = useCallback(() => {
     if (gameStatus !== 'playing' || isPlayerTurn) return;
     
     setTimeout(() => {
-      const computerMoveIndex = getComputerMove(board);
+      const computerMoveIndex = getBestMove(board);
       const newBoard = [...board];
       newBoard[computerMoveIndex] = 'X';
       setBoard(newBoard);
@@ -125,7 +121,7 @@ export const useTicTacToeGame = ({
         setIsPlayerTurn(true);
       }
     }, 500);
-  }, [board, checkWinner, gameStatus, getComputerMove, isPlayerTurn]);
+  }, [board, checkWinner, gameStatus, getBestMove, isPlayerTurn]);
 
   // Reset the game state
   const resetGame = useCallback(() => {
@@ -133,23 +129,28 @@ export const useTicTacToeGame = ({
     setGameStatus('playing');
     setIsPlayerTurn(!cpuMovesFirst);
     setShowInstructions(true);
+    setInitialCpuMoveCompleted(false);
     
     const timer = setTimeout(() => {
       setShowInstructions(false);
+      
       // If CPU moves first, make its move after instructions disappear
       if (cpuMovesFirst) {
         setTimeout(() => {
-          const initialMove = getComputerMove(Array(9).fill(null));
-          const newBoard = Array(9).fill(null);
-          newBoard[initialMove] = 'X';
-          setBoard(newBoard);
-          setIsPlayerTurn(true);
+          if (!initialCpuMoveCompleted) {
+            const initialMove = getBestMove(Array(9).fill(null));
+            const newBoard = Array(9).fill(null);
+            newBoard[initialMove] = 'X';
+            setBoard(newBoard);
+            setIsPlayerTurn(true);
+            setInitialCpuMoveCompleted(true);
+          }
         }, 100);
       }
     }, 3000);
     
     return () => clearTimeout(timer);
-  }, [cpuMovesFirst, getComputerMove]);
+  }, [cpuMovesFirst, getBestMove, initialCpuMoveCompleted]);
 
   // Handle cell click
   const handleCellClick = useCallback((index: number) => {
