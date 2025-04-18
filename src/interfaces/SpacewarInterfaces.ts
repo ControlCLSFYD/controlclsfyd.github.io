@@ -1,4 +1,3 @@
-
 export interface Ship {
   x: number;
   y: number;
@@ -10,6 +9,7 @@ export interface Ship {
   score: number;
   size: number;
   color: string;
+  hitAnimationTime?: number;
 }
 
 export interface GameConstants {

@@ -1,4 +1,3 @@
-
 import { Ship, Projectile } from '../interfaces/SpacewarInterfaces';
 
 // Draw a ship on the canvas
@@ -6,6 +5,15 @@ export const drawShip = (ctx: CanvasRenderingContext2D, ship: Ship) => {
   ctx.save();
   ctx.translate(ship.x, ship.y);
   ctx.rotate(ship.rotation);
+  
+  // Draw hit animation if ship was recently hit
+  if (ship.hitAnimationTime && Date.now() - ship.hitAnimationTime < 200) {
+    // Draw white flash around ship
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.beginPath();
+    ctx.arc(0, 0, ship.size * 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
   
   // Draw ship body
   ctx.fillStyle = ship.color;
@@ -72,15 +80,4 @@ export const drawSun = (
   ctx.fill();
 };
 
-// Draw debug info
-export const drawDebugInfo = (
-  ctx: CanvasRenderingContext2D,
-  isOrbiting: boolean,
-  canvasWidth: number
-) => {
-  if (isOrbiting) {
-    ctx.fillStyle = '#666666';
-    ctx.font = '12px monospace';
-    ctx.fillText('CPU: Orbiting', canvasWidth - 120, 70);
-  }
-};
+// Remove debug info function since we don't need orbiting status anymore

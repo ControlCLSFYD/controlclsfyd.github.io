@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
@@ -42,7 +41,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     autofireManagerRef
   } = useSpacewarGame(difficulty, onGameComplete);
   
-  // Setup keyboard controls
+  const handleShipHit = (ship: Ship) => {
+    ship.hitAnimationTime = Date.now();
+  };
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (scoreState.gameOver) return;
@@ -95,7 +97,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     };
   }, [scoreState.gameOver, player, constants]);
   
-  // Main game loop
   useEffect(() => {
     if (!canvasRef.current) return;
     
@@ -105,7 +106,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     const gameLoop = (timestamp: number) => {
       if (!canvasRef.current) return;
       
-      // Cap the frame rate
       if (timestamp - lastTime < 16) {
         animationFrameId = requestAnimationFrame(gameLoop);
         return;
@@ -116,16 +116,11 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       const ctx = canvasRef.current.getContext('2d');
       if (!ctx) return;
       
-      // Clear canvas
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
       
-      // Draw sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
       
-      // ---- PROJECTILE SYSTEM - AUTO FIRING SYSTEM ----
-      // This happens in every frame, even in game over state for visual effects
-      // Update autofire manager
       autofireManagerRef.current = manageAutofire(
         timestamp, 
         autofireManagerRef.current,
@@ -133,7 +128,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         250 // Special cooldown (ms)
       );
       
-      // Auto-fire standard projectiles for both ships
       if (autofireManagerRef.current.canPlayerFire) {
         const playerProjectile = createProjectile(
           'player', 
@@ -158,27 +152,28 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         addProjectile(cpuProjectile);
       }
       
-      // Process all projectiles (movement, collisions, scoring)
       const updatedProjectiles = processProjectiles(
         projectiles, 
         player, 
         cpu, 
         constants,
-        updatePlayerScore,
-        updateCpuScore
+        (points) => {
+          updatePlayerScore(points);
+          handleShipHit(cpu);
+        },
+        (points) => {
+          updateCpuScore(points);
+          handleShipHit(player);
+        }
       );
       
-      // Update projectile state
       updateProjectiles(updatedProjectiles);
       
-      // Draw all projectiles
       updatedProjectiles.forEach(projectile => {
         drawProjectile(ctx, projectile);
       });
       
-      // Don't process game logic if game is over
       if (scoreState.gameOver) {
-        // Still draw ships in their current positions
         drawShip(ctx, player);
         drawShip(ctx, cpu);
         
@@ -186,10 +181,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         return;
       }
       
-      // ---- PLAYER SHIP PHYSICS ----
       const updatedPlayer = { ...player };
       
-      // Apply rotation to player
       if (player.rotateLeft) {
         updatedPlayer.rotation -= constants.ROTATION_SPEED;
       }
@@ -197,16 +190,13 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.rotation += constants.ROTATION_SPEED;
       }
       
-      // Apply thrust to player
       if (player.thrust) {
         updatedPlayer.velocity.x += Math.cos(player.rotation) * constants.THRUST_POWER;
         updatedPlayer.velocity.y += Math.sin(player.rotation) * constants.THRUST_POWER;
       } else {
-        // Apply friction when not thrusting
         updatedPlayer.velocity = applyFriction(updatedPlayer.velocity, constants.FRICTION);
       }
       
-      // Apply sun gravity to player
       const playerGravity = applySunGravity(
         player.x, 
         player.y, 
@@ -220,14 +210,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedPlayer.velocity.x = playerGravity.x;
       updatedPlayer.velocity.y = playerGravity.y;
       
-      // ---- SCORING SYSTEM - PLAYER HIT SUN ----
-      // Handle sun collision - Player hits sun, CPU gets a point
       if (playerGravity.hitSun) {
         console.log("Player crashed into sun! CPU +1 point");
-        // Award a point to the CPU 
         updateCpuScore(1);
-        
-        // Respawn player
         const respawn = handleSunCollision(
           player.x, 
           player.y, 
@@ -238,12 +223,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.y = respawn.y;
         updatedPlayer.velocity = respawn.velocity;
       } else {
-        // Update player position if no collision
         updatedPlayer.x += updatedPlayer.velocity.x;
         updatedPlayer.y += updatedPlayer.velocity.y;
       }
       
-      // Handle border collisions (solid edges)
       const playerBorderCollision = handleBorderCollision(
         updatedPlayer.x,
         updatedPlayer.y,
@@ -260,10 +243,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setPlayer(updatedPlayer);
       
-      // ---- CPU SHIP AI AND PHYSICS ----
       const updatedCpu = { ...cpu };
       
-      // CPU AI logic
       const aiResult = updateCpuAI(
         updatedCpu, 
         player, 
@@ -274,13 +255,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         difficulty
       );
       
-      // Update AI state
       aiStateRef.current = aiResult.aiState;
       
-      // Get the updated CPU with AI decisions
       const aiCpu = aiResult.updatedCpu;
       
-      // Apply rotation based on AI decisions
       if (aiCpu.rotateLeft) {
         updatedCpu.rotation -= constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
       }
@@ -288,17 +266,14 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.rotation += constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
       }
       
-      // Apply thrust based on AI decisions
       updatedCpu.thrust = aiCpu.thrust;
       if (updatedCpu.thrust) {
         updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
         updatedCpu.velocity.y += Math.sin(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
       } else {
-        // Apply friction when not thrusting
         updatedCpu.velocity = applyFriction(updatedCpu.velocity, constants.FRICTION);
       }
       
-      // Apply sun gravity to CPU
       const cpuGravity = applySunGravity(
         cpu.x, 
         cpu.y, 
@@ -312,14 +287,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedCpu.velocity.x = cpuGravity.x;
       updatedCpu.velocity.y = cpuGravity.y;
       
-      // ---- SCORING SYSTEM - CPU HIT SUN ----
-      // Handle sun collision for CPU - Player gets a point
       if (cpuGravity.hitSun) {
         console.log("CPU crashed into sun! Player +1 point");
-        // Award a point to the player
         updatePlayerScore(1);
-        
-        // Respawn CPU
         const respawn = handleSunCollision(
           cpu.x, 
           cpu.y, 
@@ -330,12 +300,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.y = respawn.y;
         updatedCpu.velocity = respawn.velocity;
       } else {
-        // Update CPU position if no collision
         updatedCpu.x += updatedCpu.velocity.x;
         updatedCpu.y += updatedCpu.velocity.y;
       }
       
-      // Handle border collisions for CPU (solid edges)
       const cpuBorderCollision = handleBorderCollision(
         updatedCpu.x,
         updatedCpu.y,
@@ -352,14 +320,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setCpu(updatedCpu);
       
-      // Draw player ship
       drawShip(ctx, player);
-      
-      // Draw CPU ship
       drawShip(ctx, cpu);
-      
-      // Draw debug info (orbit behavior)
-      drawDebugInfo(ctx, aiStateRef.current.isOrbiting, constants.CANVAS_WIDTH);
       
       animationFrameId = requestAnimationFrame(gameLoop);
     };
