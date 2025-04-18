@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 
 type Player = 'X' | 'O' | null;
@@ -37,9 +36,7 @@ export const useTicTacToeGame = ({
       !cell ? [...acc, index] : acc, [] as number[]);
   }, []);
 
-  // Minimax algorithm for optimal moves
   const minimax = useCallback((board: BoardState, depth: number, isMaximizing: boolean, alpha: number = -Infinity, beta: number = Infinity): { score: number; move?: number } => {
-    // Terminal states
     if (checkWinner(board, 'X')) return { score: 10 - depth };
     if (checkWinner(board, 'O')) return { score: depth - 10 };
     
@@ -62,7 +59,7 @@ export const useTicTacToeGame = ({
         }
         
         alpha = Math.max(alpha, bestScore);
-        if (beta <= alpha) break; // Alpha-beta pruning
+        if (beta <= alpha) break;
       }
       
       return { score: bestScore, move: bestMove };
@@ -82,7 +79,7 @@ export const useTicTacToeGame = ({
         }
         
         beta = Math.min(beta, bestScore);
-        if (beta <= alpha) break; // Alpha-beta pruning
+        if (beta <= alpha) break;
       }
       
       return { score: bestScore, move: bestMove };
@@ -90,40 +87,35 @@ export const useTicTacToeGame = ({
   }, [checkWinner, getAvailableMoves]);
 
   const getBestMove = useCallback((board: BoardState): number => {
-    // Always use minimax for optimal play - ignore difficulty parameter
-    // as we want CPU to always play optimally
     const result = minimax(board, 0, true);
     
     if (result.move !== undefined) {
       return result.move;
     }
     
-    // Fallback to center or first available (shouldn't happen with proper minimax)
     const availableMoves = getAvailableMoves(board);
-    if (availableMoves.includes(4)) return 4; // Prefer center if available
-    return availableMoves[0]; // First available as last resort
+    if (availableMoves.includes(4)) return 4;
+    return availableMoves[0];
   }, [getAvailableMoves, minimax]);
-  
+
   const makeCpuMove = useCallback(() => {
     if (gameStatus !== 'playing' || isPlayerTurn) return;
     
-    setTimeout(() => {
-      const computerMoveIndex = getBestMove(board);
-      const newBoard = [...board];
-      newBoard[computerMoveIndex] = 'X';
-      setBoard(newBoard);
-      
-      if (checkWinner(newBoard, 'X')) {
-        setGameStatus('lost');
-      } else if (!newBoard.includes(null)) {
-        setGameStatus('draw');
-      } else {
-        setIsPlayerTurn(true);
-      }
-    }, 500);
+    const computerMoveIndex = getBestMove(board);
+    const newBoard = [...board];
+    newBoard[computerMoveIndex] = 'X';
+    
+    setBoard(newBoard);
+    
+    if (checkWinner(newBoard, 'X')) {
+      setGameStatus('lost');
+    } else if (!newBoard.includes(null)) {
+      setGameStatus('draw');
+    } else {
+      setIsPlayerTurn(true);
+    }
   }, [board, checkWinner, gameStatus, getBestMove, isPlayerTurn]);
 
-  // Reset the game state
   const resetGame = useCallback(() => {
     setBoard(Array(9).fill(null));
     setGameStatus('playing');
@@ -134,7 +126,6 @@ export const useTicTacToeGame = ({
     const timer = setTimeout(() => {
       setShowInstructions(false);
       
-      // If CPU moves first, make its move after instructions disappear
       if (cpuMovesFirst) {
         setTimeout(() => {
           if (!initialCpuMoveCompleted) {
@@ -152,7 +143,6 @@ export const useTicTacToeGame = ({
     return () => clearTimeout(timer);
   }, [cpuMovesFirst, getBestMove, initialCpuMoveCompleted]);
 
-  // Handle cell click
   const handleCellClick = useCallback((index: number) => {
     if (board[index] || !isPlayerTurn || gameStatus !== 'playing') return;
     
@@ -173,12 +163,10 @@ export const useTicTacToeGame = ({
     setIsPlayerTurn(false);
   }, [board, checkWinner, gameStatus, isPlayerTurn]);
 
-  // Initialize game
   useEffect(() => {
     resetGame();
   }, [resetGame, cpuMovesFirst]);
 
-  // Make CPU move when it's CPU's turn
   useEffect(() => {
     if (!isPlayerTurn && gameStatus === 'playing' && !showInstructions) {
       makeCpuMove();
