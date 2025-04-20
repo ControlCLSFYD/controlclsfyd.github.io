@@ -25,7 +25,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     gameCompleted,
     showNoughtsAndCrossesGame,
     showCourtGame,
-    showSpacewarGame,
     showUATGame,
     showSnekGame,
     currentLevel,
@@ -34,7 +33,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     completedLevel,
     noughtsAndCrossesDifficulty,
     courtDifficulty,
-    spacewarDifficulty,
     uatDifficulty,
     snekDifficulty,
     handleAccessGranted,
@@ -42,8 +40,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleNoughtsAndCrossesPlayAgain,
     handleCourtComplete,
     handleCourtPlayAgain,
-    handleSpacewarComplete,
-    handleSpacewarPlayAgain,
     handleUATComplete,
     handleUATPlayAgain,
     handleSnekComplete,
@@ -74,7 +70,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
               showNoughtsAndCrossesGame={showNoughtsAndCrossesGame}
               showCourtGame={showCourtGame}
               showDuckHuntGame={false}
-              showSpacewarGame={showSpacewarGame}
+              showSpacewarGame={false}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
@@ -83,8 +79,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
               handleCourtPlayAgain={handleCourtPlayAgain}
               handleDuckHuntComplete={() => {}}
               handleDuckHuntPlayAgain={() => {}}
-              handleSpacewarComplete={handleSpacewarComplete}
-              handleSpacewarPlayAgain={handleSpacewarPlayAgain}
+              handleSpacewarComplete={() => {}}
+              handleSpacewarPlayAgain={() => {}}
               handleUATComplete={handleUATComplete}
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
@@ -92,7 +88,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
               duckHuntDifficulty={1}
-              spacewarDifficulty={spacewarDifficulty}
+              spacewarDifficulty={1}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
             />

@@ -4,7 +4,6 @@ import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
 import UATGame from '../UATGame';
 import SnekGame from '../SnekGame';
-import SpacewarGame from '../SpacewarGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
@@ -36,22 +35,18 @@ interface GameHandlerProps {
 const GameHandler: React.FC<GameHandlerProps> = ({
   showNoughtsAndCrossesGame,
   showCourtGame,
-  showSpacewarGame,
   showUATGame, 
   showSnekGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
   handleCourtPlayAgain,
-  handleSpacewarComplete,
-  handleSpacewarPlayAgain,
   handleUATComplete,
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
-  spacewarDifficulty,
   uatDifficulty,
   snekDifficulty
 }) => {
@@ -71,16 +66,6 @@ const GameHandler: React.FC<GameHandlerProps> = ({
         onGameComplete={handleCourtComplete} 
         onPlayAgain={handleCourtPlayAgain}
         difficulty={courtDifficulty}
-      />
-    );
-  }
-  
-  if (showSpacewarGame) {
-    return (
-      <SpacewarGame
-        onGameComplete={handleSpacewarComplete}
-        onPlayAgain={handleSpacewarPlayAgain}
-        difficulty={spacewarDifficulty}
       />
     );
   }
