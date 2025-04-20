@@ -1,79 +1,59 @@
 
 import { Ship } from '../interfaces/SpacewarInterfaces';
 
-// The scoring system manages score state and provides methods to update scores
 export interface ScoreState {
-  playerScore: number;
+  playerHits: number;
   cpuScore: number;
-  winningScore: number;
+  requiredHits: number;
   gameOver: boolean;
   playerWon: boolean;
+  timerActive: boolean;
 }
 
 // Initialize scoring system
-export const createScoreState = (winningScore: number): ScoreState => ({
-  playerScore: 0,
+export const createScoreState = (): ScoreState => ({
+  playerHits: 0,
   cpuScore: 0,
-  winningScore,
+  requiredHits: 5,
   gameOver: false,
-  playerWon: false
+  playerWon: false,
+  timerActive: false
 });
 
-// Increment player score and check for win
-export const incrementPlayerScore = (state: ScoreState): ScoreState => {
-  const newPlayerScore = state.playerScore + 1;
-  console.log(`Player score increased to ${newPlayerScore}`);
+// Increment player hits and check for win
+export const incrementPlayerHits = (state: ScoreState): ScoreState => {
+  const newPlayerHits = state.playerHits + 1;
+  console.log(`Player hits increased to ${newPlayerHits}`);
   
-  // Check if player won
-  const playerWon = newPlayerScore >= state.winningScore;
+  // Check if player won (5 hits achieved)
+  const playerWon = newPlayerHits >= state.requiredHits;
   if (playerWon) {
     console.log("Player won the game!");
   }
   
   return {
     ...state,
-    playerScore: newPlayerScore,
+    playerHits: newPlayerHits,
     gameOver: playerWon,
-    playerWon: playerWon
+    playerWon: playerWon,
   };
 };
 
-// Increment CPU score and check for win
-export const incrementCpuScore = (state: ScoreState): ScoreState => {
-  const newCpuScore = state.cpuScore + 1;
-  console.log(`CPU score increased to ${newCpuScore}`);
-  
-  // Check if CPU won
-  const cpuWon = newCpuScore >= state.winningScore;
-  if (cpuWon) {
-    console.log("CPU won the game!");
-  }
-  
+// Reset game state when player dies
+export const handlePlayerDeath = (state: ScoreState): ScoreState => {
+  console.log("Player died - resetting hits");
   return {
     ...state,
-    cpuScore: newCpuScore,
-    gameOver: cpuWon,
-    playerWon: false
+    playerHits: 0,
+    gameOver: true,
+    playerWon: false,
+    timerActive: false
   };
-};
-
-// Handle scoring when ship hits the sun
-export const processSunCollisionScore = (
-  ship: Ship, 
-  isPlayer: boolean, 
-  scoreState: ScoreState
-): ScoreState => {
-  if (isPlayer) {
-    console.log("Player crashed into the sun! CPU +1 point");
-    return incrementCpuScore(scoreState);
-  } else {
-    console.log("CPU crashed into the sun! Player +1 point");
-    return incrementPlayerScore(scoreState);
-  }
 };
 
 // Reset scores
-export const resetScores = (winningScore: number): ScoreState => {
+export const resetScores = (): ScoreState => {
   console.log("Scores reset");
-  return createScoreState(winningScore);
+  return createScoreState();
 };
+

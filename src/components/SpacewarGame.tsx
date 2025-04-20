@@ -1,7 +1,7 @@
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import GameResult from './GameResult';
+import CountdownTimer from './CountdownTimer';
 import { BaseGameProps } from '../interfaces/GameInterfaces';
 import { useSpacewarGame } from '../hooks/useSpacewarGame';
 import { createInitialAIState, updateCpuAI } from '../utils/spacewarCpuAI';
@@ -43,12 +43,30 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     autofireManagerRef
   } = useSpacewarGame(difficulty, onGameComplete);
   
-  // Extract this function to handle ship hit animations
+  const [timerStarted, setTimerStarted] = useState(false);
+
+  useEffect(() => {
+    if (gameStarted && !timerStarted) {
+      setTimerStarted(true);
+      setScoreState(prev => ({ ...prev, timerActive: true }));
+    }
+  }, [gameStarted]);
+
+  const handleTimeUp = () => {
+    if (!scoreState.playerWon) {
+      setScoreState(prev => ({
+        ...prev,
+        gameOver: true,
+        playerWon: false,
+        timerActive: false
+      }));
+    }
+  };
+
   const handleShipHit = (ship: Ship) => {
     ship.hitAnimationTime = Date.now();
   };
-  
-  // Handle keyboard controls
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (scoreState.gameOver) return;
@@ -100,7 +118,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     };
   }, [scoreState.gameOver, player, constants, updatePlayerControls, addProjectile]);
   
-  // Main game loop
   useEffect(() => {
     if (!canvasRef.current) return;
     
@@ -120,22 +137,18 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       const ctx = canvasRef.current.getContext('2d');
       if (!ctx) return;
       
-      // Clear canvas and draw background
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, constants.CANVAS_WIDTH, constants.CANVAS_HEIGHT);
       
-      // Draw the sun
       drawSun(ctx, constants.CANVAS_WIDTH / 2, constants.CANVAS_HEIGHT / 2, constants.SUN_RADIUS);
       
-      // Handle autofire for player
       autofireManagerRef.current = manageAutofire(
         timestamp, 
         autofireManagerRef.current,
         constants.PROJECTILE_INTERVAL,
-        250 // Special cooldown (ms)
+        250
       );
       
-      // Handle player autofire
       if (autofireManagerRef.current.canPlayerFire) {
         const playerProjectile = createProjectile(
           'player', 
@@ -146,7 +159,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         addProjectile(playerProjectile);
       }
       
-      // Handle CPU AI and firing logic
       const aiResult = updateCpuAI(
         cpu, 
         player, 
@@ -159,7 +171,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       aiStateRef.current = aiResult.aiState;
       
-      // CPU firing logic - use the AI decision to determine if CPU should fire
       if (autofireManagerRef.current.canCpuFire && aiStateRef.current.shouldFire) {
         const cpuProjectile = createProjectile(
           'cpu', 
@@ -169,7 +180,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         );
         addProjectile(cpuProjectile);
         
-        // Occasionally fire special projectiles
         if (Math.random() < 0.1 * difficulty) {
           const cpuSpecialProjectile = createProjectile(
             'cpu', 
@@ -183,7 +193,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         }
       }
       
-      // Process and update all projectiles
       const updatedProjectiles = processProjectiles(
         projectiles, 
         player, 
@@ -201,12 +210,10 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       updateProjectiles(updatedProjectiles);
       
-      // Draw projectiles
       updatedProjectiles.forEach(projectile => {
         drawProjectile(ctx, projectile);
       });
       
-      // If game over, just draw ships and exit
       if (scoreState.gameOver) {
         drawShip(ctx, player);
         drawShip(ctx, cpu);
@@ -215,10 +222,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         return;
       }
       
-      // Update player ship
       const updatedPlayer = { ...player };
       
-      // Handle player rotation
       if (player.rotateLeft) {
         updatedPlayer.rotation -= constants.ROTATION_SPEED;
       }
@@ -226,7 +231,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.rotation += constants.ROTATION_SPEED;
       }
       
-      // Handle player thrust
       if (player.thrust) {
         updatedPlayer.velocity.x += Math.cos(player.rotation) * constants.THRUST_POWER;
         updatedPlayer.velocity.y += Math.sin(player.rotation) * constants.THRUST_POWER;
@@ -234,7 +238,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.velocity = applyFriction(updatedPlayer.velocity, constants.FRICTION);
       }
       
-      // Apply gravity to player
       const playerGravity = applySunGravity(
         player.x, 
         player.y, 
@@ -248,10 +251,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedPlayer.velocity.x = playerGravity.x;
       updatedPlayer.velocity.y = playerGravity.y;
       
-      // Handle player sun collision
       if (playerGravity.hitSun) {
-        console.log("Player crashed into sun! CPU +1 point");
-        updateCpuScore(1);
+        console.log("Player crashed into sun! Must start over");
+        updatePlayerScore(handlePlayerDeath);
         const respawn = handleSunCollision(
           player.x, 
           player.y, 
@@ -266,7 +268,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedPlayer.y += updatedPlayer.velocity.y;
       }
       
-      // Handle player border collision
       const playerBorderCollision = handleBorderCollision(
         updatedPlayer.x,
         updatedPlayer.y,
@@ -283,11 +284,9 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setPlayer(updatedPlayer);
       
-      // Update CPU ship based on AI
       const updatedCpu = { ...cpu };
       const aiCpu = aiResult.updatedCpu;
       
-      // Handle CPU rotation
       if (aiCpu.rotateLeft) {
         updatedCpu.rotation -= constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
       }
@@ -295,7 +294,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.rotation += constants.ROTATION_SPEED * (0.8 + difficulty * 0.08);
       }
       
-      // Handle CPU thrust
       updatedCpu.thrust = aiCpu.thrust;
       if (updatedCpu.thrust) {
         updatedCpu.velocity.x += Math.cos(updatedCpu.rotation) * constants.THRUST_POWER * (0.9 + difficulty * 0.08);
@@ -304,7 +302,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.velocity = applyFriction(updatedCpu.velocity, constants.FRICTION);
       }
       
-      // Apply gravity to CPU
       const cpuGravity = applySunGravity(
         cpu.x, 
         cpu.y, 
@@ -318,7 +315,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       updatedCpu.velocity.x = cpuGravity.x;
       updatedCpu.velocity.y = cpuGravity.y;
       
-      // Handle CPU sun collision
       if (cpuGravity.hitSun) {
         console.log("CPU crashed into sun! Player +1 point");
         updatePlayerScore(1);
@@ -336,7 +332,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
         updatedCpu.y += updatedCpu.velocity.y;
       }
       
-      // Handle CPU border collision
       const cpuBorderCollision = handleBorderCollision(
         updatedCpu.x,
         updatedCpu.y,
@@ -353,7 +348,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       setCpu(updatedCpu);
       
-      // Draw the ships
       drawShip(ctx, player);
       drawShip(ctx, cpu);
       
@@ -381,7 +375,6 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     updateCpuScore
   ]);
   
-  // Game control handlers
   const handleContinue = () => {
     onGameComplete();
   };
@@ -395,10 +388,21 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
     <div className="relative w-full flex flex-col items-center justify-center bg-black">
       <h2 className="text-terminal-green text-xl mb-2 font-mono">SPACEWAR!</h2>
       
+      <div className="text-terminal-green text-lg mb-2 font-mono">
+        Hits: {scoreState.playerHits} / {constants.REQUIRED_HITS}
+        <div className="ml-4 inline-block">
+          <CountdownTimer
+            initialTime={15}
+            onTimeUp={handleTimeUp}
+            isActive={scoreState.timerActive}
+          />
+        </div>
+      </div>
+
       <GameInfo 
         showInstructions={true}
-        winningScore={constants.WINNING_SCORE}
-        userScore={scoreState.playerScore}
+        winningScore={constants.REQUIRED_HITS}
+        userScore={scoreState.playerHits}
         computerScore={scoreState.cpuScore}
         difficulty={difficulty}
       />
@@ -469,8 +473,8 @@ const SpacewarGame: React.FC<BaseGameProps> = ({
       
       <div className="mt-2 text-sm text-terminal-green">
         {!isMobile 
-          ? "Controls: Arrow Keys to move, SPACE to fire. Score points when CPU flies into the sun or your projectiles hit it!" 
-          : "Use on-screen buttons to control your ship and fire special projectiles"}
+          ? "Hit the CPU ship 5 times within 15 seconds to win! Don't crash into the sun or you'll have to start over!" 
+          : "Use on-screen buttons to control your ship. Hit the CPU 5 times in 15 seconds to win!"}
       </div>
     </div>
   );

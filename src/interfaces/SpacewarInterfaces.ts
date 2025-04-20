@@ -19,7 +19,8 @@ export interface GameConstants {
   GRAVITY_STRENGTH: number;
   ROTATION_SPEED: number;
   THRUST_POWER: number;
-  WINNING_SCORE: number;
+  REQUIRED_HITS: number;
+  TIME_LIMIT: number;
   DIFFICULTY_MODIFIER: number;
   FRICTION: number;
   BOUNCE_DAMPENING: number;
