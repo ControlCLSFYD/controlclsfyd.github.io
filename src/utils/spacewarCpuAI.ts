@@ -1,3 +1,4 @@
+
 import { Ship } from '../interfaces/SpacewarInterfaces';
 import { normalizeAngle } from './spacewarUtils';
 
@@ -6,6 +7,7 @@ interface CpuAIState {
   isOrbiting: boolean;
   orbitDirection: number;
   cpuDecisionTimer: number;
+  shouldFire: boolean;
 }
 
 export const updateCpuAI = (
@@ -58,6 +60,9 @@ export const updateCpuAI = (
     updatedCpu.rotateLeft = angleToTurn < -0.03;
     updatedCpu.rotateRight = angleToTurn > 0.03;
     updatedCpu.thrust = Math.abs(angleToTurn) < 0.7;
+    
+    // Don't fire when avoiding the sun
+    updatedAiState.shouldFire = false;
   } else {
     // Regular targeting and combat logic
     const distanceToPlayer = Math.sqrt(
@@ -86,6 +91,11 @@ export const updateCpuAI = (
       x: player.x + player.velocity.x * 2,
       y: player.y + player.velocity.y * 2
     };
+    
+    // Firing logic: fire when pointed roughly at the player
+    // The smaller the angle difference, the more likely to fire
+    const firingAccuracy = Math.abs(angleToTurn);
+    updatedAiState.shouldFire = firingAccuracy < 0.3 + (Math.random() * 0.2); // Add randomness to firing decisions
   }
   
   return { updatedCpu, aiState: updatedAiState };
@@ -96,6 +106,7 @@ export const createInitialAIState = (): CpuAIState => {
     cpuTargetPosition: { x: 0, y: 0 },
     isOrbiting: false,
     orbitDirection: 1, // 1 clockwise, -1 counterclockwise
-    cpuDecisionTimer: 0
+    cpuDecisionTimer: 0,
+    shouldFire: false
   };
 };

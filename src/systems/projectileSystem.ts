@@ -138,8 +138,8 @@ export interface AutofireManager {
 export const createAutofireManager = (): AutofireManager => ({
   lastPlayerFireTime: 0,
   lastCpuFireTime: 0,
-  canPlayerFire: true,
-  canCpuFire: true,
+  canPlayerFire: false,
+  canCpuFire: false,
   playerSpecialCooldown: 0,
   cpuSpecialCooldown: 0
 });
@@ -153,7 +153,7 @@ export const manageAutofire = (
 ): AutofireManager => {
   const updated = { ...manager };
   
-  // Check if player can fire
+  // Check if player can fire (regular interval)
   if (timestamp - updated.lastPlayerFireTime >= fireInterval) {
     updated.canPlayerFire = true;
     updated.lastPlayerFireTime = timestamp;
@@ -161,8 +161,10 @@ export const manageAutofire = (
     updated.canPlayerFire = false;
   }
   
-  // Check if CPU can fire
-  if (timestamp - updated.lastCpuFireTime >= fireInterval) {
+  // Check if CPU can fire (with randomized interval for more natural behavior)
+  // CPU fires less frequently but more randomly than player
+  const cpuFireInterval = fireInterval * (1 + Math.random() * 0.5); // 1-1.5x player interval
+  if (timestamp - updated.lastCpuFireTime >= cpuFireInterval) {
     updated.canCpuFire = true;
     updated.lastCpuFireTime = timestamp;
   } else {
