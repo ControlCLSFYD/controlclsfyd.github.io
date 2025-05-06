@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useGameProgress } from './useGameProgress';
 import { useRevolvingQuestions } from './useRevolvingQuestions';
@@ -48,7 +47,15 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleAccessGranted = () => {
     onResetGame();
     setGameStarted(true);
-    setShowNoughtsAndCrossesGame(true);
+    
+    const directToCourt = localStorage.getItem('direct-to-court');
+    if (directToCourt === 'true') {
+      localStorage.removeItem('direct-to-court'); // Clear the flag
+      setShowCourtGame(true);
+      setCurrentLevel(1); // Set to level 1 since Court game is normally after level 1
+    } else {
+      setShowNoughtsAndCrossesGame(true);
+    }
   };
 
   const handleNoughtsAndCrossesComplete = () => {

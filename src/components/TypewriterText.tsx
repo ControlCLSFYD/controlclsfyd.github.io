@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 
 interface TypewriterTextProps {
@@ -50,7 +49,12 @@ const TypewriterText: React.FC<TypewriterTextProps> = ({
 
   return (
     <span className={`${className} ${!isComplete ? 'cursor-blink' : ''}`}>
-      {displayedText}
+      {displayedText.split('\n').map((line, index) => (
+        <React.Fragment key={index}>
+          {line}
+          {index < displayedText.split('\n').length - 1 && <br />}
+        </React.Fragment>
+      ))}
     </span>
   );
 };
