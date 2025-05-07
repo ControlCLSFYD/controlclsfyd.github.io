@@ -8,7 +8,6 @@ import LessonModal from './LessonModal';
 import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
 import GameOverScreen from './GameOverScreen';
-import IntroVideo from './IntroVideo';
 
 export interface Question {
   id: string;
@@ -44,7 +43,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [timeExpired, setTimeExpired] = useState(false);
-  const [showIntro, setShowIntro] = useState(level === 1);
 
   const getTimerDuration = (level: number): number => {
     switch (level) {
@@ -130,14 +128,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const handleTimeUp = () => {
     setTimeExpired(true);
   };
-
-  const handleIntroEnd = () => {
-    setShowIntro(false);
-  };
-
-  if (showIntro) {
-    return <IntroVideo onVideoEnd={handleIntroEnd} />;
-  }
 
   if (timeExpired) {
     return <GameOverScreen onRestart={onRestart} />;

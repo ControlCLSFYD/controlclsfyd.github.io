@@ -8,11 +8,11 @@ interface InvestisCompletionScreenProps {
 }
 
 const levelMessages: Record<number, string> = {
-  1: "Congratulations, user.\nYou have unlocked access code 223. \nThis lets you continue a new instance of the game from here. Write it down. \n(You are one level away from your first reward.)",
-  2: "Information flows\nto those who earn it.",
-  3: "You're starting to enjoy this,\naren't you?",
-  4: "Few get this far.\nFewer understand why.",
-  5: "Classified no more.\nBut at what cost?",
+  1: "Congratulations, user.\nYou have unlocked access code 223. \nThis lets you continue a new instance of the game from here. Write it down.",
+  2: "Congratulations, user!\nI'm proud of you. ",
+  3: "You're starting to enjoy this. \n",
+  4: "Amazing!! I had a feeling there was something about you.",
+  5: "Congratulations, user. You may become an agent yet.",
 };
 
 const InvestisCompletionScreen: React.FC<InvestisCompletionScreenProps> = ({ level, onContinue }) => {

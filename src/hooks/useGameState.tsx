@@ -49,7 +49,13 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setGameStarted(true);
     
     const directToCourt = localStorage.getItem('direct-to-court');
-    if (directToCourt === 'true') {
+    const directToSnek = localStorage.getItem('direct-to-snek');
+    
+    if (directToSnek === 'true') {
+      localStorage.removeItem('direct-to-snek'); // Clear the flag
+      setShowSnekGame(true);
+      setCurrentLevel(3); // Set to level 3 since Snek game is normally after level 3
+    } else if (directToCourt === 'true') {
       localStorage.removeItem('direct-to-court'); // Clear the flag
       setShowCourtGame(true);
       setCurrentLevel(1); // Set to level 1 since Court game is normally after level 1

@@ -1,9 +1,8 @@
-
 import React from 'react';
 import GameLevel from './GameLevel';
 import LoadingScreen from './LoadingScreen';
 import GameCompletionScreen from './GameCompletionScreen';
-import LevelCompletionScreen from './LevelCompletionScreen';
+import LevelCompletionSequence from './LevelCompletionSequence';
 import { useGameState } from '../hooks/useGameState';
 import GameHandler from './games/GameHandler';
 
@@ -61,9 +60,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
           {gameCompleted ? (
             <GameCompletionScreen onComplete={handleEndMessageComplete} />
           ) : showLevelCompleteScreen ? (
-            <LevelCompletionScreen 
+            <LevelCompletionSequence 
               level={completedLevel}
-              onContinue={handleLevelContinue} 
+              onComplete={handleLevelContinue} 
             />
           ) : isGameActive ? (
             <GameHandler 

@@ -23,6 +23,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   const [showWarningNDA, setShowWarningNDA] = useState(false);
   const [showInvestiGator, setShowInvestiGator] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
+  const [accessCodeMessageComplete, setAccessCodeMessageComplete] = useState(false);
   
   useEffect(() => {
     if (!showIntro) {
@@ -99,56 +100,66 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
 
       {loadingStep === 4 && !accessCodeCorrect && (
         <div className="text-center">
-          <TypewriterText text="Enter your access code." className="mb-4 block" />
-          <form onSubmit={handleAccessCodeSubmit} className="mt-4">
-            <input
-              type="text"
-              value={accessCode}
-              onChange={(e) => setAccessCode(e.target.value)}
-              className="bg-transparent border border-terminal-green text-terminal-green p-1 focus:outline-none"
-              autoFocus
+          <div className="min-h-[120px] flex flex-col items-center justify-start">
+            <TypewriterText 
+              text="Enter your access code." 
+              className="mb-4 block" 
+              onComplete={() => setAccessCodeMessageComplete(true)}
             />
-            <button 
-              type="submit" 
-              className="border border-terminal-green text-terminal-green px-2 py-1 ml-2 focus:outline-none hover:bg-terminal-green hover:bg-opacity-20"
-            >
-              Submit
-            </button>
-          </form>
-          
-          <div className="mt-6">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
-                  onClick={() => setShowInvestiGator(true)}
-                >
-                  <img 
-                    src="/lovable-uploads/f4308e48-123d-4416-9df6-ac0dc4b0342c.png" 
-                    alt="Investi Gator" 
-                    className="w-6 h-6 object-contain bg-black"
+            {accessCodeMessageComplete && (
+              <>
+                <form onSubmit={handleAccessCodeSubmit} className="mt-4">
+                  <input
+                    type="text"
+                    value={accessCode}
+                    onChange={(e) => setAccessCode(e.target.value)}
+                    className="bg-transparent border border-terminal-green text-terminal-green p-1 focus:outline-none"
+                    autoFocus
                   />
-                  Investi Gator's Help
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
-                <div className="flex flex-col items-center">
-                  <img 
-                    src="/lovable-uploads/1c3efc59-880b-420b-91a1-5e38b4e4abb1.png" 
-                    alt="Investi Gator" 
-                    className="w-24 h-auto mb-4 object-contain bg-black"
-                  />
-                  <div className="bg-black border border-terminal-green p-3 rounded-lg">
-                    <TypewriterText
-                      text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
-                      speed={30}
-                    />
-                  </div>
+                  <button 
+                    type="submit" 
+                    className="border border-terminal-green text-terminal-green px-2 py-1 ml-2 focus:outline-none hover:bg-terminal-green hover:bg-opacity-20"
+                  >
+                    Submit
+                  </button>
+                </form>
+                
+                <div className="mt-6">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+                        onClick={() => setShowInvestiGator(true)}
+                      >
+                        <img 
+                          src="/lovable-uploads/f4308e48-123d-4416-9df6-ac0dc4b0342c.png" 
+                          alt="Investi Gator" 
+                          className="w-6 h-6 object-contain bg-black"
+                        />
+                        Investi Gator's Help
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
+                      <div className="flex flex-col items-center">
+                        <img 
+                          src="/lovable-uploads/1c3efc59-880b-420b-91a1-5e38b4e4abb1.png" 
+                          alt="Investi Gator" 
+                          className="w-24 h-auto mb-4 object-contain bg-black"
+                        />
+                        <div className="bg-black border border-terminal-green p-3 rounded-lg">
+                          <TypewriterText
+                            text="Hi there! I'm Investi Gator, the Investigative Alligator. The access code you need is back on the homescreen. Just look more carefully!"
+                            speed={30}
+                          />
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </DialogContent>
-            </Dialog>
+              </>
+            )}
           </div>
         </div>
       )}
