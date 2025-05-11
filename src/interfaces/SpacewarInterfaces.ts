@@ -10,6 +10,26 @@ export interface SpacewarGameState {
   gameWon: boolean;
 }
 
+export interface Ship {
+  // Ship properties placeholder
+  id: number;
+  x: number;
+  y: number;
+}
+
+export interface Projectile {
+  // Projectile properties placeholder
+  id: number;
+  x: number;
+  y: number;
+}
+
+export interface GameConstants {
+  // Game constants placeholder
+  shipSpeed: number;
+  projectileSpeed: number;
+}
+
 export interface SpacewarShip {
   // Ship properties placeholder
   id: number;
