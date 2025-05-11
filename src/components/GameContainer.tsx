@@ -27,6 +27,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
     showCourtGame,
     showUATGame,
     showSnekGame,
+    showMorseCodeGame,
     currentLevel,
     isGameActive,
     showLevelCompleteScreen,
@@ -35,6 +36,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
     courtDifficulty,
     uatDifficulty,
     snekDifficulty,
+    morseCodeDifficulty,
     handleAccessGranted,
     handleNoughtsAndCrossesComplete,
     handleNoughtsAndCrossesPlayAgain,
@@ -44,6 +46,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleUATPlayAgain,
     handleSnekComplete,
     handleSnekPlayAgain,
+    handleMorseCodeComplete,
+    handleMorseCodePlayAgain,
     handleLevelComplete,
     handleLevelContinue,
     handleEndMessageComplete,
@@ -73,6 +77,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
               showSpacewarGame={false}
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
+              showMorseCodeGame={showMorseCodeGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
@@ -85,12 +90,15 @@ const GameContainer: React.FC<GameContainerProps> = ({
               handleUATPlayAgain={handleUATPlayAgain}
               handleSnekComplete={handleSnekComplete}
               handleSnekPlayAgain={handleSnekPlayAgain}
+              handleMorseCodeComplete={handleMorseCodeComplete}
+              handleMorseCodePlayAgain={handleMorseCodePlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
               duckHuntDifficulty={1}
               spacewarDifficulty={1}
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
+              morseCodeDifficulty={morseCodeDifficulty}
             />
           ) : (
             currentLevel > 0 && (

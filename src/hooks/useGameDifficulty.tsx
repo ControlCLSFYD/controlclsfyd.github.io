@@ -8,29 +8,34 @@ export const useGameDifficulty = () => {
   const [spacewarDifficulty, setSpacewarDifficulty] = useState(1);
   const [uatDifficulty, setUatDifficulty] = useState(1);
   const [snekDifficulty, setSnekDifficulty] = useState(1);
+  const [morseCodeDifficulty, setMorseCodeDifficulty] = useState(1);
   
   const increaseNoughtsAndCrossesDifficulty = () => {
-    setNoughtsAndCrossesDifficulty(prev => Math.min(prev + 1, 5));
+    setNoughtsAndCrossesDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   const increaseCourtDifficulty = () => {
-    setCourtDifficulty(prev => Math.min(prev + 1, 5));
+    setCourtDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   const increaseDuckHuntDifficulty = () => {
-    setDuckHuntDifficulty(prev => Math.min(prev + 1, 5));
+    setDuckHuntDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   const increaseSpacewarDifficulty = () => {
-    setSpacewarDifficulty(prev => Math.min(prev + 1, 5));
+    setSpacewarDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   const increaseUatDifficulty = () => {
-    setUatDifficulty(prev => Math.min(prev + 1, 5));
+    setUatDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   const increaseSnekDifficulty = () => {
-    setSnekDifficulty(prev => Math.min(prev + 1, 5));
+    setSnekDifficulty(prev => Math.min(prev + 1, 3));
+  };
+  
+  const increaseMorseCodeDifficulty = () => {
+    setMorseCodeDifficulty(prev => Math.min(prev + 1, 3));
   };
   
   return {
@@ -40,11 +45,13 @@ export const useGameDifficulty = () => {
     spacewarDifficulty,
     uatDifficulty,
     snekDifficulty,
+    morseCodeDifficulty,
     increaseNoughtsAndCrossesDifficulty,
     increaseCourtDifficulty,
     increaseDuckHuntDifficulty,
     increaseSpacewarDifficulty,
     increaseUatDifficulty,
-    increaseSnekDifficulty
+    increaseSnekDifficulty,
+    increaseMorseCodeDifficulty
   };
 };

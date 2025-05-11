@@ -4,6 +4,7 @@ import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
 import UATGame from '../UATGame';
 import SnekGame from '../SnekGame';
+import MorseCodeGame from '../MorseCodeGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
@@ -12,6 +13,7 @@ interface GameHandlerProps {
   showSpacewarGame: boolean;
   showUATGame: boolean;
   showSnekGame: boolean;
+  showMorseCodeGame: boolean;
   handleNoughtsAndCrossesComplete: () => void;
   handleNoughtsAndCrossesPlayAgain: () => void;
   handleCourtComplete: () => void;
@@ -24,12 +26,15 @@ interface GameHandlerProps {
   handleUATPlayAgain: () => void;
   handleSnekComplete: () => void;
   handleSnekPlayAgain: () => void;
+  handleMorseCodeComplete: () => void;
+  handleMorseCodePlayAgain: () => void;
   noughtsAndCrossesDifficulty: number;
   courtDifficulty: number;
   duckHuntDifficulty: number;
   spacewarDifficulty: number;
   uatDifficulty: number;
   snekDifficulty: number;
+  morseCodeDifficulty: number;
 }
 
 const GameHandler: React.FC<GameHandlerProps> = ({
@@ -37,6 +42,7 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   showCourtGame,
   showUATGame, 
   showSnekGame,
+  showMorseCodeGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
@@ -45,10 +51,13 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
+  handleMorseCodeComplete,
+  handleMorseCodePlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
   uatDifficulty,
-  snekDifficulty
+  snekDifficulty,
+  morseCodeDifficulty
 }) => {
   if (showNoughtsAndCrossesGame) {
     return (
@@ -56,6 +65,16 @@ const GameHandler: React.FC<GameHandlerProps> = ({
         onGameComplete={handleNoughtsAndCrossesComplete} 
         onPlayAgain={handleNoughtsAndCrossesPlayAgain} 
         difficulty={noughtsAndCrossesDifficulty}
+      />
+    );
+  }
+
+  if (showMorseCodeGame) {
+    return (
+      <MorseCodeGame
+        onGameComplete={handleMorseCodeComplete}
+        onPlayAgain={handleMorseCodePlayAgain}
+        difficulty={morseCodeDifficulty}
       />
     );
   }
