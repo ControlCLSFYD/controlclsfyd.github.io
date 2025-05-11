@@ -16,7 +16,8 @@ const morseCodeMap: Record<string, string> = {
 
 // The phrase to encode
 const targetPhrase = "LOVE";
-const targetMorseCode = ".-.. --- ...- .";
+// Update this to match the exact requested code pattern
+const targetMorseCode = ".-..---...-.";
 
 interface MorseCodeGameProps extends BaseGameProps {}
 
@@ -127,11 +128,11 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
 
   // Check if the entered morse code is correct
   const checkMorseCode = (code: string) => {
-    // Remove excess spaces and normalize
-    const normalizedInput = code.replace(/\s+/g, ' ').trim();
-    const targetCode = targetMorseCode.replace(/\s+/g, ' ').trim();
+    // Remove excess spaces for checking
+    const normalizedInput = code.replace(/\s+/g, '').trim();
+    const targetCode = targetMorseCode.replace(/\s+/g, '').trim();
     
-    // Check if input matches target
+    // Check if input exactly matches target (without spaces)
     if (normalizedInput === targetCode) {
       setGameState({
         ...gameState,
@@ -226,13 +227,9 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
           
           <div className="flex flex-col items-center space-y-3">
             <div className="text-sm opacity-70 mb-2">
-              <span className="mr-4">Short press = · (dot)</span>
-              <span className="mr-4">Long press = – (dash)</span>
+              <span className="mr-4">Short spacebar press = · (dot)</span>
+              <span className="mr-4">Long spacebar press = - (dash)</span>
               <span>Press backspace to delete</span>
-            </div>
-            
-            <div className={`w-32 h-10 border ${spacebarPressed ? 'bg-terminal-green text-black' : 'bg-transparent'} border-terminal-green rounded-md flex items-center justify-center transition-colors`}>
-              SPACEBAR
             </div>
           </div>
         </div>
