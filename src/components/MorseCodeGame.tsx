@@ -128,12 +128,16 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
 
   // Check if the entered morse code is correct
   const checkMorseCode = (code: string) => {
-    // Remove excess spaces for checking
+    // Remove ALL spaces and normalize input for comparison
     const normalizedInput = code.replace(/\s+/g, '').trim();
-    const targetCode = targetMorseCode.replace(/\s+/g, '').trim();
+    const targetCode = targetMorseCode.replace(/\s+/g, '');
     
-    // Check if input exactly matches target (without spaces)
+    console.log('Checking code:', normalizedInput);
+    console.log('Target code:', targetCode);
+    
+    // Check if the normalized input contains the target code sequence
     if (normalizedInput === targetCode) {
+      console.log('Morse code match successful!');
       setGameState({
         ...gameState,
         gameOver: true,
