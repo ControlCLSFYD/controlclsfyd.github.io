@@ -4,11 +4,12 @@ import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
 import { Button } from './ui/button';
-import { RefreshCw, Image, Play } from 'lucide-react';
+import { RefreshCw, Image, Play, X, Keyboard } from 'lucide-react';
 import LessonModal from './LessonModal';
 import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
 import GameOverScreen from './GameOverScreen';
+import { useIsMobile } from '../hooks/use-mobile';
 
 export interface Question {
   id: string;
@@ -49,7 +50,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [displayedCode, setDisplayedCode] = useState<string>("");
   const [spacebarPressed, setSpacebarPressed] = useState<boolean>(false);
   const [pressStartTime, setPressStartTime] = useState<number | null>(null);
-  const [lastTapTime, setLastTapTime] = useState<number | null>(null);
+  const isMobile = useIsMobile();
 
   const getTimerDuration = (level: number): number => {
     switch (level) {
@@ -57,7 +58,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
       case 2: return Math.floor(5.5 * 60); // 5:30 minutes
       case 3: return 4 * 60; // 4 minutes
       case 4: return 3 * 60; // 3 minutes
-      case 5: return 5 * 60; // Changed to 5 minutes for Level 5
+      case 5: return 5 * 60; // 5 minutes for Level 5
       default: return 7 * 60; // Default to 7 minutes
     }
   };
@@ -160,17 +161,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
       e.preventDefault();
       setSpacebarPressed(true);
       setPressStartTime(Date.now());
-      
-      // Check for double tap
-      if (lastTapTime && Date.now() - lastTapTime < 300) {
-        // Double tap detected - add letter space
-        const updatedCode = displayedCode + " ";
-        setDisplayedCode(updatedCode);
-        setLastTapTime(null);
-      } else {
-        // Set last tap time
-        setLastTapTime(Date.now());
-      }
     }
     
     if (e.code === 'Backspace' && displayedCode.length > 0) {
@@ -206,15 +196,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
     
     setSpacebarPressed(true);
     setPressStartTime(Date.now());
-    
-    // Check for double tap
-    if (lastTapTime && Date.now() - lastTapTime < 300) {
-      const updatedCode = displayedCode + " ";
-      setDisplayedCode(updatedCode);
-      setLastTapTime(null);
-    } else {
-      setLastTapTime(Date.now());
-    }
   };
 
   const handleSpaceButtonUp = () => {
@@ -245,12 +226,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
   };
 
   const handleMorseSubmit = (questionId: string) => {
-    // For this simplified implementation, just check if the answer is "berlusconi"
-    // In a real implementation, you'd convert the Morse code to text
-    const morseCodeForBerlusconi = "-... . .-. .-.. ..- ... -.-. --- -. .."; // Example Morse code
+    // Define the Morse code for "Berlusconi" without spaces
+    const morseCodeForBerlusconi = "-...-.-..-...-...-.-.----.-..-"; // Morse code without spaces
     
-    // A very simple check - in reality you'd want more sophisticated comparison
-    if (displayedCode.replace(/\s+/g, '') === morseCodeForBerlusconi.replace(/\s+/g, '')) {
+    // Compare input with the correct answer without spaces
+    if (displayedCode === morseCodeForBerlusconi) {
       handleCorrectAnswer(questionId, "Berlusconi");
     }
   };
@@ -357,7 +337,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
                     className="ml-4 p-2 rounded-full hover:bg-terminal-black/40"
                     aria-label="Delete"
                   >
-                    <span>⌫</span>
+                    <X size={16} />
                   </button>
                 </div>
               ) : (
@@ -371,8 +351,34 @@ const GameLevel: React.FC<GameLevelProps> = ({
             <div className="text-sm opacity-70 mb-2">
               <span className="mr-4">Short spacebar press = · (dot)</span>
               <span className="mr-4">Long spacebar press = - (dash)</span>
-              <span>Double-tap spacebar = space between letters</span>
+              <span>No need for spaces between letters</span>
             </div>
+            
+            {/* Mobile spacebar button */}
+            {isMobile && (
+              <div className="w-full flex flex-col gap-3 mt-4">
+                <Button
+                  variant="outline"
+                  className="h-16 text-lg border border-terminal-green flex items-center justify-center bg-terminal-black/20"
+                  onTouchStart={handleSpaceButtonDown}
+                  onTouchEnd={handleSpaceButtonUp}
+                  onMouseDown={handleSpaceButtonDown}
+                  onMouseUp={handleSpaceButtonUp}
+                >
+                  <Keyboard className="mr-2" size={24} />
+                  SPACEBAR
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="h-12 text-lg border border-terminal-green flex items-center justify-center bg-terminal-black/20"
+                  onClick={handleBackspaceClick}
+                >
+                  <X className="mr-2" size={24} />
+                  DELETE
+                </Button>
+              </div>
+            )}
             
             {/* Submit button */}
             <button
