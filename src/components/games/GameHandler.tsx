@@ -5,6 +5,7 @@ import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
 import UATGame from '../UATGame';
 import SnekGame from '../SnekGame';
 import MorseCodeGame from '../MorseCodeGame';
+import MorseCodeAudioGame from '../MorseCodeAudioGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
@@ -14,6 +15,7 @@ interface GameHandlerProps {
   showUATGame: boolean;
   showSnekGame: boolean;
   showMorseCodeGame: boolean;
+  showMorseCodeAudioGame: boolean;
   handleNoughtsAndCrossesComplete: () => void;
   handleNoughtsAndCrossesPlayAgain: () => void;
   handleCourtComplete: () => void;
@@ -28,6 +30,8 @@ interface GameHandlerProps {
   handleSnekPlayAgain: () => void;
   handleMorseCodeComplete: () => void;
   handleMorseCodePlayAgain: () => void;
+  handleMorseCodeAudioComplete: () => void;
+  handleMorseCodeAudioPlayAgain: () => void;
   noughtsAndCrossesDifficulty: number;
   courtDifficulty: number;
   duckHuntDifficulty: number;
@@ -35,6 +39,7 @@ interface GameHandlerProps {
   uatDifficulty: number;
   snekDifficulty: number;
   morseCodeDifficulty: number;
+  morseCodeAudioDifficulty: number;
 }
 
 const GameHandler: React.FC<GameHandlerProps> = ({
@@ -43,6 +48,7 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   showUATGame, 
   showSnekGame,
   showMorseCodeGame,
+  showMorseCodeAudioGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
@@ -53,11 +59,14 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   handleSnekPlayAgain,
   handleMorseCodeComplete,
   handleMorseCodePlayAgain,
+  handleMorseCodeAudioComplete,
+  handleMorseCodeAudioPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
   uatDifficulty,
   snekDifficulty,
-  morseCodeDifficulty
+  morseCodeDifficulty,
+  morseCodeAudioDifficulty
 }) => {
   if (showNoughtsAndCrossesGame) {
     return (
@@ -85,6 +94,16 @@ const GameHandler: React.FC<GameHandlerProps> = ({
         onGameComplete={handleCourtComplete} 
         onPlayAgain={handleCourtPlayAgain}
         difficulty={courtDifficulty}
+      />
+    );
+  }
+
+  if (showMorseCodeAudioGame) {
+    return (
+      <MorseCodeAudioGame
+        onGameComplete={handleMorseCodeAudioComplete}
+        onPlayAgain={handleMorseCodeAudioPlayAgain}
+        difficulty={morseCodeAudioDifficulty}
       />
     );
   }

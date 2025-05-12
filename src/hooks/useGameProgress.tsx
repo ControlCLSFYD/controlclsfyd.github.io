@@ -18,6 +18,7 @@ export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGamePro
   const [uatCompleted, setUATCompleted] = useState(false);
   const [snekCompleted, setSnekCompleted] = useState(false);
   const [morseCodeCompleted, setMorseCodeCompleted] = useState(false);
+  const [morseCodeAudioCompleted, setMorseCodeAudioCompleted] = useState(false);
   
   // Check for completed levels based on saved answers
   useEffect(() => {
@@ -83,6 +84,8 @@ export const useGameProgress = ({ savedAnswers, revolvingQuestions }: UseGamePro
     snekCompleted,
     setSnekCompleted,
     morseCodeCompleted,
-    setMorseCodeCompleted
+    setMorseCodeCompleted,
+    morseCodeAudioCompleted,
+    setMorseCodeAudioCompleted
   };
 };

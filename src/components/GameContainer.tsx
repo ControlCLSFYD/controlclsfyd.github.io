@@ -28,6 +28,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
     showUATGame,
     showSnekGame,
     showMorseCodeGame,
+    showMorseCodeAudioGame,
     currentLevel,
     isGameActive,
     showLevelCompleteScreen,
@@ -37,6 +38,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
     uatDifficulty,
     snekDifficulty,
     morseCodeDifficulty,
+    morseCodeAudioDifficulty,
     handleAccessGranted,
     handleNoughtsAndCrossesComplete,
     handleNoughtsAndCrossesPlayAgain,
@@ -48,6 +50,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     handleSnekPlayAgain,
     handleMorseCodeComplete,
     handleMorseCodePlayAgain,
+    handleMorseCodeAudioComplete,
+    handleMorseCodeAudioPlayAgain,
     handleLevelComplete,
     handleLevelContinue,
     handleEndMessageComplete,
@@ -78,6 +82,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
               showUATGame={showUATGame}
               showSnekGame={showSnekGame}
               showMorseCodeGame={showMorseCodeGame}
+              showMorseCodeAudioGame={showMorseCodeAudioGame}
               handleNoughtsAndCrossesComplete={handleNoughtsAndCrossesComplete}
               handleNoughtsAndCrossesPlayAgain={handleNoughtsAndCrossesPlayAgain}
               handleCourtComplete={handleCourtComplete}
@@ -92,6 +97,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
               handleSnekPlayAgain={handleSnekPlayAgain}
               handleMorseCodeComplete={handleMorseCodeComplete}
               handleMorseCodePlayAgain={handleMorseCodePlayAgain}
+              handleMorseCodeAudioComplete={handleMorseCodeAudioComplete}
+              handleMorseCodeAudioPlayAgain={handleMorseCodeAudioPlayAgain}
               noughtsAndCrossesDifficulty={noughtsAndCrossesDifficulty}
               courtDifficulty={courtDifficulty}
               duckHuntDifficulty={1}
@@ -99,6 +106,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
               uatDifficulty={uatDifficulty}
               snekDifficulty={snekDifficulty}
               morseCodeDifficulty={morseCodeDifficulty}
+              morseCodeAudioDifficulty={morseCodeAudioDifficulty}
             />
           ) : (
             currentLevel > 0 && (
