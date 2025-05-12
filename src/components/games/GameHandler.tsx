@@ -4,6 +4,8 @@ import CourtGame from '../CourtGame';
 import NoughtsAndCrossesGame from '../NoughtsAndCrossesGame';
 import UATGame from '../UATGame';
 import SnekGame from '../SnekGame';
+import MorseCodeGame from '../MorseCodeGame';
+import MorseCodeAudioGame from '../MorseCodeAudioGame';
 
 interface GameHandlerProps {
   showNoughtsAndCrossesGame: boolean;
@@ -12,6 +14,8 @@ interface GameHandlerProps {
   showSpacewarGame: boolean;
   showUATGame: boolean;
   showSnekGame: boolean;
+  showMorseCodeGame: boolean;
+  showMorseCodeAudioGame: boolean;
   handleNoughtsAndCrossesComplete: () => void;
   handleNoughtsAndCrossesPlayAgain: () => void;
   handleCourtComplete: () => void;
@@ -24,12 +28,18 @@ interface GameHandlerProps {
   handleUATPlayAgain: () => void;
   handleSnekComplete: () => void;
   handleSnekPlayAgain: () => void;
+  handleMorseCodeComplete: () => void;
+  handleMorseCodePlayAgain: () => void;
+  handleMorseCodeAudioComplete: () => void;
+  handleMorseCodeAudioPlayAgain: () => void;
   noughtsAndCrossesDifficulty: number;
   courtDifficulty: number;
   duckHuntDifficulty: number;
   spacewarDifficulty: number;
   uatDifficulty: number;
   snekDifficulty: number;
+  morseCodeDifficulty: number;
+  morseCodeAudioDifficulty: number;
 }
 
 const GameHandler: React.FC<GameHandlerProps> = ({
@@ -37,6 +47,8 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   showCourtGame,
   showUATGame, 
   showSnekGame,
+  showMorseCodeGame,
+  showMorseCodeAudioGame,
   handleNoughtsAndCrossesComplete,
   handleNoughtsAndCrossesPlayAgain,
   handleCourtComplete,
@@ -45,10 +57,16 @@ const GameHandler: React.FC<GameHandlerProps> = ({
   handleUATPlayAgain,
   handleSnekComplete,
   handleSnekPlayAgain,
+  handleMorseCodeComplete,
+  handleMorseCodePlayAgain,
+  handleMorseCodeAudioComplete,
+  handleMorseCodeAudioPlayAgain,
   noughtsAndCrossesDifficulty,
   courtDifficulty,
   uatDifficulty,
-  snekDifficulty
+  snekDifficulty,
+  morseCodeDifficulty,
+  morseCodeAudioDifficulty
 }) => {
   if (showNoughtsAndCrossesGame) {
     return (
@@ -59,6 +77,16 @@ const GameHandler: React.FC<GameHandlerProps> = ({
       />
     );
   }
+
+  if (showMorseCodeGame) {
+    return (
+      <MorseCodeGame
+        onGameComplete={handleMorseCodeComplete}
+        onPlayAgain={handleMorseCodePlayAgain}
+        difficulty={morseCodeDifficulty}
+      />
+    );
+  }
   
   if (showCourtGame) {
     return (
@@ -66,6 +94,16 @@ const GameHandler: React.FC<GameHandlerProps> = ({
         onGameComplete={handleCourtComplete} 
         onPlayAgain={handleCourtPlayAgain}
         difficulty={courtDifficulty}
+      />
+    );
+  }
+
+  if (showMorseCodeAudioGame) {
+    return (
+      <MorseCodeAudioGame
+        onGameComplete={handleMorseCodeAudioComplete}
+        onPlayAgain={handleMorseCodeAudioPlayAgain}
+        difficulty={morseCodeAudioDifficulty}
       />
     );
   }

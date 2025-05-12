@@ -21,6 +21,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const [showNoughtsAndCrossesGame, setShowNoughtsAndCrossesGame] = useState(false);
   const [showUATGame, setShowUATGame] = useState(false);
   const [showSnekGame, setShowSnekGame] = useState(false);
+  const [showMorseCodeGame, setShowMorseCodeGame] = useState(false);
+  const [showMorseCodeAudioGame, setShowMorseCodeAudioGame] = useState(false);
   
   const { revolvingQuestions } = useRevolvingQuestions();
   
@@ -32,6 +34,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     spacewarCompleted, setSpacewarCompleted,
     uatCompleted, setUATCompleted,
     snekCompleted, setSnekCompleted,
+    morseCodeCompleted, setMorseCodeCompleted,
+    morseCodeAudioCompleted, setMorseCodeAudioCompleted,
     currentLevel, setCurrentLevel
   } = useGameProgress({ savedAnswers, revolvingQuestions });
   
@@ -41,7 +45,9 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     duckHuntDifficulty, increaseDuckHuntDifficulty,
     spacewarDifficulty, increaseSpacewarDifficulty,
     uatDifficulty, increaseUatDifficulty,
-    snekDifficulty, increaseSnekDifficulty
+    snekDifficulty, increaseSnekDifficulty,
+    morseCodeDifficulty, increaseMorseCodeDifficulty,
+    morseCodeAudioDifficulty, increaseMorseCodeAudioDifficulty
   } = useGameDifficulty();
 
   const handleAccessGranted = () => {
@@ -67,12 +73,25 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleNoughtsAndCrossesComplete = () => {
     setNoughtsAndCrossesCompleted(true);
     setShowNoughtsAndCrossesGame(false);
-    setCurrentLevel(1);
+    // After Noughts and Crosses, show the Morse Code game
+    setShowMorseCodeGame(true);
   };
 
   const handleNoughtsAndCrossesPlayAgain = () => {
     increaseNoughtsAndCrossesDifficulty();
     setShowNoughtsAndCrossesGame(true);
+  };
+
+  const handleMorseCodeComplete = () => {
+    setMorseCodeCompleted(true);
+    setShowMorseCodeGame(false);
+    // After Morse Code game, go to level 1
+    setCurrentLevel(1);
+  };
+
+  const handleMorseCodePlayAgain = () => {
+    increaseMorseCodeDifficulty();
+    setShowMorseCodeGame(true);
   };
 
   const handleLevelComplete = () => {
@@ -106,8 +125,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
   const handleCourtComplete = () => {
     setCourtCompleted(true);
     setShowCourtGame(false);
-    // After Court game, go straight to level 3 instead of Spacewar
-    setCurrentLevel(2);
+    // After Court game, show the Morse Code Audio game
+    setShowMorseCodeAudioGame(true);
   };
 
   const handleCourtPlayAgain = (playerWon: boolean) => {
@@ -115,6 +134,18 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
       increaseCourtDifficulty();
     }
     setShowCourtGame(true);
+  };
+  
+  const handleMorseCodeAudioComplete = () => {
+    setMorseCodeAudioCompleted(true);
+    setShowMorseCodeAudioGame(false);
+    // After Morse Code Audio game, go to level 2
+    setCurrentLevel(2);
+  };
+
+  const handleMorseCodeAudioPlayAgain = () => {
+    increaseMorseCodeAudioDifficulty();
+    setShowMorseCodeAudioGame(true);
   };
 
   const handleUATComplete = () => {
@@ -150,8 +181,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     setShowNoughtsAndCrossesGame(true);
   };
 
-  // Remove Spacewar from isGameActive check
-  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame;
+  // Update isGameActive to include morse code audio game
+  const isGameActive = showCourtGame || showNoughtsAndCrossesGame || showUATGame || showSnekGame || showMorseCodeGame || showMorseCodeAudioGame;
 
   const getCurrentLevelQuestions = () => {
     return getCurrentQuestions(currentLevel, gameData.levels, revolvingQuestions);
@@ -168,6 +199,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     showCourtGame,
     showUATGame,
     showSnekGame,
+    showMorseCodeGame,
+    showMorseCodeAudioGame,
     currentLevel,
     isGameActive,
     showLevelCompleteScreen,
@@ -176,6 +209,8 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     courtDifficulty,
     uatDifficulty,
     snekDifficulty,
+    morseCodeDifficulty,
+    morseCodeAudioDifficulty,
     handleAccessGranted,
     handleNoughtsAndCrossesComplete,
     handleNoughtsAndCrossesPlayAgain,
@@ -185,6 +220,10 @@ export const useGameState = ({ savedAnswers, onResetGame }: UseGameStateProps) =
     handleUATPlayAgain,
     handleSnekComplete,
     handleSnekPlayAgain,
+    handleMorseCodeComplete,
+    handleMorseCodePlayAgain,
+    handleMorseCodeAudioComplete,
+    handleMorseCodeAudioPlayAgain,
     handleLevelComplete,
     handleLevelContinue,
     handleEndMessageComplete,
