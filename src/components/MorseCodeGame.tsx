@@ -4,7 +4,8 @@ import { Button } from './ui/button';
 import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
 import GameResult from './GameResult';
 import { useToast } from "@/hooks/use-toast";
-import { X } from 'lucide-react';
+import { X, Keyboard } from 'lucide-react';
+import { useIsMobile } from '../hooks/use-mobile';
 
 // Define Morse code mapping
 const morseCodeMap: Record<string, string> = {
@@ -38,6 +39,7 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
   const [spacebarPressed, setSpacebarPressed] = useState<boolean>(false);
   const [pressStartTime, setPressStartTime] = useState<number | null>(null);
   const [lastTapTime, setLastTapTime] = useState<number | null>(null);
+  const isMobile = useIsMobile();
   
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +128,63 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
     }
   };
 
+  // Mobile space button handlers
+  const handleSpaceButtonDown = () => {
+    if (!gameState.gameStarted || gameState.gameOver) return;
+    
+    setSpacebarPressed(true);
+    setPressStartTime(Date.now());
+    
+    // Check for double tap
+    if (lastTapTime && Date.now() - lastTapTime < 300) {
+      // Double tap detected - add letter space
+      const updatedCode = displayedCode + " ";
+      setDisplayedCode(updatedCode);
+      // Reset last tap time
+      setLastTapTime(null);
+      
+      playSound('letter-space');
+    } else {
+      // Set last tap time
+      setLastTapTime(Date.now());
+    }
+  };
+
+  const handleSpaceButtonUp = () => {
+    if (!gameState.gameStarted || gameState.gameOver || !pressStartTime) return;
+    
+    const pressDuration = Date.now() - pressStartTime;
+    
+    // Determine if it's a dot or dash based on duration
+    let symbol = '';
+    if (pressDuration < 300) {
+      // Short press - dot
+      symbol = '.';
+      playSound('dot');
+    } else {
+      // Long press - dash
+      symbol = '-';
+      playSound('dash');
+    }
+    
+    const updatedCode = displayedCode + symbol;
+    setDisplayedCode(updatedCode);
+    
+    // Reset states
+    setSpacebarPressed(false);
+    setPressStartTime(null);
+    
+    // Check if the code is correct
+    checkMorseCode(updatedCode);
+  };
+
+  const handleBackspaceClick = () => {
+    if (displayedCode.length > 0) {
+      setDisplayedCode(prev => prev.slice(0, -1));
+      playSound('delete');
+    }
+  };
+
   // Check if the entered morse code is correct
   const checkMorseCode = (code: string) => {
     // Remove ALL spaces and normalize input for comparison
@@ -205,8 +264,6 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
           </div>
           
           <div className="h-32 border border-terminal-green bg-terminal-black/30 rounded-md flex items-center justify-center overflow-hidden relative">
-            <div className="absolute top-2 left-2 text-xs opacity-70">MORSE TRANSMISSION</div>
-            
             {displayedCode ? (
               <div className="flex items-center">
                 <p className="text-3xl font-mono tracking-wider animate-pulse">
@@ -235,6 +292,32 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
               <span className="mr-4">Long spacebar press = - (dash)</span>
               <span>Press backspace to delete</span>
             </div>
+            
+            {/* Mobile controls */}
+            {isMobile && (
+              <div className="w-full flex flex-col gap-3 mt-4">
+                <Button
+                  variant="outline"
+                  className="h-16 text-lg border border-terminal-green flex items-center justify-center bg-terminal-black/20"
+                  onTouchStart={handleSpaceButtonDown}
+                  onTouchEnd={handleSpaceButtonUp}
+                  onMouseDown={handleSpaceButtonDown}
+                  onMouseUp={handleSpaceButtonUp}
+                >
+                  <Keyboard className="mr-2" size={24} />
+                  SPACEBAR
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="h-12 text-lg border border-terminal-green flex items-center justify-center bg-terminal-black/20"
+                  onClick={handleBackspaceClick}
+                >
+                  <X className="mr-2" size={24} />
+                  DELETE
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
