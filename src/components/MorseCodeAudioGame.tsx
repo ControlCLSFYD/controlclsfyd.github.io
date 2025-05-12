@@ -105,7 +105,7 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
       ) : (
         <div className="max-w-md w-full text-center space-y-8">
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold mb-4">MORSE CODE LISTENING CHALLENGE</h3>
+            <h3 className="text-2xl font-bold mb-4">LISTENING</h3>
             <p className="text-lg mb-6">
               Listen to the Morse code message and type what you hear.
               You can play the message {playsRemaining} more times.
@@ -113,13 +113,15 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
           </div>
           
           <div className="space-y-6">
-            <Button
+            {/* Updated play button to be a square with green triangle */}
+            <button
               onClick={playMorseCodeAudio}
               disabled={playsRemaining <= 0 || isPlaying}
-              className="h-16 w-16 rounded-full bg-terminal-green hover:bg-terminal-green/80 flex items-center justify-center mx-auto"
+              className="h-16 w-16 bg-terminal-black border border-terminal-green flex items-center justify-center mx-auto"
+              aria-label="Play Morse Code"
             >
-              <Play size={32} className="text-black ml-1" />
-            </Button>
+              <Play size={32} className="text-terminal-green" />
+            </button>
             
             {isPlaying && (
               <div className="flex items-center justify-center space-x-2">
@@ -143,22 +145,18 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
               />
             </div>
             
-            <Button
+            {/* Updated submit button to have green border with black interior */}
+            <button
               onClick={handleSubmitAnswer}
               disabled={userAnswer.trim() === ''}
-              className="mt-4 w-full"
-              variant="outline"
+              className="mt-4 w-full border border-terminal-green bg-terminal-black hover:bg-terminal-black/70 text-terminal-green py-2 px-4 rounded-md transition-colors"
             >
               Submit Answer
-            </Button>
+            </button>
             
             <div className="mt-4 text-sm opacity-70">
               <p>Note: Your answer must match exactly. Check your spelling and punctuation.</p>
             </div>
-          </div>
-          
-          <div className="mt-6 text-xs opacity-50">
-            <p>Audio files should be placed in: /public/audio/morse/</p>
           </div>
         </div>
       )}
