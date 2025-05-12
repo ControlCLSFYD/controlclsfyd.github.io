@@ -10,8 +10,8 @@ export const levelFiveData: Level = {
     [
       {
         id: "A",
-        text: "Which European Prime Minister was a member of the masonic organization blamed for misleading a police investigation into this terrorist bombing?",
-        answer: "Silvio Berlusconi"
+        text: "Listen.",
+        answer: "Berlusconi"
       }
     ]
   ],

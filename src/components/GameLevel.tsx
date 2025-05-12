@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
 import CountdownTimer from './CountdownTimer';
 import { Button } from './ui/button';
-import { RefreshCw, Image } from 'lucide-react';
+import { RefreshCw, Image, Play } from 'lucide-react';
 import LessonModal from './LessonModal';
 import { LessonContent } from './LessonScreen';
 import { lessonData } from '../data/gameData';
@@ -43,6 +44,12 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [timeExpired, setTimeExpired] = useState(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
+  const [playsRemaining, setPlaysRemaining] = useState<number>(2);
+  const [displayedCode, setDisplayedCode] = useState<string>("");
+  const [spacebarPressed, setSpacebarPressed] = useState<boolean>(false);
+  const [pressStartTime, setPressStartTime] = useState<number | null>(null);
+  const [lastTapTime, setLastTapTime] = useState<number | null>(null);
 
   const getTimerDuration = (level: number): number => {
     switch (level) {
@@ -50,7 +57,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
       case 2: return Math.floor(5.5 * 60); // 5:30 minutes
       case 3: return 4 * 60; // 4 minutes
       case 4: return 3 * 60; // 3 minutes
-      case 5: return Math.floor(1.5 * 60); // 1:30 minutes
+      case 5: return 5 * 60; // Changed to 5 minutes for Level 5
       default: return 7 * 60; // Default to 7 minutes
     }
   };
@@ -129,10 +136,275 @@ const GameLevel: React.FC<GameLevelProps> = ({
     setTimeExpired(true);
   };
 
+  // Morse code related functionality for Level 5
+  const playMorseCodeAudio = () => {
+    if (level !== 5 || playsRemaining <= 0) return;
+    
+    setIsPlaying(true);
+    
+    // Here you would normally play the audio file
+    console.log("Playing morse code for 'Berlusconi'");
+    
+    // Simulate audio playback time (5 seconds)
+    setTimeout(() => {
+      setIsPlaying(false);
+      setPlaysRemaining(prev => prev - 1);
+    }, 5000);
+  };
+
+  // Morse code input handlers
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (level !== 5 || !isActive) return;
+    
+    if (e.code === 'Space' && !spacebarPressed) {
+      e.preventDefault();
+      setSpacebarPressed(true);
+      setPressStartTime(Date.now());
+      
+      // Check for double tap
+      if (lastTapTime && Date.now() - lastTapTime < 300) {
+        // Double tap detected - add letter space
+        const updatedCode = displayedCode + " ";
+        setDisplayedCode(updatedCode);
+        setLastTapTime(null);
+      } else {
+        // Set last tap time
+        setLastTapTime(Date.now());
+      }
+    }
+    
+    if (e.code === 'Backspace' && displayedCode.length > 0) {
+      e.preventDefault();
+      setDisplayedCode(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent) => {
+    if (level !== 5 || !isActive) return;
+    
+    if (e.code === 'Space' && spacebarPressed && pressStartTime) {
+      e.preventDefault();
+      const pressDuration = Date.now() - pressStartTime;
+      
+      let symbol = '';
+      if (pressDuration < 300) {
+        symbol = '.';
+      } else {
+        symbol = '-';
+      }
+      
+      const updatedCode = displayedCode + symbol;
+      setDisplayedCode(updatedCode);
+      
+      setSpacebarPressed(false);
+      setPressStartTime(null);
+    }
+  };
+
+  const handleSpaceButtonDown = () => {
+    if (level !== 5 || !isActive) return;
+    
+    setSpacebarPressed(true);
+    setPressStartTime(Date.now());
+    
+    // Check for double tap
+    if (lastTapTime && Date.now() - lastTapTime < 300) {
+      const updatedCode = displayedCode + " ";
+      setDisplayedCode(updatedCode);
+      setLastTapTime(null);
+    } else {
+      setLastTapTime(Date.now());
+    }
+  };
+
+  const handleSpaceButtonUp = () => {
+    if (level !== 5 || !isActive || !pressStartTime) return;
+    
+    const pressDuration = Date.now() - pressStartTime;
+    
+    let symbol = '';
+    if (pressDuration < 300) {
+      symbol = '.';
+    } else {
+      symbol = '-';
+    }
+    
+    const updatedCode = displayedCode + symbol;
+    setDisplayedCode(updatedCode);
+    
+    setSpacebarPressed(false);
+    setPressStartTime(null);
+  };
+
+  const handleBackspaceClick = () => {
+    if (level !== 5 || !isActive) return;
+    
+    if (displayedCode.length > 0) {
+      setDisplayedCode(prev => prev.slice(0, -1));
+    }
+  };
+
+  const handleMorseSubmit = (questionId: string) => {
+    // For this simplified implementation, just check if the answer is "berlusconi"
+    // In a real implementation, you'd convert the Morse code to text
+    const morseCodeForBerlusconi = "-... . .-. .-.. ..- ... -.-. --- -. .."; // Example Morse code
+    
+    // A very simple check - in reality you'd want more sophisticated comparison
+    if (displayedCode.replace(/\s+/g, '') === morseCodeForBerlusconi.replace(/\s+/g, '')) {
+      handleCorrectAnswer(questionId, "Berlusconi");
+    }
+  };
+
   if (timeExpired) {
     return <GameOverScreen onRestart={onRestart} />;
   }
 
+  // Render special layout for Level 5 with Morse code functionality
+  if (level === 5) {
+    return (
+      <div className="p-4" ref={containerRef} tabIndex={0} style={{ outline: 'none' }}
+           onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
+        <div className="flex justify-between items-center h-[40px] mb-4">
+          <TypewriterText 
+            text={`LEVEL ${level}`} 
+            className="text-xl"
+          />
+          {isActive && (
+            <CountdownTimer 
+              initialTime={timerDuration} 
+              isActive={isActive}
+              onTimeUp={handleTimeUp}
+            />
+          )}
+        </div>
+        
+        {/* Question text */}
+        <div className="min-h-[40px] mb-4">
+          <TypewriterText 
+            text={questions[0].text} 
+            className="text-2xl font-bold block"
+          />
+        </div>
+        
+        {/* Image */}
+        {imageSrc && (
+          <div className="mb-4 border border-terminal-green p-1 relative">
+            {!imageLoaded && !imageError && (
+              <div className="w-full h-64 flex items-center justify-center text-terminal-green">
+                Loading image...
+              </div>
+            )}
+            
+            {imageError && (
+              <div className="w-full h-64 flex flex-col items-center justify-center text-terminal-green">
+                <div className="mb-2">Failed to load image</div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleReloadImage}
+                  className="border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black"
+                >
+                  Try Again
+                </Button>
+              </div>
+            )}
+            
+            <img 
+              src={`${imageSrc}?key=${imageKey}`} 
+              alt={`Level ${level} Reference`} 
+              className={`w-full max-h-96 object-contain ${!imageLoaded ? 'hidden' : ''}`}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
+          </div>
+        )}
+        
+        {/* Morse code controls */}
+        <div className="max-w-md w-full mx-auto text-center space-y-8 mb-6">
+          <div className="space-y-6">
+            {/* Play button */}
+            <button
+              onClick={playMorseCodeAudio}
+              disabled={playsRemaining <= 0 || isPlaying}
+              className="h-16 w-16 bg-terminal-black border border-terminal-green flex items-center justify-center mx-auto"
+              aria-label="Play Morse Code"
+            >
+              <Play size={32} className="text-terminal-green" />
+            </button>
+            
+            {isPlaying && (
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-3 h-3 bg-terminal-green rounded-full animate-ping"></div>
+                <div className="w-2 h-2 bg-terminal-green rounded-full animate-ping animation-delay-200"></div>
+                <div className="w-1 h-1 bg-terminal-green rounded-full animate-ping animation-delay-400"></div>
+              </div>
+            )}
+            
+            <p className="text-sm">
+              You can play the message {playsRemaining} more times.
+            </p>
+            
+            {/* Morse code display */}
+            <div className="h-32 border border-terminal-green bg-terminal-black/30 rounded-md flex items-center justify-center overflow-hidden relative">
+              {displayedCode ? (
+                <div className="flex items-center">
+                  <p className="text-3xl font-mono tracking-wider animate-pulse">
+                    {displayedCode}
+                    <span className="animate-blink ml-1">_</span>
+                  </p>
+                  <button 
+                    onClick={handleBackspaceClick}
+                    className="ml-4 p-2 rounded-full hover:bg-terminal-black/40"
+                    aria-label="Delete"
+                  >
+                    <span>⌫</span>
+                  </button>
+                </div>
+              ) : (
+                <p className="text-lg opacity-50">
+                  Press spacebar to begin...
+                  <span className="animate-blink ml-1">_</span>
+                </p>
+              )}
+            </div>
+            
+            <div className="text-sm opacity-70 mb-2">
+              <span className="mr-4">Short spacebar press = · (dot)</span>
+              <span className="mr-4">Long spacebar press = - (dash)</span>
+              <span>Double-tap spacebar = space between letters</span>
+            </div>
+            
+            {/* Submit button */}
+            <button
+              onClick={() => handleMorseSubmit(questions[0].id)}
+              disabled={displayedCode.trim() === ''}
+              className="mt-4 w-full border border-terminal-green bg-terminal-black hover:bg-terminal-black/70 text-terminal-green py-2 px-4 rounded-md transition-colors"
+            >
+              Submit Answer
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-4 flex flex-col items-center">
+          <LessonModal lesson={levelLesson} />
+          
+          {imageSrc && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleReloadImage}
+              className="flex items-center gap-2 border border-terminal-green text-terminal-green bg-black hover:bg-terminal-green hover:text-black mt-2"
+            >
+              <RefreshCw size={16} />
+              Reload Image
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Default layout for other levels
   return (
     <div className="p-4" ref={containerRef}>
       <div className="flex justify-between items-center h-[40px] mb-4">
