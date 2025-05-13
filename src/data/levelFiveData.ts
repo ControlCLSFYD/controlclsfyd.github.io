@@ -11,7 +11,7 @@ export const levelFiveData: Level = {
       {
         id: "A",
         text: "Listen.",
-        answer: "Berlusconi"
+        answer: "-.....-..-....-...-.-.----..."
       }
     ]
   ],

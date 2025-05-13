@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useIsMobile } from '../hooks/use-mobile';
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -367,11 +366,19 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
       ctx.textAlign = 'center';
       
       if (!gameStarted) {
-        ctx.fillText(
-          'Press any key to start',
-          canvas.width / 2,
-          canvas.height / 2
-        );
+        const text = 'Press any key to start \n \n Desktop WASD keys are easier \n \n Desktop tip: Snek appreciates gratitude';
+        const lines = text.split('\n');
+        const lineHeight = isMobile ? 20 : 30;
+        const totalHeight = lines.length * lineHeight;
+        const startY = canvas.height / 2 - totalHeight / 2;
+
+        lines.forEach((line, index) => {
+          ctx.fillText(
+            line,
+            canvas.width / 2,
+            startY + index * lineHeight
+          );
+        });
       }
     }
   }, [snake, food, direction, gameOver, gameStarted, gameWon, actualCellSize, isMobile]);

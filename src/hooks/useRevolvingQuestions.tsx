@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { gameData } from '../data/gameData';
 
-export const useRevolvingQuestions = () => {
+function useRevolvingQuestions() {
   const [revolvingQuestions, setRevolvingQuestions] = useState<{[key: number]: number}>({});
   
   useEffect(() => {
@@ -19,4 +18,6 @@ export const useRevolvingQuestions = () => {
   }, []);
   
   return { revolvingQuestions };
-};
+}
+
+export default useRevolvingQuestions;

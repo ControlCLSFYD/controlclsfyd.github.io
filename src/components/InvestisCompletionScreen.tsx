@@ -8,11 +8,11 @@ interface InvestisCompletionScreenProps {
 }
 
 const levelMessages: Record<number, string> = {
-  1: "Congratulations, user.\nYou have unlocked access code 223. \nThis lets you continue a new instance of the game from here. Write it down.",
-  2: "Congratulations, user!\nI'm proud of you. ",
-  3: "You're starting to enjoy this. \n",
-  4: "Amazing!! I had a feeling there was something about you.",
-  5: "Congratulations, user. You may become an agent yet.",
+  1: "Congratulations! \n You've unlocked a checkpoint: access code 223. \n This secures your current progress..",
+  2: "Well done!\n This one wasn't easy. \n If you've made it this far, it means you have both the talent and interest required to become an agent. \n Push on! ",
+  3: "Not bad! \n Remember, CLSFYD's game is just the first step. \n The real CLSFYD Challenge takes place in real life \n But other games will be developed to harness and locate those with alternative talents. \n Follow the team on instagram (@clsfyd) to stay updated.",
+  4: "Amazing!! \n  If I were you, I'd go outside and take a breather. The next one will be the hardest level yet.",
+  5: "Astounding job. \n The world needs you to follow our instructions. \n Because together, we will make a difference.",
 };
 
 const InvestisCompletionScreen: React.FC<InvestisCompletionScreenProps> = ({ level, onContinue }) => {

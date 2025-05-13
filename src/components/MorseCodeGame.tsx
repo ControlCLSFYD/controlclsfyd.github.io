@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
@@ -204,11 +203,6 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
       });
       
       playSound('success');
-      
-      toast({
-        title: "Message Received 💖",
-        description: "Your Morse code message was transmitted successfully!",
-      });
     }
   };
 

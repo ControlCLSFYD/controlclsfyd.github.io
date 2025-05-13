@@ -338,7 +338,7 @@ const SnakeGame: React.FC<SnakeGameProps> = ({ onGameComplete, onPlayAgain, diff
       
       if (!gameStarted) {
         ctx.fillText(
-          'Press any key to start',
+          'Press any key to start \n Tip: This game is best played on Desktop with the WASD keys. \n Pro tip: (Desktop) The snake appreciates gratitude',
           canvas.width / 2,
           canvas.height / 2
         );

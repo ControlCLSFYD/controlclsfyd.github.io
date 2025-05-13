@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import TypewriterText from './TypewriterText';
 import AnswerInput from './AnswerInput';
@@ -51,6 +50,8 @@ const GameLevel: React.FC<GameLevelProps> = ({
   const [spacebarPressed, setSpacebarPressed] = useState<boolean>(false);
   const [pressStartTime, setPressStartTime] = useState<number | null>(null);
   const isMobile = useIsMobile();
+  const ditSoundRef = useRef<HTMLAudioElement | null>(null);
+  const dahSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const getTimerDuration = (level: number): number => {
     switch (level) {
@@ -58,7 +59,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
       case 2: return Math.floor(5.5 * 60); // 5:30 minutes
       case 3: return 4 * 60; // 4 minutes
       case 4: return 3 * 60; // 3 minutes
-      case 5: return 5 * 60; // 5 minutes for Level 5
+      case 5: return 10 * 60; // 10 minutes for Level 5
       default: return 7 * 60; // Default to 7 minutes
     }
   };
@@ -96,6 +97,12 @@ const GameLevel: React.FC<GameLevelProps> = ({
       }, 100);
     }
   }, [isActive]);
+
+  useEffect(() => {
+    // Initialize audio elements
+    ditSoundRef.current = new Audio('/audio/dit_sound.wav');
+    dahSoundRef.current = new Audio('/audio/dah_sound.wav');
+  }, []);
 
   const handleCorrectAnswer = (questionId: string, answer: string) => {
     if (!answeredQuestions.includes(questionId)) {
@@ -143,14 +150,17 @@ const GameLevel: React.FC<GameLevelProps> = ({
     
     setIsPlaying(true);
     
-    // Here you would normally play the audio file
-    console.log("Playing morse code for 'Berlusconi'");
+    // Play the morse_belu.mp3 audio file
+    const audio = new Audio('/audio/morse/morse_Berlu.mp3');
+    audio.play().catch(error => {
+      console.error('Error playing audio:', error);
+    });
     
-    // Simulate audio playback time (5 seconds)
-    setTimeout(() => {
+    // Update state when audio finishes playing
+    audio.onended = () => {
       setIsPlaying(false);
       setPlaysRemaining(prev => prev - 1);
-    }, 5000);
+    };
   };
 
   // Morse code input handlers
@@ -179,12 +189,20 @@ const GameLevel: React.FC<GameLevelProps> = ({
       let symbol = '';
       if (pressDuration < 300) {
         symbol = '.';
+        ditSoundRef.current?.play().catch(error => console.error('Error playing dit sound:', error));
       } else {
         symbol = '-';
+        dahSoundRef.current?.play().catch(error => console.error('Error playing dah sound:', error));
       }
       
       const updatedCode = displayedCode + symbol;
       setDisplayedCode(updatedCode);
+      
+      // Check answer immediately after adding a symbol
+      const morseCodeForBerlusconi = "-.....-..-....-...-.-.----...";
+      if (updatedCode === morseCodeForBerlusconi) {
+        handleCorrectAnswer(questions[0].id, "Berlusconi");
+      }
       
       setSpacebarPressed(false);
       setPressStartTime(null);
@@ -206,12 +224,20 @@ const GameLevel: React.FC<GameLevelProps> = ({
     let symbol = '';
     if (pressDuration < 300) {
       symbol = '.';
+      ditSoundRef.current?.play().catch(error => console.error('Error playing dit sound:', error));
     } else {
       symbol = '-';
+      dahSoundRef.current?.play().catch(error => console.error('Error playing dah sound:', error));
     }
     
     const updatedCode = displayedCode + symbol;
     setDisplayedCode(updatedCode);
+    
+    // Check answer immediately after adding a symbol
+    const morseCodeForBerlusconi = "-.....-..-....-...-.-.----...";
+    if (updatedCode === morseCodeForBerlusconi) {
+      handleCorrectAnswer(questions[0].id, "Berlusconi");
+    }
     
     setSpacebarPressed(false);
     setPressStartTime(null);
@@ -222,16 +248,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
     
     if (displayedCode.length > 0) {
       setDisplayedCode(prev => prev.slice(0, -1));
-    }
-  };
-
-  const handleMorseSubmit = (questionId: string) => {
-    // Define the Morse code for "Berlusconi" without spaces
-    const morseCodeForBerlusconi = "-...-.-..-...-...-.-.----.-..-"; // Morse code without spaces
-    
-    // Compare input with the correct answer without spaces
-    if (displayedCode === morseCodeForBerlusconi) {
-      handleCorrectAnswer(questionId, "Berlusconi");
     }
   };
 
@@ -321,7 +337,7 @@ const GameLevel: React.FC<GameLevelProps> = ({
             )}
             
             <p className="text-sm">
-              You can play the message {playsRemaining} more times.
+              Attempts remaining: {playsRemaining}
             </p>
             
             {/* Morse code display */}
@@ -348,10 +364,11 @@ const GameLevel: React.FC<GameLevelProps> = ({
               )}
             </div>
             
+            {/* Remove the submit button and its related code */}
             <div className="text-sm opacity-70 mb-2">
               <span className="mr-4">Short spacebar press = · (dot)</span>
               <span className="mr-4">Long spacebar press = - (dash)</span>
-              <span>No need for spaces between letters</span>
+              <span></span>
             </div>
             
             {/* Mobile spacebar button */}
@@ -379,15 +396,6 @@ const GameLevel: React.FC<GameLevelProps> = ({
                 </Button>
               </div>
             )}
-            
-            {/* Submit button */}
-            <button
-              onClick={() => handleMorseSubmit(questions[0].id)}
-              disabled={displayedCode.trim() === ''}
-              className="mt-4 w-full border border-terminal-green bg-terminal-black hover:bg-terminal-black/70 text-terminal-green py-2 px-4 rounded-md transition-colors"
-            >
-              Submit Answer
-            </button>
           </div>
         </div>
         

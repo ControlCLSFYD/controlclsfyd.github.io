@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useGameProgress } from './useGameProgress';
-import { useRevolvingQuestions } from './useRevolvingQuestions';
+import useRevolvingQuestions from './useRevolvingQuestions';
 import { useGameDifficulty } from './useGameDifficulty';
 import { getCurrentImageSrc, getCurrentQuestions } from '../utils/gameHelpers';
 import { gameData } from '../data/gameData';

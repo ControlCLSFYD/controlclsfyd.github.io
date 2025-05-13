@@ -12,9 +12,13 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ onVideoEnd }) => {
     const video = videoRef.current;
     if (!video) return;
 
+    // Ensure video is unmuted and volume is up
+    video.muted = false;
+    video.volume = 1;
+
     // Set up video event listeners
     const handleEnded = () => {
-      onVideoEnd();
+      handleSkip(); // Programmatically trigger skip after video ends
     };
 
     const handleError = () => {
@@ -42,7 +46,6 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ onVideoEnd }) => {
         ref={videoRef}
         className="w-full h-full object-cover"
         autoPlay
-        muted
         playsInline
       >
         <source src="/videos/intro.mp4" type="video/mp4" />

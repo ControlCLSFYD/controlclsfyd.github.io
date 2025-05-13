@@ -24,6 +24,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   const [showInvestiGator, setShowInvestiGator] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [accessCodeMessageComplete, setAccessCodeMessageComplete] = useState(false);
+  const [ready, setReady] = useState(false);
   
   useEffect(() => {
     if (!showIntro) {
@@ -74,6 +75,18 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
   };
   
   if (showIntro) {
+    if (!ready) {
+      return (
+        <div className="fixed inset-0 w-screen h-screen bg-black z-50 flex flex-col items-center justify-center">
+          <Button
+            onClick={() => setReady(true)}
+            className="border border-terminal-green text-terminal-green px-8 py-4 text-2xl bg-black hover:bg-terminal-green hover:text-black transition-all duration-300"
+          >
+            Ready?
+          </Button>
+        </div>
+      );
+    }
     return <IntroVideo onVideoEnd={handleIntroEnd} />;
   }
   

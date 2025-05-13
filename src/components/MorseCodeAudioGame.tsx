@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { BaseGameProps, GameState } from '../interfaces/GameInterfaces';
 import GameResult from './GameResult';
@@ -22,55 +21,59 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
   
   const { toast } = useToast();
   const [userAnswer, setUserAnswer] = useState<string>('');
-  const [playsRemaining, setPlaysRemaining] = useState<number>(2);
+  const [playsRemaining, setPlaysRemaining] = useState<number>(3); // Changed to 3 attempts
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const correctAnswer = "I love you";
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Function to simulate playing the morse code audio
+  // Initialize audio element
+  useEffect(() => {
+    audioRef.current = new Audio('/audio/morse/morse_love.wav');
+    
+    // Cleanup on unmount
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Function to play the morse code audio
   const playMorseCodeAudio = () => {
-    if (playsRemaining <= 0) return;
+    if (playsRemaining <= 0 || !audioRef.current) return;
     
     setIsPlaying(true);
     
-    // Here you would normally play the audio file
-    // For now, we'll just simulate it
-    console.log("Playing morse code for 'I love you'");
+    // Play the audio file
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(error => {
+      console.error('Error playing audio:', error);
+      toast({
+        title: "Error",
+        description: "Failed to play audio. Please try again.",
+        variant: "destructive"
+      });
+    });
     
-    // Simulate audio playback time (5 seconds)
-    setTimeout(() => {
+    // Update state when audio finishes playing
+    audioRef.current.onended = () => {
       setIsPlaying(false);
       setPlaysRemaining(prev => prev - 1);
-      
-      toast({
-        title: "Audio played",
-        description: `${playsRemaining - 1} plays remaining.`,
-      });
-    }, 5000);
+    };
   };
 
   const handleAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUserAnswer(e.target.value);
-  };
-
-  const handleSubmitAnswer = () => {
+    const newAnswer = e.target.value;
+    setUserAnswer(newAnswer);
+    
     // Check if the answer is correct (case-insensitive)
-    if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+    if (newAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
       setGameState({
         ...gameState,
         gameOver: true,
         gameWon: true,
         score: 1
-      });
-      
-      toast({
-        title: "Correct!",
-        description: "You've successfully decoded the Morse message!",
-      });
-    } else {
-      toast({
-        title: "Incorrect",
-        description: "That's not what the message says. Try again.",
-        variant: "destructive"
       });
     }
   };
@@ -90,7 +93,7 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
       score: 0
     });
     setUserAnswer("");
-    setPlaysRemaining(2);
+    setPlaysRemaining(3); // Reset to 3 attempts
   };
 
   return (
@@ -145,17 +148,8 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
               />
             </div>
             
-            {/* Updated submit button to have green border with black interior */}
-            <button
-              onClick={handleSubmitAnswer}
-              disabled={userAnswer.trim() === ''}
-              className="mt-4 w-full border border-terminal-green bg-terminal-black hover:bg-terminal-black/70 text-terminal-green py-2 px-4 rounded-md transition-colors"
-            >
-              Submit Answer
-            </button>
-            
             <div className="mt-4 text-sm opacity-70">
-              <p>Note: Your answer must match exactly. Check your spelling and punctuation.</p>
+              <p>Note: Pen and paper recommended.</p>
             </div>
           </div>
         </div>

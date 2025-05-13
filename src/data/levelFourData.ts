@@ -1,16 +1,16 @@
-
 import { Level } from '../interfaces/GameDataInterfaces';
 
 // Level 4 data
 export const levelFourData: Level = {
   id: 4,
   hasLesson: true,
+  timeLimit: 300,
   questions: [
     [
       {
         id: "A",
-        text: "What infamous letter was published in 1950 by the Madrid Geo-Political Center.",
-        answer: "Madrid Circular"
+        text: "Think about the Marbella story we're investigating. What common office supply shares a name with a covert operation that brought similar experts over to the United States?.",
+        answer: "Operation Paperclip"
       }
     ],
     [
@@ -26,18 +26,13 @@ export const levelFourData: Level = {
       },
       {
         id: "C",
-        text: "The letter suggested that post-war Germany should create a political bloc out of which three regions:",
-        answer: "EUROPE"
+        text: "The letter suggested that post-war Germany should create a political bloc out of which two non-European regions:",
+        answer: "AFRICA"
       },
       {
         id: "D",
         text: "Region 2:",
         answer: "LATIN AMERICA"
-      },
-      {
-        id: "E",
-        text: "Region 3:",
-        answer: "AFRICA"
       }
     ],
     [
