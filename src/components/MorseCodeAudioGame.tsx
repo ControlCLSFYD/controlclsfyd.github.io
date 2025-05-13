@@ -9,11 +9,10 @@ interface MorseCodeAudioGameProps extends BaseGameProps {}
 
 const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
   onGameComplete,
-  onPlayAgain,
   difficulty = 1
 }) => {
   const [gameState, setGameState] = useState<GameState>({
-    gameStarted: true, // Start the game immediately
+    gameStarted: true,
     gameOver: false,
     gameWon: false,
     score: 0
@@ -21,7 +20,7 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
   
   const { toast } = useToast();
   const [userAnswer, setUserAnswer] = useState<string>('');
-  const [playsRemaining, setPlaysRemaining] = useState<number>(2); // Changed to 2 attempts
+  const [playsRemaining, setPlaysRemaining] = useState<number>(2);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const correctAnswer = "I love you";
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -83,26 +82,12 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
     onGameComplete();
   };
 
-  // Handle play again button
-  const handlePlayAgain = () => {
-    onPlayAgain();
-    setGameState({
-      gameStarted: true,
-      gameOver: false,
-      gameWon: false,
-      score: 0
-    });
-    setUserAnswer("");
-    setPlaysRemaining(3); // Reset to 3 attempts
-  };
-
   return (
     <div className="flex flex-col items-center justify-center min-h-[500px] p-4">
       {gameState.gameOver ? (
         <GameResult 
           gameWon={gameState.gameWon} 
           onContinue={handleContinue}
-          onPlayAgain={handlePlayAgain}
           alwaysShowContinue={true}
         />
       ) : (
@@ -111,7 +96,7 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
             <h3 className="text-2xl font-bold mb-4">LISTENING</h3>
             <p className="text-lg mb-6">
               Listen to the Morse code message and type what you hear.
-              You can play the message {playsRemaining} more times.
+              Attempts remaining: {playsRemaining}
             </p>
           </div>
           

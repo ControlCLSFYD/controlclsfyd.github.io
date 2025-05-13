@@ -23,7 +23,6 @@ interface MorseCodeGameProps extends BaseGameProps {}
 
 const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
   onGameComplete,
-  onPlayAgain,
   difficulty = 1
 }) => {
   const [gameState, setGameState] = useState<GameState>({
@@ -37,16 +36,27 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
   const [displayedCode, setDisplayedCode] = useState<string>("");
   const [spacebarPressed, setSpacebarPressed] = useState<boolean>(false);
   const [pressStartTime, setPressStartTime] = useState<number | null>(null);
-  const [lastTapTime, setLastTapTime] = useState<number | null>(null);
   const isMobile = useIsMobile();
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
 
   // Focus the container when component mounts
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.focus();
     }
+  }, []);
+
+  // Initialize audio context
+  useEffect(() => {
+    audioContextRef.current = new AudioContext();
+    return () => {
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
   }, []);
 
   // Handle key down event (spacebar pressed)
@@ -57,21 +67,6 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
       e.preventDefault();
       setSpacebarPressed(true);
       setPressStartTime(Date.now());
-      
-      // Check for double tap
-      if (lastTapTime && Date.now() - lastTapTime < 300) {
-        // Double tap detected - add letter space
-        const updatedCode = displayedCode + " ";
-        setDisplayedCode(updatedCode);
-        // Reset last tap time
-        setLastTapTime(null);
-        
-        // Play a sound effect (optional)
-        playSound('letter-space');
-      } else {
-        // Set last tap time
-        setLastTapTime(Date.now());
-      }
     }
     
     // Handle backspace to delete last character
@@ -116,8 +111,35 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
 
   // Play a sound effect based on the action
   const playSound = (type: 'dot' | 'dash' | 'letter-space' | 'success' | 'delete') => {
-    // If we had Web Audio API implemented, we'd play sounds here
-    console.log(`Playing sound: ${type}`);
+    if (!audioContextRef.current) return;
+
+    // Stop any existing sound
+    if (oscillatorRef.current) {
+      oscillatorRef.current.stop();
+      oscillatorRef.current = null;
+    }
+
+    // Create new oscillator
+    const oscillator = audioContextRef.current.createOscillator();
+    const gainNode = audioContextRef.current.createGain();
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(600, audioContextRef.current.currentTime);
+    
+    // Connect nodes
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContextRef.current.destination);
+    
+    // Set volume
+    gainNode.gain.setValueAtTime(0.1, audioContextRef.current.currentTime);
+    
+    // Start the oscillator
+    oscillator.start();
+    oscillatorRef.current = oscillator;
+
+    // Stop the sound after appropriate duration
+    const duration = type === 'dot' ? 0.1 : type === 'dash' ? 0.3 : 0.2;
+    oscillator.stop(audioContextRef.current.currentTime + duration);
   };
 
   const handleDeleteClick = () => {
@@ -133,20 +155,6 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
     
     setSpacebarPressed(true);
     setPressStartTime(Date.now());
-    
-    // Check for double tap
-    if (lastTapTime && Date.now() - lastTapTime < 300) {
-      // Double tap detected - add letter space
-      const updatedCode = displayedCode + " ";
-      setDisplayedCode(updatedCode);
-      // Reset last tap time
-      setLastTapTime(null);
-      
-      playSound('letter-space');
-    } else {
-      // Set last tap time
-      setLastTapTime(Date.now());
-    }
   };
 
   const handleSpaceButtonUp = () => {
@@ -217,23 +225,11 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gameState, spacebarPressed, pressStartTime, displayedCode, lastTapTime]);
+  }, [gameState, spacebarPressed, pressStartTime, displayedCode]);
 
   // Handle continue after game is won
   const handleContinue = () => {
     onGameComplete();
-  };
-
-  // Handle play again button
-  const handlePlayAgain = () => {
-    onPlayAgain();
-    setGameState({
-      gameStarted: true,
-      gameOver: false,
-      gameWon: false,
-      score: 0
-    });
-    setDisplayedCode("");
   };
 
   return (
@@ -247,7 +243,6 @@ const MorseCodeGame: React.FC<MorseCodeGameProps> = ({
         <GameResult 
           gameWon={gameState.gameWon} 
           onContinue={handleContinue}
-          onPlayAgain={handlePlayAgain}
           alwaysShowContinue={true}
         />
       ) : (

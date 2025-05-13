@@ -37,7 +37,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
             alt="Investi Gator" 
             className="w-6 h-6 object-contain bg-black"
           />
-          Investi Gator's Help
+          Ask the Gator
         </Button>
       </DialogTrigger>
       <DialogContent className="w-[95vw] max-w-[800px] h-auto max-h-[90vh] overflow-y-auto bg-black text-terminal-green border border-terminal-green p-2 md:p-4">

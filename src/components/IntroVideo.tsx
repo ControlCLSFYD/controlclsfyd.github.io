@@ -56,10 +56,10 @@ const IntroVideo: React.FC<IntroVideoProps> = ({ onVideoEnd }) => {
       </video>
       
       {/* Skip button */}
-      <div className="absolute bottom-8 right-8">
+      <div className="absolute bottom-4 sm:bottom-8 right-4 sm:right-8 z-50">
         <Button
           onClick={handleSkip}
-          className="border border-terminal-green text-terminal-green px-4 py-2 bg-black hover:bg-terminal-green hover:text-black transition-all duration-300"
+          className="border border-terminal-green text-terminal-green px-4 py-2 bg-black hover:bg-terminal-green hover:text-black transition-all duration-300 text-sm sm:text-base"
         >
           SKIP
         </Button>
