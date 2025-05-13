@@ -21,7 +21,7 @@ const MorseCodeAudioGame: React.FC<MorseCodeAudioGameProps> = ({
   
   const { toast } = useToast();
   const [userAnswer, setUserAnswer] = useState<string>('');
-  const [playsRemaining, setPlaysRemaining] = useState<number>(3); // Changed to 3 attempts
+  const [playsRemaining, setPlaysRemaining] = useState<number>(2); // Changed to 2 attempts
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const correctAnswer = "I love you";
   const audioRef = useRef<HTMLAudioElement | null>(null);

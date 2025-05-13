@@ -151,7 +151,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onAccessGranted }) => {
                           alt="Investi Gator" 
                           className="w-6 h-6 object-contain bg-black"
                         />
-                        Investi Gator's Help
+                        Ask the Gator
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="bg-black border border-terminal-green p-4 text-terminal-green max-w-md">
