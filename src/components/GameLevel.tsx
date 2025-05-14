@@ -377,10 +377,14 @@ const GameLevel: React.FC<GameLevelProps> = ({
                 <Button
                   variant="outline"
                   className="h-16 text-lg border border-terminal-green flex items-center justify-center bg-terminal-black/20"
-                  onTouchStart={handleSpaceButtonDown}
-                  onTouchEnd={handleSpaceButtonUp}
-                  onMouseDown={handleSpaceButtonDown}
-                  onMouseUp={handleSpaceButtonUp}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    handleSpaceButtonDown();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    handleSpaceButtonUp();
+                  }}
                 >
                   <Keyboard className="mr-2" size={24} />
                   SPACEBAR
