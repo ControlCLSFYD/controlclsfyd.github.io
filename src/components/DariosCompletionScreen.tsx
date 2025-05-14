@@ -31,7 +31,7 @@ const DariosCompletionScreen: React.FC<DariosCompletionScreenProps> = ({ level, 
       
       <Button 
         onClick={onContinue}
-        className={`border border-terminal-green text-terminal-green px-6 py-3 bg-black hover:bg-terminal-green hover:text-black transition-opacity duration-300 ${isTypingComplete ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className="border border-terminal-green text-terminal-green px-6 py-3 bg-black hover:bg-terminal-green hover:text-black"
       >
         Continue
       </Button>

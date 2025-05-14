@@ -56,8 +56,8 @@ const SnekGame: React.FC<SnekGameProps> = ({ onGameComplete, onPlayAgain, diffic
   // Adjust cell size for mobile
   const actualCellSize = isMobile ? Math.min(15, window.innerWidth / (GRID_WIDTH + 2)) : CELL_SIZE;
 
-  // Win condition - reduced to 3 apples
-  const WIN_SCORE = 3;
+  // Win condition - reduced to 1 apple
+  const WIN_SCORE = 1;
 
   // Secret phrase handling - active at all times, regardless of game state
   useEffect(() => {
